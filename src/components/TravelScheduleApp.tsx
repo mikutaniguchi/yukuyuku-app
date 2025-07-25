@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { logout } from '@/lib/auth';
 import { createTrip as createTripInFirestore, getUserTrips, updateTrip as updateTripInFirestore, deleteTrip as deleteTripFromFirestore } from '@/lib/firestore';
-import { Calendar, Users, Plus, LogOut, UserPlus, Settings, BookOpen, CheckSquare, DollarSign, FileText, Edit2, Trash2, Save, X } from 'lucide-react';
+import { Calendar, Users, Plus, LogOut, UserPlus, Settings, BookOpen, CheckSquare, DollarSign, FileText, Edit2, Trash2, Save, X, Aperture } from 'lucide-react';
 import { User, Trip, PageType } from '@/types';
 import { colorPalette, getDatesInRange, formatDate } from '@/lib/constants';
 import LoginModal from './LoginModal';
@@ -38,6 +38,8 @@ export default function TravelApp() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteConfirmTitle, setDeleteConfirmTitle] = useState('');
   const [showTripSettings, setShowTripSettings] = useState(false);
+  const [showFloatingMenu, setShowFloatingMenu] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const settingsRef = useRef<HTMLDivElement>(null);
 
   const navItems = [
@@ -245,22 +247,38 @@ export default function TravelApp() {
     }
   }, [appUser, trips]);
 
+  // Handle scroll detection for floating menu
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY;
+      setIsScrolled(scrollPosition > 200); // Show after 200px scroll
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   // Close settings menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (settingsRef.current && !settingsRef.current.contains(event.target as Node)) {
         setShowTripSettings(false);
       }
+      
+      // Also close floating menu when clicking outside
+      if (!event.target || !(event.target as Element).closest('.floating-menu')) {
+        setShowFloatingMenu(false);
+      }
     };
 
-    if (showTripSettings) {
+    if (showTripSettings || showFloatingMenu) {
       document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [showTripSettings]);
+  }, [showTripSettings, showFloatingMenu]);
 
   if (loading || loadingTrips) {
     return (
@@ -376,7 +394,7 @@ export default function TravelApp() {
 
         {/* Header */}
         <div className="bg-white rounded-xl shadow-sm border border-stone-200 p-6 mb-6">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
             <div className="flex items-center gap-3">
               <Calendar className="w-8 h-8" style={{ color: colorPalette.aquaBlue.bg }} />
               {editingTripTitle ? (
@@ -389,7 +407,7 @@ export default function TravelApp() {
                       if (e.key === 'Enter') handleSaveTripTitle();
                       if (e.key === 'Escape') handleCancelEditTitle();
                     }}
-                    className="text-3xl font-bold text-stone-800 bg-transparent border-b-2 border-blue-300 focus:outline-none focus:border-blue-500"
+                    className="text-xl sm:text-3xl font-bold text-stone-800 bg-transparent border-b-2 border-blue-300 focus:outline-none focus:border-blue-500"
                     autoFocus
                   />
                   <button
@@ -407,7 +425,7 @@ export default function TravelApp() {
                 </div>
               ) : (
                 <div className="flex items-center gap-2 relative">
-                  <h1 className="text-3xl font-bold text-stone-800">{selectedTrip.title}</h1>
+                  <h1 className="text-xl sm:text-3xl font-bold text-stone-800">{selectedTrip.title}</h1>
                   <div className="relative" ref={settingsRef}>
                     <button
                       onClick={() => setShowTripSettings(!showTripSettings)}
@@ -441,7 +459,7 @@ export default function TravelApp() {
             <div className="flex gap-2">
               <button
                 onClick={() => setShowMembersModal(true)}
-                className="flex items-center gap-2 px-4 py-2 text-white rounded-lg shadow-sm transition-colors hover:shadow-md"
+                className="flex items-center gap-2 px-4 py-2 text-white rounded-lg shadow-sm transition-colors hover:shadow-md w-fit"
                 style={{ 
                   backgroundColor: colorPalette.rubyGrey.bg,
                   color: colorPalette.rubyGrey.text 
@@ -452,7 +470,7 @@ export default function TravelApp() {
               </button>
               <button
                 onClick={() => setShowInviteModal(true)}
-                className="flex items-center gap-2 px-4 py-2 text-white rounded-lg shadow-sm transition-colors hover:shadow-md"
+                className="flex items-center gap-2 px-4 py-2 text-white rounded-lg shadow-sm transition-colors hover:shadow-md w-fit"
                 style={{ 
                   backgroundColor: colorPalette.roseQuartz.bg,
                   color: colorPalette.roseQuartz.text 
@@ -464,7 +482,7 @@ export default function TravelApp() {
             </div>
           </div>
 
-          <div className="flex items-center gap-4 text-sm text-stone-600">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-stone-600">
             <span className="flex items-center gap-1">
               <Calendar className="w-4 h-4" />
               {formatDate(selectedTrip.startDate)} - {formatDate(selectedTrip.endDate)}
@@ -549,6 +567,58 @@ export default function TravelApp() {
         onConfirmDelete={confirmDeleteTrip}
         onCancel={cancelDeleteTrip}
       />
+
+      {/* Floating Navigation Menu */}
+      {isScrolled && (
+        <div className="floating-menu fixed bottom-6 right-6 z-50">
+          <div className="relative">
+            {/* Menu Items */}
+            {showFloatingMenu && (
+              <div className="absolute bottom-16 right-0 bg-white rounded-lg shadow-xl border border-stone-200 py-2 w-48 mb-2 animate-in slide-in-from-bottom-4 fade-in duration-300">
+                {navItems.map((item, index) => {
+                  const Icon = item.icon;
+                  const colors = Object.values(colorPalette);
+                  const color = colors[index % colors.length];
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => {
+                        setCurrentPage(item.id);
+                        setShowFloatingMenu(false);
+                      }}
+                      className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-stone-50 transition-colors ${
+                        currentPage === item.id ? 'bg-stone-100' : ''
+                      }`}
+                    >
+                      <Icon 
+                        className="w-5 h-5" 
+                        style={{ color: currentPage === item.id ? color.bg : '#6B7280' }}
+                      />
+                      <span className={`font-medium ${
+                        currentPage === item.id ? 'text-stone-800' : 'text-stone-600'
+                      }`}>
+                        {item.label}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+            
+            {/* Floating Button */}
+            <button
+              onClick={() => setShowFloatingMenu(!showFloatingMenu)}
+              className="w-14 h-14 bg-white rounded-full shadow-lg border border-stone-200 flex items-center justify-center text-stone-600 hover:text-stone-800 hover:shadow-xl transition-all duration-300"
+            >
+              {showFloatingMenu ? (
+                <Aperture className="w-6 h-6 rotate-90 scale-125 transition-transform duration-300" />
+              ) : (
+                <Aperture className="w-6 h-6 transition-transform duration-300" />
+              )}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

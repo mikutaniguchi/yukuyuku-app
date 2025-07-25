@@ -22,15 +22,13 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
   const [expandedSchedules, setExpandedSchedules] = useState<Set<string>>(new Set());
   const [showImageModal, setShowImageModal] = useState<string | null>(null);
   const [showPDFModal, setShowPDFModal] = useState<string | null>(null);
-  const getCurrentHour = () => {
+  const handleNewScheduleClick = () => {
     const now = new Date();
     const hours = now.getHours().toString().padStart(2, '0');
-    return `${hours}:00`;
-  };
-
-  const handleNewScheduleClick = () => {
+    const currentTime = `${hours}:00`;
+    
     setNewSchedule({
-      time: getCurrentHour(),
+      time: currentTime,
       title: "",
       location: "",
       description: "",
@@ -500,11 +498,6 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                             {getIcon(schedule.icon)}
                           </span>
                         )}
-                        {schedule.budget > 0 && (
-                          <span className="text-xs text-stone-500">
-                            ¥{schedule.budgetPeople > 0 ? Math.round(schedule.budget / schedule.budgetPeople) : 0}/人
-                          </span>
-                        )}
                       </div>
                       <div className="flex gap-2">
                         <button
@@ -546,22 +539,6 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                       </div>
                     )}
 
-                    {schedule.budget > 0 && (
-                      <div className="bg-stone-50 rounded-lg p-3 mb-3">
-                        <div className="flex items-center gap-2 text-sm text-stone-600">
-                          <DollarSign className="w-4 h-4" />
-                          <span className="font-medium">予算:</span>
-                          <span>¥{schedule.budget} ({schedule.budgetPeople}人分)</span>
-                          <span className="font-semibold">→ 1人あたり¥{schedule.budgetPeople > 0 ? Math.round(schedule.budget / schedule.budgetPeople) : 0}</span>
-                        </div>
-                        {schedule.paidBy && (
-                          <div className="mt-2 text-sm text-stone-600">
-                            <span className="font-medium">立て替え中:</span>
-                            <span className="ml-1">{trip.members.find(m => m.id === schedule.paidBy)?.name || '不明'}</span>
-                          </div>
-                        )}
-                      </div>
-                    )}
 
                     {(schedule.transport?.method || schedule.transport?.duration) && (
                       <div className="bg-stone-50 rounded-lg p-3 mb-3">
@@ -586,6 +563,7 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                                       src={file.url} 
                                       alt={file.name}
                                       fill
+                                      unoptimized
                                       className="object-cover rounded-lg hover:opacity-80 transition-opacity"
                                     />
                                   </div>
