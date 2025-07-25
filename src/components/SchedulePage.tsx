@@ -4,7 +4,10 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import { Calendar, Plus, MapPin, Edit2, Trash2, Save, X, Upload, FileText, Car, ExternalLink, DollarSign, ChevronDown, ChevronUp, Utensils, Plane, TrainFront, Bus, Camera, Bed } from 'lucide-react';
 import { Trip, Schedule, UploadedFile } from '@/types';
-import { colorPalette, getDatesInRange, formatDate, linkifyText, getGoogleMapsLink } from '@/lib/constants';
+import { colorPalette, getDatesInRange, formatDate, linkifyText, getGoogleMapsLink, getIcon } from '@/lib/constants';
+import NewScheduleModal from './NewScheduleModal';
+import ImageModal from './ImageModal';
+import PDFModal from './PDFModal';
 
 interface SchedulePageProps {
   trip: Trip;
@@ -81,19 +84,6 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
     return file.type === 'application/pdf';
   };
 
-  const getIcon = (icon?: string) => {
-    if (!icon) return null;
-    switch (icon) {
-      case 'meal': return <Utensils className="w-4 h-4" />;
-      case 'car': return <Car className="w-4 h-4" />;
-      case 'plane': return <Plane className="w-4 h-4" />;
-      case 'train': return <TrainFront className="w-4 h-4" />;
-      case 'bus': return <Bus className="w-4 h-4" />;
-      case 'camera': return <Camera className="w-4 h-4" />;
-      case 'bed': return <Bed className="w-4 h-4" />;
-      default: return null;
-    }
-  };
 
   const iconOptions = [
     { id: '', name: 'なし', bgColor: colorPalette.strawBeige.light, iconColor: colorPalette.strawBeige.lightText },
@@ -692,212 +682,27 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
         </div>
       </div>
 
-      {/* Image Modal */}
-      {showImageModal && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50"
-          onClick={() => setShowImageModal(null)}
-        >
-          <div className="relative max-w-4xl max-h-4xl">
-            <Image 
-              src={showImageModal} 
-              alt="拡大表示"
-              width={800}
-              height={600}
-              className="max-w-full max-h-full object-contain rounded-lg"
-              onClick={(e) => e.stopPropagation()}
-            />
-          </div>
-        </div>
-      )}
+      <ImageModal
+        isOpen={!!showImageModal}
+        imageUrl={showImageModal}
+        onClose={() => setShowImageModal(null)}
+      />
 
-      {/* PDF Modal */}
-      {showPDFModal && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50"
-          onClick={() => setShowPDFModal(null)}
-        >
-          <div className="bg-white rounded-lg w-full max-w-4xl h-full max-h-[90vh] flex flex-col">
-            <div className="flex items-center justify-between p-4 border-b">
-              <h3 className="text-lg font-semibold">PDF プレビュー</h3>
-              <button
-                onClick={() => setShowPDFModal(null)}
-                className="text-stone-500 hover:text-stone-700"
-              >
-                ✕
-              </button>
-            </div>
-            <div className="flex-1 p-4">
-              <iframe 
-                src={showPDFModal}
-                className="w-full h-full rounded"
-                title="PDF Preview"
-              />
-            </div>
-          </div>
-        </div>
-      )}
+      <PDFModal
+        isOpen={!!showPDFModal}
+        pdfUrl={showPDFModal}
+        onClose={() => setShowPDFModal(null)}
+      />
 
-      {/* New Schedule Modal */}
-      {showNewScheduleModal && (
-        <div 
-          className="fixed inset-0 flex items-center justify-center p-4 z-50"
-          onClick={() => setShowNewScheduleModal(false)}
-        >
-          <div 
-            className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl border border-stone-200"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="text-xl font-semibold mb-4 text-stone-800">スケジュールを追加</h3>
-            <div className="space-y-4">
-              <input
-                type="time"
-                value={newSchedule.time}
-                onChange={(e) => setNewSchedule({ ...newSchedule, time: e.target.value })}
-                className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-              <div>
-                <label className="block text-sm font-medium text-stone-700 mb-2">アイコン</label>
-                <div className="flex gap-1">
-                  {iconOptions.map(option => (
-                    <button
-                      key={option.id}
-                      type="button"
-                      onClick={() => setNewSchedule({ ...newSchedule, icon: option.id })}
-                      className={`p-2 rounded-full transition-colors duration-200 ${
-                        newSchedule.icon === option.id 
-                          ? 'border-2' 
-                          : 'hover:bg-stone-100 border-2 border-transparent'
-                      }`}
-                      style={{
-                        backgroundColor: newSchedule.icon === option.id ? option.bgColor : 'transparent',
-                        color: newSchedule.icon === option.id ? option.iconColor : '#6B7280',
-                        borderColor: newSchedule.icon === option.id ? option.iconColor : 'transparent'
-                      }}
-                      title={option.name}
-                    >
-                      {option.id ? (
-                        <div className="w-4 h-4 flex items-center justify-center">
-                          {getIcon(option.id)}
-                        </div>
-                      ) : (
-                        <X className="w-4 h-4" />
-                      )}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <input
-                type="text"
-                placeholder="タイトル"
-                value={newSchedule.title}
-                onChange={(e) => setNewSchedule({ ...newSchedule, title: e.target.value })}
-                className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-              <input
-                type="text"
-                placeholder="場所"
-                value={newSchedule.location}
-                onChange={(e) => setNewSchedule({ ...newSchedule, location: e.target.value })}
-                className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-              <textarea
-                placeholder="詳細・メモ"
-                value={newSchedule.description}
-                onChange={(e) => setNewSchedule({ ...newSchedule, description: e.target.value })}
-                className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                rows={3}
-              />
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-stone-500">¥</span>
-                  <input
-                    type="number"
-                    placeholder="例: 3000"
-                    value={newSchedule.budget === 0 ? "" : newSchedule.budget}
-                    onChange={(e) => setNewSchedule({ ...newSchedule, budget: parseInt(e.target.value) || 0 })}
-                    className="w-full pl-7 pr-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-                <div className="relative">
-                  <input
-                    type="number"
-                    placeholder="例: 3"
-                    value={newSchedule.budgetPeople}
-                    onChange={(e) => setNewSchedule({ ...newSchedule, budgetPeople: parseInt(e.target.value) || 1 })}
-                    className="w-full pr-8 pl-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    min="1"
-                  />
-                  <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-stone-500">人</span>
-                </div>
-                {newSchedule.budget > 0 && newSchedule.budgetPeople >= 2 ? (
-                  <select
-                    value={newSchedule.paidBy}
-                    onChange={(e) => setNewSchedule({ ...newSchedule, paidBy: e.target.value })}
-                    className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="">立て替え中：なし</option>
-                    {trip.members.map(member => (
-                      <option key={member.id} value={member.id}>
-                        立て替え中：{member.name}
-                      </option>
-                    ))}
-                  </select>
-                ) : (
-                  <div></div>
-                )}
-              </div>
-              <div className="border-t pt-3">
-                <h4 className="text-sm font-medium text-stone-700 mb-2">交通情報</h4>
-                <div className="grid grid-cols-2 gap-2">
-                  <input
-                    type="text"
-                    placeholder="例: 電車"
-                    value={newSchedule.transport.method}
-                    onChange={(e) => setNewSchedule({ 
-                      ...newSchedule, 
-                      transport: { ...newSchedule.transport, method: e.target.value }
-                    })}
-                    className="px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                  />
-                  <input
-                    type="text"
-                    placeholder="例: 30分"
-                    value={newSchedule.transport.duration}
-                    onChange={(e) => setNewSchedule({ 
-                      ...newSchedule, 
-                      transport: { ...newSchedule.transport, duration: e.target.value }
-                    })}
-                    className="px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                  />
-                </div>
-              </div>
-            </div>
-            <div className="flex gap-3 mt-6">
-              <button
-                onClick={addNewSchedule}
-                className="flex-1 py-2 text-white rounded-lg transition-colors font-medium"
-                style={{ 
-                  backgroundColor: colorPalette.abyssGreen.bg,
-                  color: colorPalette.abyssGreen.text 
-                }}
-              >
-                追加
-              </button>
-              <button
-                onClick={() => setShowNewScheduleModal(false)}
-                className="flex-1 py-2 text-white rounded-lg transition-colors font-medium"
-                style={{ 
-                  backgroundColor: colorPalette.sandRed.bg,
-                  color: colorPalette.sandRed.text 
-                }}
-              >
-                キャンセル
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <NewScheduleModal
+        isOpen={showNewScheduleModal}
+        onClose={() => setShowNewScheduleModal(false)}
+        newSchedule={newSchedule}
+        onScheduleChange={setNewSchedule}
+        onSubmit={addNewSchedule}
+        tripMembers={trip.members}
+        iconOptions={iconOptions}
+      />
     </>
   );
 }

@@ -1,4 +1,6 @@
 // lib/constants.ts
+import React from 'react';
+import { Utensils, Car, Plane, TrainFront, Bus, Camera, Bed } from 'lucide-react';
 import { ColorPalette } from '../types';
 
 export const colorPalette: ColorPalette = {
@@ -30,6 +32,41 @@ export const formatDate = (dateString: string): string => {
 
 export const linkifyText = (text: string) => {
   if (!text) return text;
+  
+  // 行ごとに分割してマークダウン見出しとURLを処理
+  const lines = text.split('\n');
+  
+  return lines.map((line, lineIndex) => {
+    // マークダウン見出しの処理
+    const headingMatch = line.match(/^(#{1,3})\s+(.+)$/);
+    if (headingMatch) {
+      const level = headingMatch[1].length;
+      const content = headingMatch[2];
+      const headingClass = {
+        1: 'text-2xl font-bold text-stone-800 mt-6 mb-3',
+        2: 'text-xl font-semibold text-stone-800 mt-5 mb-2',
+        3: 'text-lg font-medium text-stone-800 mt-4 mb-2'
+      }[level] || 'text-lg font-medium text-stone-800 mt-4 mb-2';
+      
+      return (
+        <div key={lineIndex} className={headingClass}>
+          {processUrls(content)}
+        </div>
+      );
+    }
+    
+    // 通常のテキスト行の処理
+    return (
+      <div key={lineIndex}>
+        {processUrls(line)}
+        {lineIndex < lines.length - 1 && <br />}
+      </div>
+    );
+  });
+};
+
+// URLのリンク化処理を分離
+const processUrls = (text: string) => {
   const urlRegex = /(https?:\/\/[^\s]+)/g;
   const parts = text.split(urlRegex);
   
@@ -72,4 +109,18 @@ export const getGoogleMapsLink = (location: string): string | null => {
   if (!location) return null;
   const encodedLocation = encodeURIComponent(location);
   return `https://www.google.com/search?q=${encodedLocation}`;
+};
+
+export const getIcon = (icon?: string) => {
+  if (!icon) return null;
+  switch (icon) {
+    case 'meal': return <Utensils className="w-4 h-4" />;
+    case 'car': return <Car className="w-4 h-4" />;
+    case 'plane': return <Plane className="w-4 h-4" />;
+    case 'train': return <TrainFront className="w-4 h-4" />;
+    case 'bus': return <Bus className="w-4 h-4" />;
+    case 'camera': return <Camera className="w-4 h-4" />;
+    case 'bed': return <Bed className="w-4 h-4" />;
+    default: return null;
+  }
 };

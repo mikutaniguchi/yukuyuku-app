@@ -1,11 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Calendar } from 'lucide-react';
+import { LogIn } from 'lucide-react';
 import { User, Trip, LoginMode } from '@/types';
 import { colorPalette } from '../lib/constants';
 import { auth } from '@/lib/firebase';
 import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import Modal from './Modal';
 
 interface LoginModalProps {
   onLogin: (user: User) => void;

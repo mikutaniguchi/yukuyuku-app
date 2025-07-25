@@ -11,6 +11,7 @@ import LoginModal from './LoginModal';
 import MembersModal from './MembersModal';
 import InviteModal from './InviteModal';
 import CreateTripModal from './CreateTripModal';
+import DeleteTripModal from './DeleteTripModal';
 import SchedulePage from './SchedulePage';
 import MemoPage from './MemoPage';
 import ChecklistPage from './ChecklistPage';
@@ -41,10 +42,10 @@ export default function TravelApp() {
 
   const navItems = [
     { id: "schedule" as const, label: "スケジュール", icon: Calendar },
-    { id: "memo" as const, label: "旅行メモ", icon: BookOpen },
     { id: "checklist" as const, label: "チェックリスト", icon: CheckSquare },
     { id: "budget" as const, label: "予算管理", icon: DollarSign },
-    { id: "files" as const, label: "ファイル", icon: FileText }
+    { id: "files" as const, label: "ファイル", icon: FileText },
+    { id: "memo" as const, label: "メモ", icon: BookOpen }
   ];
 
   // Firebase認証状態を監視
@@ -276,7 +277,7 @@ export default function TravelApp() {
   // 旅行がない場合は作成フォームを表示
   if (!selectedTrip && appUser) {
     if (showCreateTripModal) {
-      return <CreateTripModal onCreateTrip={handleCreateTrip} />;
+      return <CreateTripModal isOpen={showCreateTripModal} onCreateTrip={handleCreateTrip} />;
     }
     return (
       <div className="min-h-screen bg-gradient-to-br from-stone-50 to-neutral-100 flex items-center justify-center p-4">
@@ -316,12 +317,11 @@ export default function TravelApp() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-stone-50 to-neutral-100">
-      {showCreateTripModal && (
-        <CreateTripModal 
-          onCreateTrip={handleCreateTrip}
-          onClose={() => setShowCreateTripModal(false)}
-        />
-      )}
+      <CreateTripModal 
+        isOpen={showCreateTripModal}
+        onCreateTrip={handleCreateTrip}
+        onClose={() => setShowCreateTripModal(false)}
+      />
       <div className="container mx-auto px-4 py-6">
         {/* User info bar */}
         <div className="flex items-center justify-between mb-4 bg-white rounded-lg shadow-sm border border-stone-200 px-4 py-2">
@@ -527,75 +527,28 @@ export default function TravelApp() {
       </div>
 
       {/* Modals */}
-      {showMembersModal && (
-        <MembersModal 
-          trip={selectedTrip}
-          user={appUser}
-          onClose={() => setShowMembersModal(false)}
-          onTripUpdate={updateTrip}
-        />
-      )}
+      <MembersModal 
+        isOpen={showMembersModal}
+        trip={selectedTrip}
+        user={appUser}
+        onClose={() => setShowMembersModal(false)}
+        onTripUpdate={updateTrip}
+      />
 
-      {showInviteModal && (
-        <InviteModal 
-          trip={selectedTrip}
-          onClose={() => setShowInviteModal(false)}
-        />
-      )}
+      <InviteModal 
+        isOpen={showInviteModal}
+        trip={selectedTrip}
+        onClose={() => setShowInviteModal(false)}
+      />
 
-      {/* Delete Confirmation Modal */}
-      {showDeleteConfirm && selectedTrip && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
-          onClick={cancelDeleteTrip}
-        >
-          <div 
-            className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl border border-stone-200"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="text-xl font-semibold mb-4 text-red-700">旅行を削除</h3>
-            <div className="space-y-4">
-              <p className="text-stone-700">
-                この操作は取り消せません。すべてのスケジュール、メモ、チェックリストが削除されます。
-              </p>
-              <p className="text-stone-700">
-                削除するには、旅行名「<span className="font-semibold text-stone-900">{selectedTrip.title}</span>」を入力してください：
-              </p>
-              <input
-                type="text"
-                value={deleteConfirmTitle}
-                onChange={(e) => setDeleteConfirmTitle(e.target.value)}
-                placeholder="旅行名を入力"
-                className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                autoFocus
-              />
-            </div>
-            <div className="flex gap-3 mt-6">
-              <button
-                onClick={confirmDeleteTrip}
-                disabled={deleteConfirmTitle !== selectedTrip.title}
-                className={`flex-1 py-2 text-white rounded-lg transition-colors font-medium ${
-                  deleteConfirmTitle === selectedTrip.title
-                    ? 'bg-red-600 hover:bg-red-700'
-                    : 'bg-gray-300 cursor-not-allowed'
-                }`}
-              >
-                削除
-              </button>
-              <button
-                onClick={cancelDeleteTrip}
-                className="flex-1 py-2 text-white rounded-lg transition-colors font-medium"
-                style={{ 
-                  backgroundColor: colorPalette.strawBeige.bg,
-                  color: colorPalette.strawBeige.text 
-                }}
-              >
-                キャンセル
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <DeleteTripModal
+        isOpen={showDeleteConfirm}
+        trip={selectedTrip}
+        deleteConfirmTitle={deleteConfirmTitle}
+        onDeleteConfirmTitleChange={setDeleteConfirmTitle}
+        onConfirmDelete={confirmDeleteTrip}
+        onCancel={cancelDeleteTrip}
+      />
     </div>
   );
 }

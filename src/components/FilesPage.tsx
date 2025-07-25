@@ -5,6 +5,8 @@ import Image from 'next/image';
 import { FileText, ImageIcon, Download, Calendar, Clock } from 'lucide-react';
 import { Trip, UploadedFile } from '@/types';
 import { formatDate } from '@/lib/constants';
+import ImageModal from './ImageModal';
+import PDFModal from './PDFModal';
 
 interface FilesPageProps {
   trip: Trip;
@@ -196,51 +198,17 @@ export default function FilesPage({ trip }: FilesPageProps) {
         )}
       </div>
 
-      {/* Image Modal */}
-      {showImageModal && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50"
-          onClick={() => setShowImageModal(null)}
-        >
-          <div className="relative max-w-4xl max-h-4xl">
-            <Image 
-              src={showImageModal} 
-              alt="拡大表示"
-              width={800}
-              height={600}
-              className="max-w-full max-h-full object-contain rounded-lg"
-              onClick={(e) => e.stopPropagation()}
-            />
-          </div>
-        </div>
-      )}
+      <ImageModal
+        isOpen={!!showImageModal}
+        imageUrl={showImageModal}
+        onClose={() => setShowImageModal(null)}
+      />
 
-      {/* PDF Modal */}
-      {showPDFModal && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50"
-          onClick={() => setShowPDFModal(null)}
-        >
-          <div className="bg-white rounded-lg w-full max-w-4xl h-full max-h-[90vh] flex flex-col">
-            <div className="flex items-center justify-between p-4 border-b">
-              <h3 className="text-lg font-semibold">PDF プレビュー</h3>
-              <button
-                onClick={() => setShowPDFModal(null)}
-                className="text-stone-500 hover:text-stone-700"
-              >
-                ✕
-              </button>
-            </div>
-            <div className="flex-1 p-4">
-              <iframe 
-                src={showPDFModal}
-                className="w-full h-full rounded"
-                title="PDF Preview"
-              />
-            </div>
-          </div>
-        </div>
-      )}
+      <PDFModal
+        isOpen={!!showPDFModal}
+        pdfUrl={showPDFModal}
+        onClose={() => setShowPDFModal(null)}
+      />
     </>
   );
 }
