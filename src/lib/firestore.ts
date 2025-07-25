@@ -43,6 +43,14 @@ export const getUserTrips = async (userId: string) => {
   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Trip));
 };
 
+export const updateTrip = async (tripId: string, tripData: Partial<Trip>) => {
+  const tripRef = doc(db, 'trips', tripId);
+  await updateDoc(tripRef, {
+    ...tripData,
+    updatedAt: serverTimestamp()
+  });
+};
+
 // Schedules
 export const createSchedule = async (schedule: Omit<Schedule, 'id'>) => {
   const scheduleRef = doc(collection(db, 'schedules'));

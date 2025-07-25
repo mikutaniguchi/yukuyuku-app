@@ -13,6 +13,8 @@ interface ChecklistPageProps {
 export default function ChecklistPage({ trip, onTripUpdate }: ChecklistPageProps) {
   const [showNewChecklistModal, setShowNewChecklistModal] = useState(false);
   const [newChecklist, setNewChecklist] = useState({ name: "", items: [""] });
+  const [editingItem, setEditingItem] = useState<string | null>(null);
+  const [editingText, setEditingText] = useState("");
 
   const toggleChecklistItem = (checklistId: string, itemId: string) => {
     onTripUpdate(trip.id, (currentTrip) => ({
@@ -65,6 +67,39 @@ export default function ChecklistPage({ trip, onTripUpdate }: ChecklistPageProps
           : checklist
       )
     }));
+  };
+
+  const startEditingItem = (item: { id: string; text: string }) => {
+    setEditingItem(item.id);
+    setEditingText(item.text);
+  };
+
+  const saveEditingItem = (checklistId: string, itemId: string) => {
+    if (!editingText.trim()) return;
+    
+    onTripUpdate(trip.id, (currentTrip) => ({
+      ...currentTrip,
+      checklists: currentTrip.checklists.map(checklist => 
+        checklist.id === checklistId 
+          ? { 
+              ...checklist, 
+              items: checklist.items.map(item => 
+                item.id === itemId 
+                  ? { ...item, text: editingText.trim() }
+                  : item
+              )
+            }
+          : checklist
+      )
+    }));
+    
+    setEditingItem(null);
+    setEditingText("");
+  };
+
+  const cancelEditingItem = () => {
+    setEditingItem(null);
+    setEditingText("");
   };
 
   const deleteChecklist = (checklistId: string) => {
@@ -172,15 +207,61 @@ export default function ChecklistPage({ trip, onTripUpdate }: ChecklistPageProps
                           </svg>
                         )}
                       </button>
-                      <span className={`flex-1 ${item.checked ? 'line-through text-stone-500' : 'text-stone-700'}`}>
-                        {item.text}
-                      </span>
-                      <button
-                        onClick={() => deleteChecklistItem(checklist.id, item.id)}
-                        className="opacity-0 group-hover:opacity-100 p-1 text-stone-400 hover:text-red-600 transition-all"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
+                      {editingItem === item.id ? (
+                        <div className="flex-1 flex items-center gap-2">
+                          <input
+                            type="text"
+                            value={editingText}
+                            onChange={(e) => setEditingText(e.target.value)}
+                            onKeyPress={(e) => {
+                              if (e.key === 'Enter') {
+                                saveEditingItem(checklist.id, item.id);
+                              } else if (e.key === 'Escape') {
+                                cancelEditingItem();
+                              }
+                            }}
+                            className="flex-1 px-2 py-1 border border-stone-300 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                            autoFocus
+                          />
+                          <button
+                            onClick={() => saveEditingItem(checklist.id, item.id)}
+                            className="p-1 text-green-600 hover:text-green-700 transition-colors"
+                          >
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </button>
+                          <button
+                            onClick={cancelEditingItem}
+                            className="p-1 text-stone-400 hover:text-stone-600 transition-colors"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ) : (
+                        <>
+                          <span 
+                            className={`flex-1 ${item.checked ? 'line-through text-stone-500' : 'text-stone-700'} cursor-pointer`}
+                            onClick={() => startEditingItem(item)}
+                          >
+                            {item.text}
+                          </span>
+                          <button
+                            onClick={() => startEditingItem(item)}
+                            className="opacity-0 group-hover:opacity-100 p-1 text-stone-400 hover:text-blue-600 transition-all"
+                          >
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                            </svg>
+                          </button>
+                          <button
+                            onClick={() => deleteChecklistItem(checklist.id, item.id)}
+                            className="opacity-0 group-hover:opacity-100 p-1 text-stone-400 hover:text-red-600 transition-all"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </>
+                      )}
                     </div>
                   ))}
                 </div>

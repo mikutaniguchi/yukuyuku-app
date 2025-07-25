@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { logout } from '@/lib/auth';
-import { createTrip as createTripInFirestore, getUserTrips } from '@/lib/firestore';
+import { createTrip as createTripInFirestore, getUserTrips, updateTrip as updateTripInFirestore } from '@/lib/firestore';
 import { Calendar, Users, Plus, LogOut, UserPlus, Settings, BookOpen, CheckSquare, DollarSign, FileText } from 'lucide-react';
 import { User, Trip, PageType } from '@/types';
 import { colorPalette, getDatesInRange, formatDate } from '@/lib/constants';
@@ -138,7 +138,8 @@ export default function TravelApp() {
     }
   };
 
-  const updateTrip = (tripId: string, updateFunction: (trip: Trip) => Trip) => {
+  const updateTrip = async (tripId: string, updateFunction: (trip: Trip) => Trip) => {
+    // ローカル状態を更新
     setTrips(prevTrips => 
       prevTrips.map(trip => {
         if (trip.id === tripId) {
@@ -151,6 +152,17 @@ export default function TravelApp() {
         return trip;
       })
     );
+
+    // Firestoreを更新
+    try {
+      const currentTrip = trips.find(trip => trip.id === tripId);
+      if (currentTrip) {
+        const updatedTrip = updateFunction(currentTrip);
+        await updateTripInFirestore(tripId, updatedTrip);
+      }
+    } catch (error) {
+      console.error('Failed to update trip in Firestore:', error);
+    }
   };
 
   const hasAccess = appUser && selectedTrip && selectedTrip.members.some(m => 
