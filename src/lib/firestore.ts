@@ -5,6 +5,7 @@ import {
   getDoc,
   getDocs,
   updateDoc,
+  deleteDoc,
   query,
   where,
   orderBy,
@@ -49,6 +50,11 @@ export const updateTrip = async (tripId: string, tripData: Partial<Trip>) => {
     ...tripData,
     updatedAt: serverTimestamp()
   });
+};
+
+export const deleteTrip = async (tripId: string) => {
+  const tripRef = doc(db, 'trips', tripId);
+  await deleteDoc(tripRef);
 };
 
 // Schedules

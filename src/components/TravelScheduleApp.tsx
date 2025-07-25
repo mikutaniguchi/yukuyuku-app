@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { logout } from '@/lib/auth';
-import { createTrip as createTripInFirestore, getUserTrips, updateTrip as updateTripInFirestore } from '@/lib/firestore';
-import { Calendar, Users, Plus, LogOut, UserPlus, Settings, BookOpen, CheckSquare, DollarSign, FileText } from 'lucide-react';
+import { createTrip as createTripInFirestore, getUserTrips, updateTrip as updateTripInFirestore, deleteTrip as deleteTripFromFirestore } from '@/lib/firestore';
+import { Calendar, Users, Plus, LogOut, UserPlus, Settings, BookOpen, CheckSquare, DollarSign, FileText, Edit2, Trash2, Save, X } from 'lucide-react';
 import { User, Trip, PageType } from '@/types';
 import { colorPalette, getDatesInRange, formatDate } from '@/lib/constants';
 import LoginModal from './LoginModal';
@@ -32,6 +32,12 @@ export default function TravelApp() {
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showCreateTripModal, setShowCreateTripModal] = useState(false);
   const [loadingTrips, setLoadingTrips] = useState(true);
+  const [editingTripTitle, setEditingTripTitle] = useState(false);
+  const [tempTripTitle, setTempTripTitle] = useState('');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteConfirmTitle, setDeleteConfirmTitle] = useState('');
+  const [showTripSettings, setShowTripSettings] = useState(false);
+  const settingsRef = useRef<HTMLDivElement>(null);
 
   const navItems = [
     { id: "schedule" as const, label: "スケジュール", icon: Calendar },
@@ -158,6 +164,69 @@ export default function TravelApp() {
     }
   };
 
+  const handleDeleteTrip = () => {
+    setDeleteConfirmTitle('');
+    setShowDeleteConfirm(true);
+    setShowTripSettings(false);
+  };
+
+  const confirmDeleteTrip = async () => {
+    if (!selectedTrip || deleteConfirmTitle !== selectedTrip.title) {
+      return;
+    }
+
+    try {
+      await deleteTripFromFirestore(selectedTrip.id);
+      const updatedTrips = trips.filter(trip => trip.id !== selectedTrip.id);
+      setTrips(updatedTrips);
+      
+      if (updatedTrips.length > 0) {
+        setSelectedTrip(updatedTrips[0]);
+        setSelectedDate(getDatesInRange(updatedTrips[0].startDate, updatedTrips[0].endDate)[0]);
+      } else {
+        setSelectedTrip(null);
+        setShowCreateTripModal(true);
+      }
+      
+      setShowDeleteConfirm(false);
+      setDeleteConfirmTitle('');
+    } catch (error) {
+      console.error('Failed to delete trip:', error);
+      alert('旅行の削除に失敗しました');
+    }
+  };
+
+  const cancelDeleteTrip = () => {
+    setShowDeleteConfirm(false);
+    setDeleteConfirmTitle('');
+  };
+
+  const handleEditTripTitle = () => {
+    setTempTripTitle(selectedTrip?.title || '');
+    setEditingTripTitle(true);
+    setShowTripSettings(false);
+  };
+
+  const handleSaveTripTitle = async () => {
+    if (!selectedTrip || !tempTripTitle.trim()) return;
+    
+    try {
+      await updateTrip(selectedTrip.id, (trip) => ({
+        ...trip,
+        title: tempTripTitle.trim()
+      }));
+      setEditingTripTitle(false);
+    } catch (error) {
+      console.error('Failed to update trip title:', error);
+      alert('タイトルの更新に失敗しました');
+    }
+  };
+
+  const handleCancelEditTitle = () => {
+    setEditingTripTitle(false);
+    setTempTripTitle('');
+  };
+
   const hasAccess = appUser && selectedTrip && selectedTrip.members.some(m => 
     (m.id === appUser.id) || (m.name === appUser.name && m.type === appUser.type)
   );
@@ -174,6 +243,23 @@ export default function TravelApp() {
       }
     }
   }, [appUser, trips]);
+
+  // Close settings menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (settingsRef.current && !settingsRef.current.contains(event.target as Node)) {
+        setShowTripSettings(false);
+      }
+    };
+
+    if (showTripSettings) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showTripSettings]);
 
   if (loading || loadingTrips) {
     return (
@@ -297,10 +383,67 @@ export default function TravelApp() {
         {/* Header */}
         <div className="bg-white rounded-xl shadow-sm border border-stone-200 p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-3xl font-bold text-stone-800 flex items-center gap-3">
+            <div className="flex items-center gap-3">
               <Calendar className="w-8 h-8" style={{ color: colorPalette.aquaBlue.bg }} />
-              {selectedTrip.title}
-            </h1>
+              {editingTripTitle ? (
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={tempTripTitle}
+                    onChange={(e) => setTempTripTitle(e.target.value)}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') handleSaveTripTitle();
+                      if (e.key === 'Escape') handleCancelEditTitle();
+                    }}
+                    className="text-3xl font-bold text-stone-800 bg-transparent border-b-2 border-blue-300 focus:outline-none focus:border-blue-500"
+                    autoFocus
+                  />
+                  <button
+                    onClick={handleSaveTripTitle}
+                    className="p-1 text-green-600 hover:text-green-700 transition-colors"
+                  >
+                    <Save className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={handleCancelEditTitle}
+                    className="p-1 text-stone-400 hover:text-stone-600 transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 relative">
+                  <h1 className="text-3xl font-bold text-stone-800">{selectedTrip.title}</h1>
+                  <div className="relative" ref={settingsRef}>
+                    <button
+                      onClick={() => setShowTripSettings(!showTripSettings)}
+                      className="p-1 text-stone-400 hover:text-stone-600 transition-colors opacity-60 hover:opacity-100"
+                    >
+                      <Settings className="w-5 h-5" />
+                    </button>
+                    
+                    {showTripSettings && (
+                      <div className="absolute top-8 right-0 bg-white border border-stone-200 rounded-lg shadow-lg py-2 w-40 z-10">
+                        <button
+                          onClick={handleEditTripTitle}
+                          className="w-full px-4 py-2 text-left text-stone-700 hover:bg-stone-50 flex items-center gap-2"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                          タイトル変更
+                        </button>
+                        <button
+                          onClick={handleDeleteTrip}
+                          className="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 flex items-center gap-2"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          旅行を削除
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
             <div className="flex gap-2">
               <button
                 onClick={() => setShowMembersModal(true)}
@@ -404,6 +547,60 @@ export default function TravelApp() {
           trip={selectedTrip}
           onClose={() => setShowInviteModal(false)}
         />
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && selectedTrip && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+          onClick={cancelDeleteTrip}
+        >
+          <div 
+            className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl border border-stone-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-xl font-semibold mb-4 text-red-700">旅行を削除</h3>
+            <div className="space-y-4">
+              <p className="text-stone-700">
+                この操作は取り消せません。すべてのスケジュール、メモ、チェックリストが削除されます。
+              </p>
+              <p className="text-stone-700">
+                削除するには、旅行名「<span className="font-semibold text-stone-900">{selectedTrip.title}</span>」を入力してください：
+              </p>
+              <input
+                type="text"
+                value={deleteConfirmTitle}
+                onChange={(e) => setDeleteConfirmTitle(e.target.value)}
+                placeholder="旅行名を入力"
+                className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                autoFocus
+              />
+            </div>
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={confirmDeleteTrip}
+                disabled={deleteConfirmTitle !== selectedTrip.title}
+                className={`flex-1 py-2 text-white rounded-lg transition-colors font-medium ${
+                  deleteConfirmTitle === selectedTrip.title
+                    ? 'bg-red-600 hover:bg-red-700'
+                    : 'bg-gray-300 cursor-not-allowed'
+                }`}
+              >
+                削除
+              </button>
+              <button
+                onClick={cancelDeleteTrip}
+                className="flex-1 py-2 text-white rounded-lg transition-colors font-medium"
+                style={{ 
+                  backgroundColor: colorPalette.strawBeige.bg,
+                  color: colorPalette.strawBeige.text 
+                }}
+              >
+                キャンセル
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
