@@ -273,7 +273,7 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                         <input
                           type="number"
                           placeholder="例: 3000"
-                          value={schedule.budget}
+                          value={schedule.budget === 0 ? "" : schedule.budget}
                           onChange={(e) => {
                             const updatedSchedule = { ...schedule, budget: parseInt(e.target.value) || 0 };
                             onTripUpdate(trip.id, currentTrip => {
@@ -654,7 +654,7 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                   <input
                     type="number"
                     placeholder="例: 3000"
-                    value={newSchedule.budget}
+                    value={newSchedule.budget === 0 ? "" : newSchedule.budget}
                     onChange={(e) => setNewSchedule({ ...newSchedule, budget: parseInt(e.target.value) || 0 })}
                     className="w-full pl-7 pr-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
