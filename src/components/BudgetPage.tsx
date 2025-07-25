@@ -30,29 +30,37 @@ export default function BudgetPage({ trip }: BudgetPageProps) {
     );
   };
 
-  const getBudgetByCategory = () => {
-    const categoryBudgets: Record<string, number> = {};
+
+  const calculateAdvancePayments = () => {
+    const advances: Record<string, { memberId: string; memberName: string; totalAdvanced: number; perPersonPayment: number }> = {};
     
     Object.values(trip.schedules).forEach(daySchedules => {
       daySchedules.forEach(schedule => {
-        const tag = trip.customTags.find(t => t.id === schedule.type);
-        const categoryName = tag?.name || schedule.type;
-        const budgetPerPerson = schedule.budgetPeople > 0 ? Math.round((schedule.budget || 0) / schedule.budgetPeople) : 0;
-        const transportCost = schedule.transport?.cost || 0;
-        
-        if (!categoryBudgets[categoryName]) {
-          categoryBudgets[categoryName] = 0;
+        if (schedule.paidBy && schedule.budget > 0) {
+          const member = trip.members.find(m => m.id === schedule.paidBy);
+          if (member) {
+            if (!advances[schedule.paidBy]) {
+              advances[schedule.paidBy] = {
+                memberId: schedule.paidBy,
+                memberName: member.name,
+                totalAdvanced: 0,
+                perPersonPayment: 0
+              };
+            }
+            advances[schedule.paidBy].totalAdvanced += schedule.budget;
+            // 各スケジュールのbudgetPeopleを使って一人あたりの支払い額を計算
+            advances[schedule.paidBy].perPersonPayment += Math.round(schedule.budget / schedule.budgetPeople);
+          }
         }
-        categoryBudgets[categoryName] += budgetPerPerson + transportCost;
       });
     });
-    
-    return Object.entries(categoryBudgets).filter(([, amount]) => amount > 0);
+
+    return Object.values(advances);
   };
 
   const totalBudget = calculateTotalBudget();
-  const categoryBudgets = getBudgetByCategory();
   const averageDailyBudget = tripDates.length > 0 ? Math.round(totalBudget / tripDates.length) : 0;
+  const advancePayments = calculateAdvancePayments();
 
   return (
     <div className="space-y-6">
@@ -101,39 +109,6 @@ export default function BudgetPage({ trip }: BudgetPageProps) {
         </div>
       </div>
 
-      {/* カテゴリ別予算 */}
-      {categoryBudgets.length > 0 && (
-        <div className="bg-white rounded-xl shadow-sm border border-stone-200 p-6">
-          <h3 className="text-lg font-semibold text-stone-800 mb-4">カテゴリ別予算（1人あたり）</h3>
-          <div className="space-y-3">
-            {categoryBudgets
-              .sort(([, a], [, b]) => b - a)
-              .map(([category, amount]) => {
-                const percentage = totalBudget > 0 ? Math.round((amount / totalBudget) * 100) : 0;
-                return (
-                  <div key={category} className="flex items-center justify-between">
-                    <div className="flex items-center gap-3 flex-1">
-                      <span className="font-medium text-stone-700 min-w-20">{category}</span>
-                      <div className="flex-1 bg-stone-200 rounded-full h-3">
-                        <div 
-                          className="h-3 rounded-full transition-all duration-300"
-                          style={{ 
-                            width: `${percentage}%`,
-                            backgroundColor: colorPalette.strawBeige.bg
-                          }}
-                        />
-                      </div>
-                      <span className="text-sm text-stone-500 min-w-12">{percentage}%</span>
-                    </div>
-                    <span className="font-bold text-stone-800 min-w-24 text-right">
-                      ¥{amount.toLocaleString()}
-                    </span>
-                  </div>
-                );
-              })}
-          </div>
-        </div>
-      )}
 
       {/* 日別予算詳細 */}
       <div className="bg-white rounded-xl shadow-sm border border-stone-200 p-6">
@@ -188,6 +163,35 @@ export default function BudgetPage({ trip }: BudgetPageProps) {
           })}
         </div>
       </div>
+
+      {/* 立て替え集計 */}
+      {advancePayments.length > 0 && (
+        <div className="bg-white rounded-xl shadow-sm border border-stone-200 p-6">
+          <h3 className="text-lg font-semibold text-stone-800 mb-4">立て替え集計</h3>
+          <div className="space-y-4">
+            {advancePayments.map(advance => (
+              <div key={advance.memberId} className="border border-stone-200 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-semibold text-stone-800">{advance.memberName}</h4>
+                  <span className="text-lg font-bold" style={{ color: colorPalette.sandRed.bg }}>
+                    立て替え合計: ¥{advance.totalAdvanced.toLocaleString()}
+                  </span>
+                </div>
+                <div className="bg-stone-50 rounded-lg p-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-stone-600">
+                      {advance.memberName}に払う（1人あたり）
+                    </span>
+                    <span className="font-bold text-stone-800">
+                      ¥{advance.perPersonPayment.toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* 予算がない場合のメッセージ */}
       {totalBudget === 0 && (

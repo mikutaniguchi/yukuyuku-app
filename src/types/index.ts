@@ -36,6 +36,7 @@ export interface Schedule {
   icon?: string;
   budget: number;
   budgetPeople: number;
+  paidBy?: string; // 立て替え者のメンバーID
   transport: Transport;
   createdAt?: Date | string;
 }

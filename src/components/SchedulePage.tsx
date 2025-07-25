@@ -34,19 +34,21 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
       icon: "",
       budget: 0,
       budgetPeople: 1,
+      paidBy: "",
       transport: { method: "", duration: "", cost: 0 }
     });
     setShowNewScheduleModal(true);
   };
 
   const [newSchedule, setNewSchedule] = useState({
-    time: "",
+    time: "12:00", // 固定値に変更
     title: "",
     location: "",
     description: "",
     icon: "",
     budget: 0,
     budgetPeople: 1,
+    paidBy: "",
     transport: { method: "", duration: "", cost: 0 }
   });
 
@@ -114,8 +116,8 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
       const files = (e.target as HTMLInputElement).files;
       if (!files) return;
 
-      const fileList = Array.from(files).map(file => ({
-        id: Date.now() + Math.random(),
+      const fileList = Array.from(files).map((file, index) => ({
+        id: `file_${Date.now()}_${index}`,
         name: file.name,
         type: file.type,
         url: URL.createObjectURL(file)
@@ -160,6 +162,7 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
       ...(newSchedule.icon && { icon: newSchedule.icon }),
       budget: newSchedule.budget,
       budgetPeople: newSchedule.budgetPeople,
+      ...(newSchedule.paidBy && { paidBy: newSchedule.paidBy }),
       transport: newSchedule.transport,
       files: []
     };
@@ -178,6 +181,7 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
       icon: "",
       budget: 0,
       budgetPeople: 1,
+      paidBy: "",
       transport: { method: "", duration: "", cost: 0 }
     });
     setShowNewScheduleModal(false);
@@ -349,7 +353,7 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                       className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       rows={2}
                     />
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                       <div className="relative">
                         <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-stone-500">¥</span>
                         <input
@@ -389,6 +393,36 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                         />
                         <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-stone-500">人</span>
                       </div>
+                      {schedule.budget > 0 && schedule.budgetPeople >= 2 ? (
+                        <select
+                          value={schedule.paidBy || ""}
+                          onChange={(e) => {
+                            const updatedSchedule = { ...schedule };
+                            if (e.target.value) {
+                              updatedSchedule.paidBy = e.target.value;
+                            } else {
+                              delete updatedSchedule.paidBy;
+                            }
+                            onTripUpdate(trip.id, currentTrip => {
+                              const updatedSchedules = { ...currentTrip.schedules };
+                              updatedSchedules[selectedDate] = updatedSchedules[selectedDate].map(s => 
+                                s.id === schedule.id ? updatedSchedule : s
+                              );
+                              return { ...currentTrip, schedules: updatedSchedules };
+                            });
+                          }}
+                          className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        >
+                          <option value="">立て替え中：なし</option>
+                          {trip.members.map(member => (
+                            <option key={member.id} value={member.id}>
+                              立て替え中：{member.name}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <div></div>
+                      )}
                     </div>
                     <div className="border-t pt-3">
                       <h4 className="text-sm font-medium text-stone-700 mb-2">交通情報</h4>
@@ -530,6 +564,12 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                           <span>¥{schedule.budget} ({schedule.budgetPeople}人分)</span>
                           <span className="font-semibold">→ 1人あたり¥{schedule.budgetPeople > 0 ? Math.round(schedule.budget / schedule.budgetPeople) : 0}</span>
                         </div>
+                        {schedule.paidBy && (
+                          <div className="mt-2 text-sm text-stone-600">
+                            <span className="font-medium">立て替え中:</span>
+                            <span className="ml-1">{trip.members.find(m => m.id === schedule.paidBy)?.name || '不明'}</span>
+                          </div>
+                        )}
                       </div>
                     )}
 
@@ -768,7 +808,7 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                 className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 rows={3}
               />
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-stone-500">¥</span>
                   <input
@@ -790,6 +830,22 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                   />
                   <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-stone-500">人</span>
                 </div>
+                {newSchedule.budget > 0 && newSchedule.budgetPeople >= 2 ? (
+                  <select
+                    value={newSchedule.paidBy}
+                    onChange={(e) => setNewSchedule({ ...newSchedule, paidBy: e.target.value })}
+                    className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">立て替え中：なし</option>
+                    {trip.members.map(member => (
+                      <option key={member.id} value={member.id}>
+                        立て替え中：{member.name}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <div></div>
+                )}
               </div>
               <div className="border-t pt-3">
                 <h4 className="text-sm font-medium text-stone-700 mb-2">交通情報</h4>
