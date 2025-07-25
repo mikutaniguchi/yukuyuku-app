@@ -89,4 +89,4 @@ export interface ColorVariant {
 }
 
 export type LoginMode = 'select' | 'google' | 'guest';
-export type PageType = 'schedule' | 'memo' | 'checklist' | 'budget' | 'tags';
+export type PageType = 'schedule' | 'memo' | 'checklist' | 'budget' | 'files' | 'tags';

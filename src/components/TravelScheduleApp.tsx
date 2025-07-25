@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Calendar, Users, Plus, LogOut, UserPlus, Settings, BookOpen, CheckSquare, DollarSign } from 'lucide-react';
+import { Calendar, Users, Plus, LogOut, UserPlus, Settings, BookOpen, CheckSquare, DollarSign, FileText } from 'lucide-react';
 import { User, Trip, PageType } from '@/types';
 import { colorPalette, getDatesInRange, formatDate } from '@/lib/constants';
 import LoginModal from './LoginModal';
@@ -12,6 +12,7 @@ import MemoPage from './MemoPage';
 import ChecklistPage from './ChecklistPage';
 import BudgetPage from './BudgetPage';
 import TagsPage from './TagsPage';
+import FilesPage from './FilesPage';
 
 // モックデータ
 const initialTrips: Trip[] = [
@@ -92,6 +93,7 @@ export default function TravelApp() {
     { id: "memo" as const, label: "旅行メモ", icon: BookOpen },
     { id: "checklist" as const, label: "チェックリスト", icon: CheckSquare },
     { id: "budget" as const, label: "予算管理", icon: DollarSign },
+    { id: "files" as const, label: "ファイル", icon: FileText },
     { id: "tags" as const, label: "タグ設定", icon: Settings }
   ];
 
@@ -308,6 +310,9 @@ export default function TravelApp() {
         )}
         {currentPage === "budget" && (
           <BudgetPage trip={selectedTrip} />
+        )}
+        {currentPage === "files" && (
+          <FilesPage trip={selectedTrip} />
         )}
         {currentPage === "tags" && (
           <TagsPage trip={selectedTrip} onTripUpdate={updateTrip} />

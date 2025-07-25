@@ -36,15 +36,15 @@ export default function TagsPage({ trip, onTripUpdate }: TagsPageProps) {
     }));
   };
 
-  const updateTag = (tagId: string, updatedTag: Partial<CustomTag>) => {
-    onTripUpdate(trip.id, (currentTrip) => ({
-      ...currentTrip,
-      customTags: currentTrip.customTags.map(tag => 
-        tag.id === tagId ? { ...tag, ...updatedTag } : tag
-      )
-    }));
-    setEditingTag(null);
-  };
+  // const updateTag = (tagId: string, updatedTag: Partial<CustomTag>) => {
+  //   onTripUpdate(trip.id, (currentTrip) => ({
+  //     ...currentTrip,
+  //     customTags: currentTrip.customTags.map(tag => 
+  //       tag.id === tagId ? { ...tag, ...updatedTag } : tag
+  //     )
+  //   }));
+  //   setEditingTag(null);
+  // };
 
   const deleteTag = (tagId: string) => {
     // デフォルトタグは削除不可
@@ -122,7 +122,14 @@ export default function TagsPage({ trip, onTripUpdate }: TagsPageProps) {
                   <input
                     type="text"
                     value={tag.name}
-                    onChange={(e) => updateTag(tag.id, { name: e.target.value })}
+                    onChange={(e) => {
+                      onTripUpdate(trip.id, (currentTrip) => ({
+                        ...currentTrip,
+                        customTags: currentTrip.customTags.map(t => 
+                          t.id === tag.id ? { ...t, name: e.target.value } : t
+                        )
+                      }));
+                    }}
                     className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="タグ名"
                   />
@@ -132,7 +139,14 @@ export default function TagsPage({ trip, onTripUpdate }: TagsPageProps) {
                       {colorOptions.map(colorOption => (
                         <button
                           key={colorOption.value}
-                          onClick={() => updateTag(tag.id, { color: colorOption.value })}
+                          onClick={() => {
+                            onTripUpdate(trip.id, (currentTrip) => ({
+                              ...currentTrip,
+                              customTags: currentTrip.customTags.map(t => 
+                                t.id === tag.id ? { ...t, color: colorOption.value } : t
+                              )
+                            }));
+                          }}
                           className={`w-8 h-8 rounded border-2 transition-colors ${
                             tag.color === colorOption.value ? 'border-stone-400' : 'border-stone-200'
                           }`}

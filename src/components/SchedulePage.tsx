@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import { Calendar, Plus, MapPin, Users, Clock, Edit2, Trash2, Save, X, Upload, FileText, Image, Car, ExternalLink, DollarSign } from 'lucide-react';
-import { Trip, Schedule } from '@/types';
+import Image from 'next/image';
+import { Calendar, Plus, MapPin, Users, Clock, Edit2, Trash2, Save, X, Upload, FileText, Car, ExternalLink, DollarSign, ChevronDown, ChevronUp } from 'lucide-react';
+import { Trip, Schedule, UploadedFile } from '@/types';
 import { colorPalette, getDatesInRange, formatDate, linkifyText, getGoogleMapsLink } from '@/lib/constants';
 
 interface SchedulePageProps {
@@ -15,6 +16,9 @@ interface SchedulePageProps {
 export default function SchedulePage({ trip, selectedDate, onDateChange, onTripUpdate }: SchedulePageProps) {
   const [showNewScheduleModal, setShowNewScheduleModal] = useState(false);
   const [editingSchedule, setEditingSchedule] = useState<number | null>(null);
+  const [expandedSchedules, setExpandedSchedules] = useState<Set<number>>(new Set());
+  const [showImageModal, setShowImageModal] = useState<string | null>(null);
+  const [showPDFModal, setShowPDFModal] = useState<string | null>(null);
   const [newSchedule, setNewSchedule] = useState({
     time: "",
     title: "",
@@ -30,6 +34,24 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
 
   const tripDates = getDatesInRange(trip.startDate, trip.endDate);
   const currentSchedules = trip.schedules[selectedDate] || [];
+
+  const toggleScheduleExpansion = (scheduleId: number) => {
+    const newExpanded = new Set(expandedSchedules);
+    if (newExpanded.has(scheduleId)) {
+      newExpanded.delete(scheduleId);
+    } else {
+      newExpanded.add(scheduleId);
+    }
+    setExpandedSchedules(newExpanded);
+  };
+
+  const isImageFile = (file: UploadedFile) => {
+    return file.type && file.type.startsWith('image/');
+  };
+
+  const isPDFFile = (file: UploadedFile) => {
+    return file.type === 'application/pdf';
+  };
 
   const getTypeIcon = (type: string) => {
     switch (type) {
@@ -104,19 +126,6 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
     });
   };
 
-  const updateSchedule = (scheduleId: number, updatedData: Partial<Schedule>) => {
-    onTripUpdate(trip.id, currentTrip => {
-      const updatedSchedules = { ...currentTrip.schedules };
-      updatedSchedules[selectedDate] = updatedSchedules[selectedDate].map(schedule => 
-        schedule.id === scheduleId 
-          ? { ...schedule, ...updatedData }
-          : schedule
-      );
-      return { ...currentTrip, schedules: updatedSchedules };
-    });
-    setEditingSchedule(null);
-  };
-
   return (
     <>
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -170,12 +179,30 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                       <input
                         type="time"
                         value={schedule.time}
-                        onChange={(e) => updateSchedule(schedule.id, { time: e.target.value })}
+                        onChange={(e) => {
+                          const updatedSchedule = { ...schedule, time: e.target.value };
+                          onTripUpdate(trip.id, currentTrip => {
+                            const updatedSchedules = { ...currentTrip.schedules };
+                            updatedSchedules[selectedDate] = updatedSchedules[selectedDate].map(s => 
+                              s.id === schedule.id ? updatedSchedule : s
+                            );
+                            return { ...currentTrip, schedules: updatedSchedules };
+                          });
+                        }}
                         className="px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       />
                       <select
                         value={schedule.type}
-                        onChange={(e) => updateSchedule(schedule.id, { type: e.target.value })}
+                        onChange={(e) => {
+                          const updatedSchedule = { ...schedule, type: e.target.value };
+                          onTripUpdate(trip.id, currentTrip => {
+                            const updatedSchedules = { ...currentTrip.schedules };
+                            updatedSchedules[selectedDate] = updatedSchedules[selectedDate].map(s => 
+                              s.id === schedule.id ? updatedSchedule : s
+                            );
+                            return { ...currentTrip, schedules: updatedSchedules };
+                          });
+                        }}
                         className="px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       >
                         {trip.customTags.map(tag => (
@@ -187,20 +214,47 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                       type="text"
                       placeholder="タイトル"
                       value={schedule.title}
-                      onChange={(e) => updateSchedule(schedule.id, { title: e.target.value })}
+                      onChange={(e) => {
+                        const updatedSchedule = { ...schedule, title: e.target.value };
+                        onTripUpdate(trip.id, currentTrip => {
+                          const updatedSchedules = { ...currentTrip.schedules };
+                          updatedSchedules[selectedDate] = updatedSchedules[selectedDate].map(s => 
+                            s.id === schedule.id ? updatedSchedule : s
+                          );
+                          return { ...currentTrip, schedules: updatedSchedules };
+                        });
+                      }}
                       className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                     <input
                       type="text"
                       placeholder="場所"
                       value={schedule.location}
-                      onChange={(e) => updateSchedule(schedule.id, { location: e.target.value })}
+                      onChange={(e) => {
+                        const updatedSchedule = { ...schedule, location: e.target.value };
+                        onTripUpdate(trip.id, currentTrip => {
+                          const updatedSchedules = { ...currentTrip.schedules };
+                          updatedSchedules[selectedDate] = updatedSchedules[selectedDate].map(s => 
+                            s.id === schedule.id ? updatedSchedule : s
+                          );
+                          return { ...currentTrip, schedules: updatedSchedules };
+                        });
+                      }}
                       className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                     <textarea
                       placeholder="詳細・メモ（URLも自動でリンクになります）"
                       value={schedule.description}
-                      onChange={(e) => updateSchedule(schedule.id, { description: e.target.value })}
+                      onChange={(e) => {
+                        const updatedSchedule = { ...schedule, description: e.target.value };
+                        onTripUpdate(trip.id, currentTrip => {
+                          const updatedSchedules = { ...currentTrip.schedules };
+                          updatedSchedules[selectedDate] = updatedSchedules[selectedDate].map(s => 
+                            s.id === schedule.id ? updatedSchedule : s
+                          );
+                          return { ...currentTrip, schedules: updatedSchedules };
+                        });
+                      }}
                       className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       rows={2}
                     />
@@ -211,7 +265,16 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                           type="number"
                           placeholder="例: 3000"
                           value={schedule.budget}
-                          onChange={(e) => updateSchedule(schedule.id, { budget: parseInt(e.target.value) || 0 })}
+                          onChange={(e) => {
+                            const updatedSchedule = { ...schedule, budget: parseInt(e.target.value) || 0 };
+                            onTripUpdate(trip.id, currentTrip => {
+                              const updatedSchedules = { ...currentTrip.schedules };
+                              updatedSchedules[selectedDate] = updatedSchedules[selectedDate].map(s => 
+                                s.id === schedule.id ? updatedSchedule : s
+                              );
+                              return { ...currentTrip, schedules: updatedSchedules };
+                            });
+                          }}
                           className="w-full pl-7 pr-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         />
                       </div>
@@ -220,7 +283,16 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                           type="number"
                           placeholder="例: 3"
                           value={schedule.budgetPeople}
-                          onChange={(e) => updateSchedule(schedule.id, { budgetPeople: parseInt(e.target.value) || 1 })}
+                          onChange={(e) => {
+                            const updatedSchedule = { ...schedule, budgetPeople: parseInt(e.target.value) || 1 };
+                            onTripUpdate(trip.id, currentTrip => {
+                              const updatedSchedules = { ...currentTrip.schedules };
+                              updatedSchedules[selectedDate] = updatedSchedules[selectedDate].map(s => 
+                                s.id === schedule.id ? updatedSchedule : s
+                              );
+                              return { ...currentTrip, schedules: updatedSchedules };
+                            });
+                          }}
                           className="w-full pr-8 pl-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                           min="1"
                         />
@@ -234,18 +306,38 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                           type="text"
                           placeholder="例: 電車"
                           value={schedule.transport?.method || ""}
-                          onChange={(e) => updateSchedule(schedule.id, { 
-                            transport: { ...schedule.transport, method: e.target.value }
-                          })}
+                          onChange={(e) => {
+                            const updatedSchedule = { 
+                              ...schedule, 
+                              transport: { ...schedule.transport, method: e.target.value }
+                            };
+                            onTripUpdate(trip.id, currentTrip => {
+                              const updatedSchedules = { ...currentTrip.schedules };
+                              updatedSchedules[selectedDate] = updatedSchedules[selectedDate].map(s => 
+                                s.id === schedule.id ? updatedSchedule : s
+                              );
+                              return { ...currentTrip, schedules: updatedSchedules };
+                            });
+                          }}
                           className="px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                         />
                         <input
                           type="text"
                           placeholder="例: 30分"
                           value={schedule.transport?.duration || ""}
-                          onChange={(e) => updateSchedule(schedule.id, { 
-                            transport: { ...schedule.transport, duration: e.target.value }
-                          })}
+                          onChange={(e) => {
+                            const updatedSchedule = { 
+                              ...schedule, 
+                              transport: { ...schedule.transport, duration: e.target.value }
+                            };
+                            onTripUpdate(trip.id, currentTrip => {
+                              const updatedSchedules = { ...currentTrip.schedules };
+                              updatedSchedules[selectedDate] = updatedSchedules[selectedDate].map(s => 
+                                s.id === schedule.id ? updatedSchedule : s
+                              );
+                              return { ...currentTrip, schedules: updatedSchedules };
+                            });
+                          }}
                           className="px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                         />
                       </div>
@@ -357,19 +449,57 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
 
                     {schedule.files && schedule.files.length > 0 && (
                       <div className="mb-3">
-                        <div className="flex flex-wrap gap-2">
-                          {schedule.files.map(file => (
-                            <div key={file.id} className="flex items-center gap-1 px-2 py-1 bg-stone-100 rounded text-sm">
-                              {file.type.startsWith('image/') ? (
-                                // eslint-disable-next-line jsx-a11y/alt-text
-                                <Image className="w-4 h-4"/>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                          {schedule.files.slice(0, expandedSchedules.has(schedule.id) ? undefined : 6).map(file => (
+                            <div key={file.id} className="group">
+                              {isImageFile(file) ? (
+                                <div className="relative">
+                                  <div className="relative w-full h-20 cursor-pointer" onClick={() => setShowImageModal(file.url)}>
+                                    <Image 
+                                      src={file.url} 
+                                      alt={file.name}
+                                      fill
+                                      className="object-cover rounded-lg hover:opacity-80 transition-opacity"
+                                    />
+                                  </div>
+                                  <div className="absolute bottom-1 left-1 bg-black bg-opacity-50 text-white text-xs px-1 rounded">
+                                    {file.name.length > 10 ? `${file.name.substring(0, 10)}...` : file.name}
+                                  </div>
+                                </div>
                               ) : (
-                                <FileText className="w-4 h-4" />
+                                <div 
+                                  className="flex items-center gap-2 p-2 bg-stone-100 rounded-lg hover:bg-stone-200 cursor-pointer transition-colors"
+                                  onClick={() => isPDFFile(file) ? setShowPDFModal(file.url) : undefined}
+                                >
+                                  <FileText className="w-4 h-4 text-stone-600" />
+                                  <span className="text-sm text-stone-700 truncate">
+                                    {file.name.length > 15 ? `${file.name.substring(0, 15)}...` : file.name}
+                                  </span>
+                                </div>
                               )}
-                              <span className="truncate max-w-32">{file.name}</span>
                             </div>
                           ))}
                         </div>
+                        
+                        {/* アコーディオン機能 */}
+                        {schedule.files.length > 6 && (
+                          <button
+                            onClick={() => toggleScheduleExpansion(schedule.id)}
+                            className="mt-2 flex items-center gap-1 text-sm text-stone-600 hover:text-stone-800 transition-colors"
+                          >
+                            {expandedSchedules.has(schedule.id) ? (
+                              <>
+                                <ChevronUp className="w-4 h-4" />
+                                ファイルを閉じる
+                              </>
+                            ) : (
+                              <>
+                                <ChevronDown className="w-4 h-4" />
+                                {schedule.files.length - 6}件のファイルを表示
+                              </>
+                            )}
+                          </button>
+                        )}
                       </div>
                     )}
 
@@ -377,7 +507,7 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                       type="file"
                       ref={fileInputRef}
                       multiple
-                      accept="image/*,.pdf"
+                      accept="image/*,.pdf,.heic"
                       onChange={(e) => handleFileUpload(schedule.id, e.target.files)}
                       className="hidden"
                     />
@@ -412,6 +542,52 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
           </div>
         </div>
       </div>
+
+      {/* Image Modal */}
+      {showImageModal && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50"
+          onClick={() => setShowImageModal(null)}
+        >
+          <div className="relative max-w-4xl max-h-4xl">
+            <Image 
+              src={showImageModal} 
+              alt="拡大表示"
+              width={800}
+              height={600}
+              className="max-w-full max-h-full object-contain rounded-lg"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* PDF Modal */}
+      {showPDFModal && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50"
+          onClick={() => setShowPDFModal(null)}
+        >
+          <div className="bg-white rounded-lg w-full max-w-4xl h-full max-h-[90vh] flex flex-col">
+            <div className="flex items-center justify-between p-4 border-b">
+              <h3 className="text-lg font-semibold">PDF プレビュー</h3>
+              <button
+                onClick={() => setShowPDFModal(null)}
+                className="text-stone-500 hover:text-stone-700"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="flex-1 p-4">
+              <iframe 
+                src={showPDFModal}
+                className="w-full h-full rounded"
+                title="PDF Preview"
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* New Schedule Modal */}
       {showNewScheduleModal && (
