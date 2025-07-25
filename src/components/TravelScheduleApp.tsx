@@ -333,12 +333,6 @@ export default function TravelApp() {
               {appUser?.name.charAt(0)}
             </div>
             <span className="font-medium text-stone-700">{appUser?.name}</span>
-            {appUser?.type === 'google' && (
-              <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">Google</span>
-            )}
-            {appUser?.type === 'guest' && (
-              <span className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full">ゲスト</span>
-            )}
           </div>
           <button
             onClick={handleLogout}

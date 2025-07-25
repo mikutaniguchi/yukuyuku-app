@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import { Calendar, Plus, MapPin, Edit2, Trash2, Save, X, Upload, FileText, Car, ExternalLink, DollarSign, ChevronDown, ChevronUp, Utensils, Plane, TrainFront, Bus, Camera, Bed } from 'lucide-react';
 import { Trip, Schedule, UploadedFile } from '@/types';
@@ -50,7 +50,13 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
     transport: { method: "", duration: "", cost: 0 }
   });
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const createFileInput = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.multiple = true;
+    input.accept = 'image/*,.pdf,.heic';
+    return input;
+  };
 
   const tripDates = getDatesInRange(trip.startDate, trip.endDate);
   const currentSchedules = trip.schedules[selectedDate] || [];
@@ -102,21 +108,38 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
     return iconOptions.find(option => option.id === (icon || '')) || iconOptions[0];
   };
 
-  const handleFileUpload = (scheduleId: string, files: FileList | null) => {
-    if (!files) return;
+  const handleFileUpload = (scheduleId: string) => {
+    const input = createFileInput();
+    input.onchange = (e) => {
+      const files = (e.target as HTMLInputElement).files;
+      if (!files) return;
 
-    const fileList = Array.from(files).map(file => ({
-      id: Date.now() + Math.random(),
-      name: file.name,
-      type: file.type,
-      url: URL.createObjectURL(file)
-    }));
+      const fileList = Array.from(files).map(file => ({
+        id: Date.now() + Math.random(),
+        name: file.name,
+        type: file.type,
+        url: URL.createObjectURL(file)
+      }));
 
+      onTripUpdate(trip.id, currentTrip => {
+        const updatedSchedules = { ...currentTrip.schedules };
+        updatedSchedules[selectedDate] = updatedSchedules[selectedDate].map(schedule => 
+          schedule.id === scheduleId 
+            ? { ...schedule, files: [...schedule.files, ...fileList] }
+            : schedule
+        );
+        return { ...currentTrip, schedules: updatedSchedules };
+      });
+    };
+    input.click();
+  };
+
+  const handleFileDelete = (scheduleId: string, fileId: string | number) => {
     onTripUpdate(trip.id, currentTrip => {
       const updatedSchedules = { ...currentTrip.schedules };
       updatedSchedules[selectedDate] = updatedSchedules[selectedDate].map(schedule => 
         schedule.id === scheduleId 
-          ? { ...schedule, files: [...schedule.files, ...fileList] }
+          ? { ...schedule, files: schedule.files.filter(file => file.id !== fileId) }
           : schedule
       );
       return { ...currentTrip, schedules: updatedSchedules };
@@ -525,7 +548,7 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                       <div className="mb-3">
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                           {schedule.files.slice(0, expandedSchedules.has(schedule.id) ? undefined : 6).map(file => (
-                            <div key={file.id} className="group">
+                            <div key={file.id} className="group relative">
                               {isImageFile(file) ? (
                                 <div className="relative">
                                   <div className="relative w-full h-20 cursor-pointer" onClick={() => setShowImageModal(file.url)}>
@@ -539,16 +562,36 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                                   <div className="absolute bottom-1 left-1 bg-black bg-opacity-50 text-white text-xs px-1 rounded">
                                     {file.name.length > 10 ? `${file.name.substring(0, 10)}...` : file.name}
                                   </div>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleFileDelete(schedule.id, file.id);
+                                    }}
+                                    className="absolute top-1 right-1 bg-stone-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-stone-700"
+                                  >
+                                    <X className="w-3 h-3" />
+                                  </button>
                                 </div>
                               ) : (
-                                <div 
-                                  className="flex items-center gap-2 p-2 bg-stone-100 rounded-lg hover:bg-stone-200 cursor-pointer transition-colors"
-                                  onClick={() => isPDFFile(file) ? setShowPDFModal(file.url) : undefined}
-                                >
-                                  <FileText className="w-4 h-4 text-stone-600" />
-                                  <span className="text-sm text-stone-700 truncate">
-                                    {file.name.length > 15 ? `${file.name.substring(0, 15)}...` : file.name}
-                                  </span>
+                                <div className="relative">
+                                  <div 
+                                    className="flex items-center gap-2 p-2 bg-stone-100 rounded-lg hover:bg-stone-200 cursor-pointer transition-colors"
+                                    onClick={() => isPDFFile(file) ? setShowPDFModal(file.url) : undefined}
+                                  >
+                                    <FileText className="w-4 h-4 text-stone-600" />
+                                    <span className="text-sm text-stone-700 truncate">
+                                      {file.name.length > 15 ? `${file.name.substring(0, 15)}...` : file.name}
+                                    </span>
+                                  </div>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleFileDelete(schedule.id, file.id);
+                                    }}
+                                    className="absolute top-1 right-1 bg-stone-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-stone-700"
+                                  >
+                                    <X className="w-3 h-3" />
+                                  </button>
                                 </div>
                               )}
                             </div>
@@ -577,16 +620,8 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                       </div>
                     )}
 
-                    <input
-                      type="file"
-                      ref={fileInputRef}
-                      multiple
-                      accept="image/*,.pdf,.heic"
-                      onChange={(e) => handleFileUpload(schedule.id, e.target.files)}
-                      className="hidden"
-                    />
                     <button
-                      onClick={() => fileInputRef.current?.click()}
+                      onClick={() => handleFileUpload(schedule.id)}
                       className="flex items-center gap-2 px-3 py-1 text-sm bg-stone-100 text-stone-700 rounded-lg hover:bg-stone-200 transition-colors"
                     >
                       <Upload className="w-4 h-4" />
