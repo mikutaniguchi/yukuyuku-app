@@ -1,0 +1,146 @@
+import { 
+  collection,
+  doc,
+  setDoc,
+  getDoc,
+  getDocs,
+  updateDoc,
+  query,
+  where,
+  orderBy,
+  serverTimestamp
+} from 'firebase/firestore';
+import { db } from './firebase';
+import { Trip, Schedule, Checklist, Memo, Tag, Member, Budget } from '@/types';
+
+// Trips
+export const createTrip = async (trip: Omit<Trip, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const tripRef = doc(collection(db, 'trips'));
+  const tripData = {
+    ...trip,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp()
+  };
+  await setDoc(tripRef, tripData);
+  return tripRef.id;
+};
+
+export const getTrip = async (tripId: string) => {
+  const tripDoc = await getDoc(doc(db, 'trips', tripId));
+  if (tripDoc.exists()) {
+    return { id: tripDoc.id, ...tripDoc.data() } as Trip;
+  }
+  return null;
+};
+
+export const getUserTrips = async (userId: string) => {
+  const q = query(
+    collection(db, 'trips'),
+    where('memberIds', 'array-contains', userId),
+    orderBy('updatedAt', 'desc')
+  );
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Trip));
+};
+
+// Schedules
+export const createSchedule = async (schedule: Omit<Schedule, 'id'>) => {
+  const scheduleRef = doc(collection(db, 'schedules'));
+  await setDoc(scheduleRef, {
+    ...schedule,
+    createdAt: serverTimestamp()
+  });
+  return scheduleRef.id;
+};
+
+export const getTripSchedules = async (tripId: string) => {
+  const q = query(
+    collection(db, 'schedules'),
+    where('tripId', '==', tripId),
+    orderBy('date', 'asc'),
+    orderBy('startTime', 'asc')
+  );
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Schedule));
+};
+
+// Checklists
+export const createChecklistItem = async (item: Omit<Checklist, 'id'>) => {
+  const itemRef = doc(collection(db, 'checklists'));
+  await setDoc(itemRef, item);
+  return itemRef.id;
+};
+
+export const getTripChecklists = async (tripId: string) => {
+  const q = query(collection(db, 'checklists'), where('tripId', '==', tripId));
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Checklist));
+};
+
+export const updateChecklistItem = async (itemId: string, checked: boolean) => {
+  await updateDoc(doc(db, 'checklists', itemId), { checked });
+};
+
+// Memos
+export const createMemo = async (memo: Omit<Memo, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const memoRef = doc(collection(db, 'memos'));
+  await setDoc(memoRef, {
+    ...memo,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp()
+  });
+  return memoRef.id;
+};
+
+export const getTripMemos = async (tripId: string) => {
+  const q = query(
+    collection(db, 'memos'),
+    where('tripId', '==', tripId),
+    orderBy('updatedAt', 'desc')
+  );
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Memo));
+};
+
+// Tags
+export const createTag = async (tag: Omit<Tag, 'id'>) => {
+  const tagRef = doc(collection(db, 'tags'));
+  await setDoc(tagRef, tag);
+  return tagRef.id;
+};
+
+export const getTripTags = async (tripId: string) => {
+  const q = query(collection(db, 'tags'), where('tripId', '==', tripId));
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Tag));
+};
+
+// Members
+export const addMember = async (tripId: string, member: Omit<Member, 'id' | 'joinedAt'>) => {
+  const memberRef = doc(collection(db, 'members'));
+  await setDoc(memberRef, {
+    ...member,
+    tripId,
+    joinedAt: serverTimestamp()
+  });
+  return memberRef.id;
+};
+
+export const getTripMembers = async (tripId: string) => {
+  const q = query(collection(db, 'members'), where('tripId', '==', tripId));
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Member));
+};
+
+// Budget
+export const createBudgetItem = async (item: Omit<Budget, 'id'>) => {
+  const budgetRef = doc(collection(db, 'budgets'));
+  await setDoc(budgetRef, item);
+  return budgetRef.id;
+};
+
+export const getTripBudgets = async (tripId: string) => {
+  const q = query(collection(db, 'budgets'), where('tripId', '==', tripId));
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Budget));
+};

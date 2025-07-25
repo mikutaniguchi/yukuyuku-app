@@ -9,7 +9,7 @@ interface MembersModalProps {
   trip: Trip;
   user: User | null;
   onClose: () => void;
-  onTripUpdate: (tripId: number, updateFunction: (trip: Trip) => Trip) => void;
+  onTripUpdate: (tripId: string, updateFunction: (trip: Trip) => Trip) => void;
 }
 
 export default function MembersModal({ trip, user, onClose, onTripUpdate }: MembersModalProps) {

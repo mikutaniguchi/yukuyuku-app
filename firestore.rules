@@ -1,0 +1,47 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ユーザーは自分が作成した旅行を読み書きできる
+    match /trips/{tripId} {
+      allow read: if request.auth != null && 
+        (request.auth.uid == resource.data.creator || 
+         request.auth.uid in resource.data.memberIds);
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && 
+        (request.auth.uid == resource.data.creator || 
+         request.auth.uid in resource.data.memberIds);
+      allow delete: if request.auth != null && 
+        request.auth.uid == resource.data.creator;
+    }
+    
+    // スケジュール
+    match /schedules/{scheduleId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // チェックリスト
+    match /checklists/{checklistId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // メモ
+    match /memos/{memoId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // タグ
+    match /tags/{tagId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // メンバー
+    match /members/{memberId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // 予算
+    match /budgets/{budgetId} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}

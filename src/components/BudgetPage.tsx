@@ -171,7 +171,7 @@ export default function BudgetPage({ trip }: BudgetPageProps) {
                     return (
                       <div key={schedule.id} className="flex items-center justify-between text-sm bg-stone-50 rounded-lg p-3">
                         <div className="flex items-center gap-2">
-                          <span className="font-medium text-stone-600">{schedule.time}</span>
+                          <span className="font-medium text-stone-600">{schedule.startTime}</span>
                           <span className="text-stone-700">{schedule.title}</span>
                           <div className="text-xs text-stone-500">
                             {schedule.budget > 0 && `(¥${schedule.budget}÷${schedule.budgetPeople}人)`}

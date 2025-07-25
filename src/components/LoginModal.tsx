@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import { Calendar } from 'lucide-react';
 import { User, Trip, LoginMode } from '@/types';
 import { colorPalette } from '../lib/constants';
+import { auth } from '@/lib/firebase';
+import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 
 interface LoginModalProps {
   onLogin: (user: User) => void;
@@ -14,15 +16,22 @@ export default function LoginModal({ onLogin, trips }: LoginModalProps) {
   const [loginMode, setLoginMode] = useState<LoginMode>('select');
   const [guestName, setGuestName] = useState('');
   const [inviteCode, setInviteCode] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
-  const handleGoogleLogin = () => {
-    const mockUser: User = {
-      id: "user123",
-      name: "あなた",
-      email: "you@example.com",
-      type: "google"
-    };
-    onLogin(mockUser);
+  const handleGoogleLogin = async () => {
+    try {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      const user: User = {
+        id: result.user.uid,
+        name: result.user.displayName || "ユーザー",
+        email: result.user.email || "",
+        type: "google"
+      };
+      onLogin(user);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'ログインに失敗しました');
+    }
   };
 
   const handleGuestLogin = () => {
@@ -75,7 +84,7 @@ export default function LoginModal({ onLogin, trips }: LoginModalProps) {
         {loginMode === 'select' && (
           <div className="space-y-4">
             <button
-              onClick={() => setLoginMode('google')}
+              onClick={handleGoogleLogin}
               className="w-full py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center gap-3"
               style={{ backgroundColor: colorPalette.aquaBlue.bg, color: colorPalette.aquaBlue.text }}
             >
@@ -99,27 +108,9 @@ export default function LoginModal({ onLogin, trips }: LoginModalProps) {
           </div>
         )}
 
-        {loginMode === 'google' && (
-          <div className="space-y-4">
-            <div className="text-center p-6 border-2 border-dashed border-stone-300 rounded-lg">
-              <p className="text-stone-600 mb-4">Google認証機能</p>
-              <p className="text-sm text-stone-500 mb-4">
-                実際の実装ではGoogleのOAuth APIを使用します
-              </p>
-              <button
-                onClick={handleGoogleLogin}
-                className="py-2 px-4 rounded-lg font-medium text-white"
-                style={{ backgroundColor: colorPalette.abyssGreen.bg }}
-              >
-                ログインする（デモ）
-              </button>
-            </div>
-            <button
-              onClick={() => setLoginMode('select')}
-              className="w-full py-2 text-stone-600 hover:text-stone-800 transition-colors"
-            >
-              ← 戻る
-            </button>
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+            {error}
           </div>
         )}
 

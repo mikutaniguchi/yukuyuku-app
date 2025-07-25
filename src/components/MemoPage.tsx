@@ -6,7 +6,7 @@ import { Trip } from '@/types';
 
 interface MemoPageProps {
   trip: Trip;
-  onTripUpdate: (tripId: number, updateFunction: (trip: Trip) => Trip) => void;
+  onTripUpdate: (tripId: string, updateFunction: (trip: Trip) => Trip) => void;
 }
 
 export default function MemoPage({ trip, onTripUpdate }: MemoPageProps) {

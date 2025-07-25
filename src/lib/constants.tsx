@@ -60,7 +60,7 @@ export const generateInviteCode = (): string => {
   return result;
 };
 
-export const generateInviteLink = (tripId: number, inviteCode: string): string => {
+export const generateInviteLink = (tripId: string, inviteCode: string): string => {
   // クライアントサイドでのみ window.location を使用
   if (typeof window !== 'undefined') {
     return `${window.location.origin}/join/${inviteCode}`;

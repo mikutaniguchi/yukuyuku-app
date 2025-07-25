@@ -7,14 +7,14 @@ import { colorPalette } from '@/lib/constants';
 
 interface ChecklistPageProps {
   trip: Trip;
-  onTripUpdate: (tripId: number, updateFunction: (trip: Trip) => Trip) => void;
+  onTripUpdate: (tripId: string, updateFunction: (trip: Trip) => Trip) => void;
 }
 
 export default function ChecklistPage({ trip, onTripUpdate }: ChecklistPageProps) {
   const [showNewChecklistModal, setShowNewChecklistModal] = useState(false);
   const [newChecklist, setNewChecklist] = useState({ name: "", items: [""] });
 
-  const toggleChecklistItem = (checklistId: number, itemId: number) => {
+  const toggleChecklistItem = (checklistId: string, itemId: string) => {
     onTripUpdate(trip.id, (currentTrip) => ({
       ...currentTrip,
       checklists: currentTrip.checklists.map(checklist => {
@@ -31,11 +31,11 @@ export default function ChecklistPage({ trip, onTripUpdate }: ChecklistPageProps
     }));
   };
 
-  const addChecklistItem = (checklistId: number, text: string) => {
+  const addChecklistItem = (checklistId: string, text: string) => {
     if (!text.trim()) return;
 
     const newItem: ChecklistItem = {
-      id: Date.now(),
+      id: Date.now().toString(),
       text: text.trim(),
       checked: false
     };
@@ -53,7 +53,7 @@ export default function ChecklistPage({ trip, onTripUpdate }: ChecklistPageProps
     }));
   };
 
-  const deleteChecklistItem = (checklistId: number, itemId: number) => {
+  const deleteChecklistItem = (checklistId: string, itemId: string) => {
     onTripUpdate(trip.id, (currentTrip) => ({
       ...currentTrip,
       checklists: currentTrip.checklists.map(checklist => 
@@ -67,7 +67,7 @@ export default function ChecklistPage({ trip, onTripUpdate }: ChecklistPageProps
     }));
   };
 
-  const deleteChecklist = (checklistId: number) => {
+  const deleteChecklist = (checklistId: string) => {
     onTripUpdate(trip.id, (currentTrip) => ({
       ...currentTrip,
       checklists: currentTrip.checklists.filter(checklist => checklist.id !== checklistId)
@@ -78,10 +78,11 @@ export default function ChecklistPage({ trip, onTripUpdate }: ChecklistPageProps
     if (!newChecklist.name) return;
 
     const checklistCategory: Checklist = {
-      id: Date.now(),
+      id: Date.now().toString(),
+      tripId: trip.id.toString(),
       name: newChecklist.name,
       items: newChecklist.items.filter(item => item.trim()).map((item, index): ChecklistItem => ({
-        id: Date.now() + index,
+        id: (Date.now() + index).toString(),
         text: item.trim(),
         checked: false
       }))

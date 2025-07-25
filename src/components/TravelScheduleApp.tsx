@@ -1,12 +1,16 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { logout } from '@/lib/auth';
+import { createTrip as createTripInFirestore, getUserTrips } from '@/lib/firestore';
 import { Calendar, Users, Plus, LogOut, UserPlus, Settings, BookOpen, CheckSquare, DollarSign, FileText } from 'lucide-react';
 import { User, Trip, PageType } from '@/types';
 import { colorPalette, getDatesInRange, formatDate } from '@/lib/constants';
 import LoginModal from './LoginModal';
 import MembersModal from './MembersModal';
 import InviteModal from './InviteModal';
+import CreateTripModal from './CreateTripModal';
 import SchedulePage from './SchedulePage';
 import MemoPage from './MemoPage';
 import ChecklistPage from './ChecklistPage';
@@ -14,79 +18,21 @@ import BudgetPage from './BudgetPage';
 import TagsPage from './TagsPage';
 import FilesPage from './FilesPage';
 
-// モックデータ
-const initialTrips: Trip[] = [
-  {
-    id: 1,
-    title: "東京旅行",
-    startDate: "2024-08-01",
-    endDate: "2024-08-03",
-    creator: "user123",
-    members: [
-      { id: "user123", name: "あなた", type: "google", email: "you@example.com" },
-      { id: "guest1", name: "田中さん", type: "guest" },
-      { id: "guest2", name: "佐藤さん", type: "guest" }
-    ],
-    inviteCode: "TOKYO2024",
-    memo: "宿泊先：東京ホテル\n緊急連絡先：090-1234-5678\n集合場所：東京駅丸の内中央口",
-    schedules: {
-      "2024-08-01": [
-        {
-          id: 1,
-          time: "09:00",
-          title: "東京駅集合",
-          location: "東京駅丸の内中央口",
-          description: "新幹線で到着後、みんなで合流",
-          files: [],
-          type: "meeting",
-          budget: 0,
-          budgetPeople: 1,
-          transport: { method: "", duration: "", cost: 0 }
-        },
-        {
-          id: 2,
-          time: "12:00",
-          title: "浅草観光",
-          location: "浅草寺",
-          description: "雷門から仲見世通りを歩いて浅草寺へ\nhttps://example.com/asakusa",
-          files: [],
-          type: "sightseeing",
-          budget: 1500,
-          budgetPeople: 3,
-          transport: { method: "電車", duration: "30分", cost: 200 }
-        }
-      ]
-    },
-    customTags: [
-      { id: "meeting", name: "集合", color: "bg-stone-200 text-stone-800" },
-      { id: "sightseeing", name: "観光", color: "bg-emerald-200 text-emerald-800" },
-      { id: "departure", name: "出発", color: "bg-rose-200 text-rose-800" },
-      { id: "meal", name: "食事", color: "bg-amber-200 text-amber-800" }
-    ],
-    checklists: [
-      {
-        id: 1,
-        name: "持ち物リスト",
-        items: [
-          { id: 1, text: "パスポート", checked: false },
-          { id: 2, text: "財布", checked: false },
-          { id: 3, text: "充電器", checked: true },
-          { id: 4, text: "カメラ", checked: false }
-        ]
-      }
-    ]
-  }
-];
+// モックデータ（初期は空）
+const initialTrips: Trip[] = [];
 
 export default function TravelApp() {
-  const [user, setUser] = useState<User | null>(null);
+  const { user: firebaseUser, loading } = useAuth();
+  const [appUser, setAppUser] = useState<User | null>(null);
   const [trips, setTrips] = useState<Trip[]>(initialTrips);
-  const [selectedTrip, setSelectedTrip] = useState<Trip>(trips[0]);
-  const [selectedDate, setSelectedDate] = useState<string>("2024-08-01");
+  const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
+  const [selectedDate, setSelectedDate] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<PageType>("schedule");
-  const [showLoginModal, setShowLoginModal] = useState(true);
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const [showMembersModal, setShowMembersModal] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
+  const [showCreateTripModal, setShowCreateTripModal] = useState(false);
+  const [loadingTrips, setLoadingTrips] = useState(true);
 
   const navItems = [
     { id: "schedule" as const, label: "スケジュール", icon: Calendar },
@@ -97,22 +43,107 @@ export default function TravelApp() {
     { id: "tags" as const, label: "タグ設定", icon: Settings }
   ];
 
+  // Firebase認証状態を監視
+  useEffect(() => {
+    if (!loading) {
+      if (firebaseUser) {
+        const userData: User = {
+          id: firebaseUser.uid,
+          name: firebaseUser.displayName || "ユーザー",
+          email: firebaseUser.email || "",
+          type: "google"
+        };
+        setAppUser(userData);
+        setShowLoginModal(false);
+        loadUserTrips(firebaseUser.uid);
+      } else {
+        setShowLoginModal(true);
+        setLoadingTrips(false);
+      }
+    }
+  }, [firebaseUser, loading]);
+
+  const loadUserTrips = async (userId: string) => {
+    try {
+      const userTrips = await getUserTrips(userId);
+      setTrips(userTrips);
+      if (userTrips.length === 0) {
+        setShowCreateTripModal(true);
+      } else {
+        setSelectedTrip(userTrips[0]);
+        setSelectedDate(getDatesInRange(userTrips[0].startDate, userTrips[0].endDate)[0]);
+      }
+    } catch (error) {
+      console.error('Failed to load trips:', error);
+    } finally {
+      setLoadingTrips(false);
+    }
+  };
+
   const handleLogin = (userData: User) => {
-    setUser(userData);
+    setAppUser(userData);
     setShowLoginModal(false);
+    
+    // 新規Googleユーザーの場合、旅行作成フォームを表示
+    if (userData.type === 'google' && !trips.some(trip => 
+      trip.members.some(m => m.id === userData.id)
+    )) {
+      setShowCreateTripModal(true);
+    }
   };
 
-  const handleLogout = () => {
-    setUser(null);
-    setShowLoginModal(true);
+  const handleCreateTrip = async (tripData: { title: string; startDate: string; endDate: string }) => {
+    if (!appUser) return;
+    
+    try {
+      const newTrip: Omit<Trip, 'id' | 'createdAt' | 'updatedAt'> = {
+        title: tripData.title,
+        startDate: tripData.startDate,
+        endDate: tripData.endDate,
+        creator: appUser.id,
+        memberIds: [appUser.id],
+        members: [appUser],
+        inviteCode: Math.random().toString(36).substring(2, 8).toUpperCase(),
+        memo: "",
+        schedules: {},
+        customTags: [
+          { id: "meeting", name: "集合", color: "bg-stone-200 text-stone-800" },
+          { id: "sightseeing", name: "観光", color: "bg-emerald-200 text-emerald-800" },
+          { id: "departure", name: "出発", color: "bg-rose-200 text-rose-800" },
+          { id: "meal", name: "食事", color: "bg-amber-200 text-amber-800" }
+        ],
+        checklists: []
+      };
+      
+      const tripId = await createTripInFirestore(newTrip);
+      const createdTrip = { ...newTrip, id: tripId } as Trip;
+      setTrips([...trips, createdTrip]);
+      setSelectedTrip(createdTrip);
+      setSelectedDate(createdTrip.startDate);
+      setShowCreateTripModal(false);
+    } catch (error) {
+      console.error('Failed to create trip:', error);
+    }
   };
 
-  const updateTrip = (tripId: number, updateFunction: (trip: Trip) => Trip) => {
+  const handleLogout = async () => {
+    try {
+      await logout();
+      setAppUser(null);
+      setTrips([]);
+      setSelectedTrip(null);
+      setShowLoginModal(true);
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
+
+  const updateTrip = (tripId: string, updateFunction: (trip: Trip) => Trip) => {
     setTrips(prevTrips => 
       prevTrips.map(trip => {
         if (trip.id === tripId) {
           const updatedTrip = updateFunction(trip);
-          if (selectedTrip.id === tripId) {
+          if (selectedTrip?.id === tripId) {
             setSelectedTrip(updatedTrip);
           }
           return updatedTrip;
@@ -122,25 +153,56 @@ export default function TravelApp() {
     );
   };
 
-  const hasAccess = user && selectedTrip.members.some(m => 
-    (m.id === user.id) || (m.name === user.name && m.type === user.type)
+  const hasAccess = appUser && selectedTrip && selectedTrip.members.some(m => 
+    (m.id === appUser.id) || (m.name === appUser.name && m.type === appUser.type)
   );
 
   // Auto-select first accessible trip
   useEffect(() => {
-    if (user && trips.length > 0) {
+    if (appUser && trips.length > 0) {
       const userTrips = trips.filter(trip => 
-        trip.members.some(m => m.id === user.id || (m.name === user.name && m.type === user.type))
+        trip.members.some(m => m.id === appUser.id || (m.name === appUser.name && m.type === appUser.type))
       );
       if (userTrips.length > 0) {
         setSelectedTrip(userTrips[0]);
         setSelectedDate(getDatesInRange(userTrips[0].startDate, userTrips[0].endDate)[0]);
       }
     }
-  }, [user, trips]);
+  }, [appUser, trips]);
+
+  if (loading || loadingTrips) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-stone-50 to-neutral-100 flex items-center justify-center">
+        <div className="text-stone-600">読み込み中...</div>
+      </div>
+    );
+  }
 
   if (showLoginModal) {
     return <LoginModal onLogin={handleLogin} trips={trips} />;
+  }
+
+  // 旅行がない場合は作成フォームを表示
+  if (!selectedTrip && appUser) {
+    if (showCreateTripModal) {
+      return <CreateTripModal onCreateTrip={handleCreateTrip} />;
+    }
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-stone-50 to-neutral-100 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
+          <h2 className="text-xl font-bold text-stone-800 mb-4">旅行がありません</h2>
+          <p className="text-stone-600 mb-6">新しい旅行を作成して始めましょう</p>
+          <button
+            onClick={() => setShowCreateTripModal(true)}
+            className="px-6 py-2 text-white rounded-lg flex items-center gap-2 mx-auto"
+            style={{ backgroundColor: colorPalette.abyssGreen.bg }}
+          >
+            <Plus className="w-5 h-5" />
+            新しい旅行を作成
+          </button>
+        </div>
+      </div>
+    );
   }
 
   if (!hasAccess) {
@@ -163,6 +225,12 @@ export default function TravelApp() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-stone-50 to-neutral-100">
+      {showCreateTripModal && (
+        <CreateTripModal 
+          onCreateTrip={handleCreateTrip}
+          onClose={() => setShowCreateTripModal(false)}
+        />
+      )}
       <div className="container mx-auto px-4 py-6">
         {/* User info bar */}
         <div className="flex items-center justify-between mb-4 bg-white rounded-lg shadow-sm border border-stone-200 px-4 py-2">
@@ -171,13 +239,13 @@ export default function TravelApp() {
               className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium" 
               style={{ backgroundColor: colorPalette.aquaBlue.light, color: colorPalette.aquaBlue.bg }}
             >
-              {user?.name.charAt(0)}
+              {appUser?.name.charAt(0)}
             </div>
-            <span className="font-medium text-stone-700">{user?.name}</span>
-            {user?.type === 'google' && (
+            <span className="font-medium text-stone-700">{appUser?.name}</span>
+            {appUser?.type === 'google' && (
               <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">Google</span>
             )}
-            {user?.type === 'guest' && (
+            {appUser?.type === 'guest' && (
               <span className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full">ゲスト</span>
             )}
           </div>
@@ -193,7 +261,7 @@ export default function TravelApp() {
         {/* Trip Selector Tabs */}
         <div className="flex flex-wrap gap-2 mb-4">
           {trips.filter(trip => 
-            trip.members.some(m => m.id === user?.id || (m.name === user?.name && m.type === user?.type))
+            trip.members.some(m => m.id === appUser?.id || (m.name === appUser?.name && m.type === appUser?.type))
           ).map(trip => (
             <button
               key={trip.id}
@@ -323,7 +391,7 @@ export default function TravelApp() {
       {showMembersModal && (
         <MembersModal 
           trip={selectedTrip}
-          user={user}
+          user={appUser}
           onClose={() => setShowMembersModal(false)}
           onTripUpdate={updateTrip}
         />

@@ -22,7 +22,7 @@ export default function FilesPage({ trip }: FilesPageProps) {
       scheduleTitle: string;
       scheduleTime: string;
       date: string;
-      scheduleId: number;
+      scheduleId: string;
     }> = [];
 
     Object.entries(trip.schedules).forEach(([date, schedules]) => {
@@ -32,7 +32,7 @@ export default function FilesPage({ trip }: FilesPageProps) {
             allFiles.push({
               file,
               scheduleTitle: schedule.title,
-              scheduleTime: schedule.time,
+              scheduleTime: schedule.startTime,
               date,
               scheduleId: schedule.id
             });

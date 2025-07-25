@@ -7,7 +7,7 @@ import { colorPalette } from '@/lib/constants';
 
 interface TagsPageProps {
   trip: Trip;
-  onTripUpdate: (tripId: number, updateFunction: (trip: Trip) => Trip) => void;
+  onTripUpdate: (tripId: string, updateFunction: (trip: Trip) => Trip) => void;
 }
 
 export default function TagsPage({ trip, onTripUpdate }: TagsPageProps) {

@@ -10,13 +10,13 @@ interface SchedulePageProps {
   trip: Trip;
   selectedDate: string;
   onDateChange: (date: string) => void;
-  onTripUpdate: (tripId: number, updateFunction: (trip: Trip) => Trip) => void;
+  onTripUpdate: (tripId: string, updateFunction: (trip: Trip) => Trip) => void;
 }
 
 export default function SchedulePage({ trip, selectedDate, onDateChange, onTripUpdate }: SchedulePageProps) {
   const [showNewScheduleModal, setShowNewScheduleModal] = useState(false);
-  const [editingSchedule, setEditingSchedule] = useState<number | null>(null);
-  const [expandedSchedules, setExpandedSchedules] = useState<Set<number>>(new Set());
+  const [editingSchedule, setEditingSchedule] = useState<string | null>(null);
+  const [expandedSchedules, setExpandedSchedules] = useState<Set<string>>(new Set());
   const [showImageModal, setShowImageModal] = useState<string | null>(null);
   const [showPDFModal, setShowPDFModal] = useState<string | null>(null);
   const [newSchedule, setNewSchedule] = useState({
@@ -35,7 +35,7 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
   const tripDates = getDatesInRange(trip.startDate, trip.endDate);
   const currentSchedules = trip.schedules[selectedDate] || [];
 
-  const toggleScheduleExpansion = (scheduleId: number) => {
+  const toggleScheduleExpansion = (scheduleId: string) => {
     const newExpanded = new Set(expandedSchedules);
     if (newExpanded.has(scheduleId)) {
       newExpanded.delete(scheduleId);
@@ -68,7 +68,7 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
            { name: type, color: "bg-stone-200 text-stone-800" };
   };
 
-  const handleFileUpload = (scheduleId: number, files: FileList | null) => {
+  const handleFileUpload = (scheduleId: string, files: FileList | null) => {
     if (!files) return;
 
     const fileList = Array.from(files).map(file => ({
@@ -93,8 +93,17 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
     if (!newSchedule.title || !newSchedule.time) return;
 
     const scheduleItem: Schedule = {
-      id: Date.now(),
-      ...newSchedule,
+      id: Date.now().toString(),
+      tripId: trip.id.toString(),
+      date: selectedDate,
+      startTime: newSchedule.time,
+      title: newSchedule.title,
+      location: newSchedule.location,
+      description: newSchedule.description,
+      type: newSchedule.type,
+      budget: newSchedule.budget,
+      budgetPeople: newSchedule.budgetPeople,
+      transport: newSchedule.transport,
       files: []
     };
 
@@ -118,7 +127,7 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
     // selectedDateは変更しない（現在の日付を維持）
   };
 
-  const deleteSchedule = (scheduleId: number) => {
+  const deleteSchedule = (scheduleId: string) => {
     onTripUpdate(trip.id, currentTrip => {
       const updatedSchedules = { ...currentTrip.schedules };
       updatedSchedules[selectedDate] = updatedSchedules[selectedDate].filter(s => s.id !== scheduleId);
@@ -178,9 +187,9 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                     <div className="grid grid-cols-2 gap-3">
                       <input
                         type="time"
-                        value={schedule.time}
+                        value={schedule.startTime}
                         onChange={(e) => {
-                          const updatedSchedule = { ...schedule, time: e.target.value };
+                          const updatedSchedule = { ...schedule, startTime: e.target.value };
                           onTripUpdate(trip.id, currentTrip => {
                             const updatedSchedules = { ...currentTrip.schedules };
                             updatedSchedules[selectedDate] = updatedSchedules[selectedDate].map(s => 
@@ -372,7 +381,7 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-3">
                         <span className="text-lg font-semibold" style={{ color: colorPalette.aquaBlue.bg }}>
-                          {schedule.time}
+                          {schedule.startTime}
                         </span>
                         <span className={`px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${getCustomTag(schedule.type).color}`}>
                           {getTypeIcon(schedule.type)}
