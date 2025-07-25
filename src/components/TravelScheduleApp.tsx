@@ -15,7 +15,6 @@ import SchedulePage from './SchedulePage';
 import MemoPage from './MemoPage';
 import ChecklistPage from './ChecklistPage';
 import BudgetPage from './BudgetPage';
-import TagsPage from './TagsPage';
 import FilesPage from './FilesPage';
 
 // モックデータ（初期は空）
@@ -39,8 +38,7 @@ export default function TravelApp() {
     { id: "memo" as const, label: "旅行メモ", icon: BookOpen },
     { id: "checklist" as const, label: "チェックリスト", icon: CheckSquare },
     { id: "budget" as const, label: "予算管理", icon: DollarSign },
-    { id: "files" as const, label: "ファイル", icon: FileText },
-    { id: "tags" as const, label: "タグ設定", icon: Settings }
+    { id: "files" as const, label: "ファイル", icon: FileText }
   ];
 
   // Firebase認証状態を監視
@@ -106,12 +104,7 @@ export default function TravelApp() {
         inviteCode: Math.random().toString(36).substring(2, 8).toUpperCase(),
         memo: "",
         schedules: {},
-        customTags: [
-          { id: "meeting", name: "集合", color: "bg-stone-200 text-stone-800" },
-          { id: "sightseeing", name: "観光", color: "bg-emerald-200 text-emerald-800" },
-          { id: "departure", name: "出発", color: "bg-rose-200 text-rose-800" },
-          { id: "meal", name: "食事", color: "bg-amber-200 text-amber-800" }
-        ],
+        customTags: [],
         checklists: []
       };
       
@@ -393,9 +386,6 @@ export default function TravelApp() {
         )}
         {currentPage === "files" && (
           <FilesPage trip={selectedTrip} />
-        )}
-        {currentPage === "tags" && (
-          <TagsPage trip={selectedTrip} onTripUpdate={updateTrip} />
         )}
       </div>
 

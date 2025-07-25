@@ -33,7 +33,7 @@ export interface Schedule {
   location: string;
   description: string;
   files: UploadedFile[];
-  type: string;
+  icon?: string;
   budget: number;
   budgetPeople: number;
   transport: Transport;
@@ -128,4 +128,4 @@ export interface Budget {
 }
 
 export type LoginMode = 'select' | 'google' | 'guest' | 'email';
-export type PageType = 'schedule' | 'memo' | 'checklist' | 'budget' | 'files' | 'tags';
+export type PageType = 'schedule' | 'memo' | 'checklist' | 'budget' | 'files';

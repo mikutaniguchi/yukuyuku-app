@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from 'react';
 import Image from 'next/image';
-import { Calendar, Plus, MapPin, Users, Clock, Edit2, Trash2, Save, X, Upload, FileText, Car, ExternalLink, DollarSign, ChevronDown, ChevronUp } from 'lucide-react';
+import { Calendar, Plus, MapPin, Edit2, Trash2, Save, X, Upload, FileText, Car, ExternalLink, DollarSign, ChevronDown, ChevronUp, Utensils, Plane, TrainFront, Bus, Camera, Bed } from 'lucide-react';
 import { Trip, Schedule, UploadedFile } from '@/types';
 import { colorPalette, getDatesInRange, formatDate, linkifyText, getGoogleMapsLink } from '@/lib/constants';
 
@@ -19,12 +19,32 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
   const [expandedSchedules, setExpandedSchedules] = useState<Set<string>>(new Set());
   const [showImageModal, setShowImageModal] = useState<string | null>(null);
   const [showPDFModal, setShowPDFModal] = useState<string | null>(null);
+  const getCurrentHour = () => {
+    const now = new Date();
+    const hours = now.getHours().toString().padStart(2, '0');
+    return `${hours}:00`;
+  };
+
+  const handleNewScheduleClick = () => {
+    setNewSchedule({
+      time: getCurrentHour(),
+      title: "",
+      location: "",
+      description: "",
+      icon: "",
+      budget: 0,
+      budgetPeople: 1,
+      transport: { method: "", duration: "", cost: 0 }
+    });
+    setShowNewScheduleModal(true);
+  };
+
   const [newSchedule, setNewSchedule] = useState({
     time: "",
     title: "",
     location: "",
     description: "",
-    type: "meeting",
+    icon: "",
     budget: 0,
     budgetPeople: 1,
     transport: { method: "", duration: "", cost: 0 }
@@ -53,19 +73,33 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
     return file.type === 'application/pdf';
   };
 
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'meeting': return <Users className="w-4 h-4" />;
-      case 'sightseeing': return <MapPin className="w-4 h-4" />;
-      case 'departure': return <Calendar className="w-4 h-4" />;
-      case 'meal': return <Clock className="w-4 h-4" />;
-      default: return <Clock className="w-4 h-4" />;
+  const getIcon = (icon?: string) => {
+    if (!icon) return null;
+    switch (icon) {
+      case 'meal': return <Utensils className="w-4 h-4" />;
+      case 'car': return <Car className="w-4 h-4" />;
+      case 'plane': return <Plane className="w-4 h-4" />;
+      case 'train': return <TrainFront className="w-4 h-4" />;
+      case 'bus': return <Bus className="w-4 h-4" />;
+      case 'camera': return <Camera className="w-4 h-4" />;
+      case 'bed': return <Bed className="w-4 h-4" />;
+      default: return null;
     }
   };
 
-  const getCustomTag = (type: string) => {
-    return trip.customTags.find(tag => tag.id === type) || 
-           { name: type, color: "bg-stone-200 text-stone-800" };
+  const iconOptions = [
+    { id: '', name: 'なし', bgColor: colorPalette.strawBeige.light, iconColor: colorPalette.strawBeige.lightText },
+    { id: 'meal', name: '食事', bgColor: colorPalette.sandRed.light, iconColor: colorPalette.sandRed.lightText },
+    { id: 'car', name: '車', bgColor: colorPalette.aquaBlue.light, iconColor: colorPalette.aquaBlue.lightText },
+    { id: 'plane', name: '飛行機', bgColor: colorPalette.aquaBlue.light, iconColor: colorPalette.aquaBlue.lightText },
+    { id: 'train', name: '電車', bgColor: colorPalette.aquaBlue.light, iconColor: colorPalette.aquaBlue.lightText },
+    { id: 'bus', name: 'バス', bgColor: colorPalette.aquaBlue.light, iconColor: colorPalette.aquaBlue.lightText },
+    { id: 'camera', name: '観光', bgColor: colorPalette.strawBeige.light, iconColor: colorPalette.strawBeige.lightText },
+    { id: 'bed', name: '宿泊', bgColor: colorPalette.roseQuartz.light, iconColor: colorPalette.roseQuartz.lightText }
+  ];
+
+  const getIconOption = (icon?: string) => {
+    return iconOptions.find(option => option.id === (icon || '')) || iconOptions[0];
   };
 
   const handleFileUpload = (scheduleId: string, files: FileList | null) => {
@@ -100,7 +134,7 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
       title: newSchedule.title,
       location: newSchedule.location,
       description: newSchedule.description,
-      type: newSchedule.type,
+      ...(newSchedule.icon && { icon: newSchedule.icon }),
       budget: newSchedule.budget,
       budgetPeople: newSchedule.budgetPeople,
       transport: newSchedule.transport,
@@ -118,7 +152,7 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
       title: "",
       location: "",
       description: "",
-      type: "meeting",
+      icon: "",
       budget: 0,
       budgetPeople: 1,
       transport: { method: "", duration: "", cost: 0 }
@@ -167,7 +201,7 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
               {formatDate(selectedDate)}のスケジュール
             </h2>
             <button
-              onClick={() => setShowNewScheduleModal(true)}
+              onClick={handleNewScheduleClick}
               className="flex items-center gap-2 px-4 py-2 text-white rounded-lg shadow-sm transition-colors font-medium hover:shadow-md"
               style={{ 
                 backgroundColor: colorPalette.abyssGreen.bg,
@@ -184,40 +218,65 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
               <div key={schedule.id} className="border border-stone-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                 {editingSchedule === schedule.id ? (
                   <div className="space-y-3">
-                    <div className="grid grid-cols-2 gap-3">
-                      <input
-                        type="time"
-                        value={schedule.startTime}
-                        onChange={(e) => {
-                          const updatedSchedule = { ...schedule, startTime: e.target.value };
-                          onTripUpdate(trip.id, currentTrip => {
-                            const updatedSchedules = { ...currentTrip.schedules };
-                            updatedSchedules[selectedDate] = updatedSchedules[selectedDate].map(s => 
-                              s.id === schedule.id ? updatedSchedule : s
-                            );
-                            return { ...currentTrip, schedules: updatedSchedules };
-                          });
-                        }}
-                        className="px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      />
-                      <select
-                        value={schedule.type}
-                        onChange={(e) => {
-                          const updatedSchedule = { ...schedule, type: e.target.value };
-                          onTripUpdate(trip.id, currentTrip => {
-                            const updatedSchedules = { ...currentTrip.schedules };
-                            updatedSchedules[selectedDate] = updatedSchedules[selectedDate].map(s => 
-                              s.id === schedule.id ? updatedSchedule : s
-                            );
-                            return { ...currentTrip, schedules: updatedSchedules };
-                          });
-                        }}
-                        className="px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      >
-                        {trip.customTags.map(tag => (
-                          <option key={tag.id} value={tag.id}>{tag.name}</option>
+                    <input
+                      type="time"
+                      value={schedule.startTime}
+                      onChange={(e) => {
+                        const updatedSchedule = { ...schedule, startTime: e.target.value };
+                        onTripUpdate(trip.id, currentTrip => {
+                          const updatedSchedules = { ...currentTrip.schedules };
+                          updatedSchedules[selectedDate] = updatedSchedules[selectedDate].map(s => 
+                            s.id === schedule.id ? updatedSchedule : s
+                          );
+                          return { ...currentTrip, schedules: updatedSchedules };
+                        });
+                      }}
+                      className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                    <div>
+                      <label className="block text-sm font-medium text-stone-700 mb-2">アイコン</label>
+                      <div className="flex gap-1">
+                        {iconOptions.map(option => (
+                          <button
+                            key={option.id}
+                            type="button"
+                            onClick={() => {
+                              const updatedSchedule = { ...schedule };
+                              if (option.id) {
+                                updatedSchedule.icon = option.id;
+                              } else {
+                                delete updatedSchedule.icon;
+                              }
+                              onTripUpdate(trip.id, currentTrip => {
+                                const updatedSchedules = { ...currentTrip.schedules };
+                                updatedSchedules[selectedDate] = updatedSchedules[selectedDate].map(s => 
+                                  s.id === schedule.id ? updatedSchedule : s
+                                );
+                                return { ...currentTrip, schedules: updatedSchedules };
+                              });
+                            }}
+                            className={`p-2 rounded-full transition-colors duration-200 ${
+                              (schedule.icon || '') === option.id 
+                                ? 'border-2' 
+                                : 'hover:bg-stone-100 border-2 border-transparent'
+                            }`}
+                            style={{
+                              backgroundColor: (schedule.icon || '') === option.id ? option.bgColor : 'transparent',
+                              color: (schedule.icon || '') === option.id ? option.iconColor : '#6B7280',
+                              borderColor: (schedule.icon || '') === option.id ? option.iconColor : 'transparent'
+                            }}
+                            title={option.name}
+                          >
+                            {option.id ? (
+                              <div className="w-4 h-4 flex items-center justify-center">
+                                {getIcon(option.id)}
+                              </div>
+                            ) : (
+                              <X className="w-4 h-4" />
+                            )}
+                          </button>
                         ))}
-                      </select>
+                      </div>
                     </div>
                     <input
                       type="text"
@@ -380,16 +439,23 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                   <>
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-3">
-                        <span className="text-lg font-semibold" style={{ color: colorPalette.aquaBlue.bg }}>
+                        <span className="text-lg font-semibold" style={{ color: colorPalette.abyssGreen.bg }}>
                           {schedule.startTime}
                         </span>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${getCustomTag(schedule.type).color}`}>
-                          {getTypeIcon(schedule.type)}
-                          {getCustomTag(schedule.type).name}
-                        </span>
-                        {(schedule.budget > 0 || schedule.transport?.cost > 0) && (
+                        {schedule.icon && (
+                          <span 
+                            className="px-3 py-2 rounded-full text-xs font-medium flex items-center gap-1"
+                            style={{ 
+                              backgroundColor: getIconOption(schedule.icon).bgColor, 
+                              color: getIconOption(schedule.icon).iconColor 
+                            }}
+                          >
+                            {getIcon(schedule.icon)}
+                          </span>
+                        )}
+                        {schedule.budget > 0 && (
                           <span className="text-xs text-stone-500">
-                            ¥{(schedule.budgetPeople > 0 ? Math.round((schedule.budget || 0) / schedule.budgetPeople) : 0) + (schedule.transport?.cost || 0)}/人
+                            ¥{schedule.budgetPeople > 0 ? Math.round(schedule.budget / schedule.budgetPeople) : 0}/人
                           </span>
                         )}
                       </div>
@@ -444,14 +510,13 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                       </div>
                     )}
 
-                    {(schedule.transport?.method || schedule.transport?.duration || (schedule.transport?.cost && schedule.transport.cost > 0)) && (
+                    {(schedule.transport?.method || schedule.transport?.duration) && (
                       <div className="bg-stone-50 rounded-lg p-3 mb-3">
                         <div className="flex items-center gap-2 text-sm text-stone-600">
                           <Car className="w-4 h-4" />
                           <span className="font-medium">交通情報:</span>
                           {schedule.transport.method && <span>{schedule.transport.method}</span>}
                           {schedule.transport.duration && <span>({schedule.transport.duration})</span>}
-                          {schedule.transport.cost > 0 && <span>¥{schedule.transport.cost}</span>}
                         </div>
                       </div>
                     )}
@@ -537,7 +602,7 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                 <Calendar className="w-12 h-12 mx-auto mb-4 text-stone-300" />
                 <p>この日のスケジュールはまだありません</p>
                 <button
-                  onClick={() => setShowNewScheduleModal(true)}
+                  onClick={handleNewScheduleClick}
                   className="mt-4 px-4 py-2 text-white rounded-lg transition-colors font-medium"
                   style={{ 
                     backgroundColor: colorPalette.abyssGreen.bg,
@@ -610,22 +675,42 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
           >
             <h3 className="text-xl font-semibold mb-4 text-stone-800">スケジュールを追加</h3>
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                <input
-                  type="time"
-                  value={newSchedule.time}
-                  onChange={(e) => setNewSchedule({ ...newSchedule, time: e.target.value })}
-                  className="px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-                <select
-                  value={newSchedule.type}
-                  onChange={(e) => setNewSchedule({ ...newSchedule, type: e.target.value })}
-                  className="px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  {trip.customTags.map(tag => (
-                    <option key={tag.id} value={tag.id}>{tag.name}</option>
+              <input
+                type="time"
+                value={newSchedule.time}
+                onChange={(e) => setNewSchedule({ ...newSchedule, time: e.target.value })}
+                className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+              <div>
+                <label className="block text-sm font-medium text-stone-700 mb-2">アイコン</label>
+                <div className="flex gap-1">
+                  {iconOptions.map(option => (
+                    <button
+                      key={option.id}
+                      type="button"
+                      onClick={() => setNewSchedule({ ...newSchedule, icon: option.id })}
+                      className={`p-2 rounded-full transition-colors duration-200 ${
+                        newSchedule.icon === option.id 
+                          ? 'border-2' 
+                          : 'hover:bg-stone-100 border-2 border-transparent'
+                      }`}
+                      style={{
+                        backgroundColor: newSchedule.icon === option.id ? option.bgColor : 'transparent',
+                        color: newSchedule.icon === option.id ? option.iconColor : '#6B7280',
+                        borderColor: newSchedule.icon === option.id ? option.iconColor : 'transparent'
+                      }}
+                      title={option.name}
+                    >
+                      {option.id ? (
+                        <div className="w-4 h-4 flex items-center justify-center">
+                          {getIcon(option.id)}
+                        </div>
+                      ) : (
+                        <X className="w-4 h-4" />
+                      )}
+                    </button>
                   ))}
-                </select>
+                </div>
               </div>
               <input
                 type="text"
