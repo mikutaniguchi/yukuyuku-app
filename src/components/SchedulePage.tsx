@@ -150,7 +150,7 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
         });
       } catch (error) {
         console.error('ファイルアップロードエラー:', error);
-        alert(`ファイルのアップロードに失敗しました: ${error.message || error}`);
+        alert(`ファイルのアップロードに失敗しました: ${error instanceof Error ? error.message : 'Unknown error'}`);
       } finally {
         // アップロード完了
         setUploadingFiles(prev => {
