@@ -46,6 +46,9 @@ export interface UploadedFile {
   name: string;
   type: string;
   url: string;
+  fullPath?: string; // Firebase Storage path for deletion
+  originalSize?: number;
+  compressedSize?: number;
 }
 
 export interface CustomTag {

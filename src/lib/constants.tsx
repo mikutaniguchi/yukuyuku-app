@@ -78,7 +78,7 @@ const processUrls = (text: string) => {
           href={part}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-blue-600 hover:text-blue-800 underline break-all"
+          className="text-stone-700 hover:text-stone-900 underline break-all"
         >
           {part}
         </a>
@@ -107,8 +107,15 @@ export const generateInviteLink = (tripId: string, inviteCode: string): string =
 
 export const getGoogleMapsLink = (location: string): string | null => {
   if (!location) return null;
+  
+  // すでにGoogleマップのURLの場合はそのまま返す
+  if (location.includes('maps.google.com') || location.includes('goo.gl/maps') || location.includes('maps.app.goo.gl')) {
+    return location;
+  }
+  
+  // 通常の場所名の場合はGoogleマップの検索URLを生成
   const encodedLocation = encodeURIComponent(location);
-  return `https://www.google.com/search?q=${encodedLocation}`;
+  return `https://www.google.com/maps/search/?api=1&query=${encodedLocation}`;
 };
 
 export const getIcon = (icon?: string) => {

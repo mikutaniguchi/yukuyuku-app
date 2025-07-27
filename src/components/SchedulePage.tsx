@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Calendar, Plus, MapPin, Edit2, Trash2, Save, X, Upload, FileText, Car, ExternalLink, DollarSign, ChevronDown, ChevronUp, Utensils, Plane, TrainFront, Bus, Camera, Bed } from 'lucide-react';
 import { Trip, Schedule, UploadedFile } from '@/types';
 import { colorPalette, getDatesInRange, formatDate, linkifyText, getGoogleMapsLink, getIcon } from '@/lib/constants';
+import { processAndUploadFile, deleteFileFromStorage } from '@/lib/fileStorage';
 import NewScheduleModal from './NewScheduleModal';
 import ImageModal from './ImageModal';
 import PDFModal from './PDFModal';
@@ -22,6 +23,7 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
   const [expandedSchedules, setExpandedSchedules] = useState<Set<string>>(new Set());
   const [showImageModal, setShowImageModal] = useState<string | null>(null);
   const [showPDFModal, setShowPDFModal] = useState<string | null>(null);
+  const [uploadingFiles, setUploadingFiles] = useState<Set<string>>(new Set());
   const handleNewScheduleClick = () => {
     const now = new Date();
     const hours = now.getHours().toString().padStart(2, '0');
@@ -62,7 +64,30 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
   };
 
   const tripDates = getDatesInRange(trip.startDate, trip.endDate);
-  const currentSchedules = trip.schedules[selectedDate] || [];
+
+  // スクロール時に現在の日付を検出
+  useEffect(() => {
+    const handleScroll = () => {
+      const dateElements = tripDates.map(date => ({
+        date,
+        element: document.getElementById(`schedule-${date}`)
+      }));
+      
+      // ビューポート内の要素を検出
+      for (const { date, element } of dateElements) {
+        if (element) {
+          const rect = element.getBoundingClientRect();
+          if (rect.top <= 100 && rect.bottom > 100) {
+            onDateChange(date);
+            break;
+          }
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [tripDates, onDateChange]);
 
   const toggleScheduleExpansion = (scheduleId: string) => {
     const newExpanded = new Set(expandedSchedules);
@@ -98,33 +123,62 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
     return iconOptions.find(option => option.id === (icon || '')) || iconOptions[0];
   };
 
-  const handleFileUpload = (scheduleId: string) => {
+  const handleFileUpload = async (scheduleId: string) => {
     const input = createFileInput();
-    input.onchange = (e) => {
+    input.onchange = async (e) => {
       const files = (e.target as HTMLInputElement).files;
       if (!files) return;
 
-      const fileList = Array.from(files).map((file, index) => ({
-        id: `file_${Date.now()}_${index}`,
-        name: file.name,
-        type: file.type,
-        url: URL.createObjectURL(file)
-      }));
+      // アップロード開始
+      setUploadingFiles(prev => new Set([...prev, scheduleId]));
 
-      onTripUpdate(trip.id, currentTrip => {
-        const updatedSchedules = { ...currentTrip.schedules };
-        updatedSchedules[selectedDate] = updatedSchedules[selectedDate].map(schedule => 
-          schedule.id === scheduleId 
-            ? { ...schedule, files: [...schedule.files, ...fileList] }
-            : schedule
-        );
-        return { ...currentTrip, schedules: updatedSchedules };
-      });
+      try {
+        const uploadPromises = Array.from(files).map(async (file) => {
+          return await processAndUploadFile(file, trip.id, scheduleId);
+        });
+
+        const uploadedFiles = await Promise.all(uploadPromises);
+
+        onTripUpdate(trip.id, currentTrip => {
+          const updatedSchedules = { ...currentTrip.schedules };
+          updatedSchedules[selectedDate] = updatedSchedules[selectedDate].map(schedule => 
+            schedule.id === scheduleId 
+              ? { ...schedule, files: [...schedule.files, ...uploadedFiles] }
+              : schedule
+          );
+          return { ...currentTrip, schedules: updatedSchedules };
+        });
+      } catch (error) {
+        console.error('ファイルアップロードエラー:', error);
+        alert(`ファイルのアップロードに失敗しました: ${error.message || error}`);
+      } finally {
+        // アップロード完了
+        setUploadingFiles(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(scheduleId);
+          return newSet;
+        });
+      }
     };
     input.click();
   };
 
-  const handleFileDelete = (scheduleId: string, fileId: string | number) => {
+  const handleFileDelete = async (scheduleId: string, fileId: string | number) => {
+    // 削除対象のファイル情報を取得
+    const schedule = trip.schedules[selectedDate]?.find(s => s.id === scheduleId);
+    const fileToDelete = schedule?.files.find(f => f.id === fileId);
+    
+    if (fileToDelete?.fullPath) {
+      try {
+        // Firebase Storageから削除
+        await deleteFileFromStorage(fileToDelete.fullPath);
+      } catch (error) {
+        console.error('Storage削除エラー:', error);
+        // Storage削除に失敗してもUI上では削除を続行
+      }
+    }
+
+    // UIから削除
     onTripUpdate(trip.id, currentTrip => {
       const updatedSchedules = { ...currentTrip.schedules };
       updatedSchedules[selectedDate] = updatedSchedules[selectedDate].map(schedule => 
@@ -186,15 +240,21 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
 
   return (
     <>
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        <div className="bg-white rounded-xl shadow-sm border border-stone-200 p-4">
+      <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] lg:grid-cols-[auto_1fr] gap-6">
+        <div className="bg-white rounded-xl shadow-sm border border-stone-200 p-4 md:w-fit md:h-fit md:sticky md:top-6">
           <h2 className="text-lg font-semibold text-stone-800 mb-4">日程</h2>
           <div className="space-y-2">
             {tripDates.map(date => (
-              <button
+              <a
                 key={date}
-                onClick={() => onDateChange(date)}
-                className={`w-full text-left px-3 py-2 rounded-lg transition-colors font-medium ${
+                href={`#schedule-${date}`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  const element = document.getElementById(`schedule-${date}`);
+                  element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  onDateChange(date);
+                }}
+                className={`block w-full text-left px-3 py-2 rounded-lg transition-colors font-medium whitespace-nowrap ${
                   selectedDate === date
                     ? 'text-white shadow-sm'
                     : 'hover:bg-stone-100 text-stone-700'
@@ -205,33 +265,44 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                 } : {}}
               >
                 {formatDate(date)}
-              </button>
+              </a>
             ))}
           </div>
         </div>
 
-        <div className="lg:col-span-3 bg-white rounded-xl shadow-sm border border-stone-200 p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-stone-800">
-              {formatDate(selectedDate)}のスケジュール
-            </h2>
-            <button
-              onClick={handleNewScheduleClick}
-              className="flex items-center gap-2 px-4 py-2 text-white rounded-lg shadow-sm transition-colors font-medium hover:shadow-md"
-              style={{ 
-                backgroundColor: colorPalette.abyssGreen.bg,
-                color: colorPalette.abyssGreen.text 
-              }}
-            >
-              <Plus className="w-4 h-4" />
-              追加
-            </button>
-          </div>
+        <div className="space-y-8">
+          {tripDates.map(date => {
+            const daySchedules = trip.schedules[date] || [];
+            return (
+              <div 
+                key={date} 
+                id={`schedule-${date}`}
+                className="bg-white rounded-xl shadow-sm border border-stone-200 p-6 scroll-mt-6"
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-semibold text-stone-800">
+                    {formatDate(date)}
+                  </h2>
+                  <button
+                    onClick={() => {
+                      onDateChange(date);
+                      handleNewScheduleClick();
+                    }}
+                    className="flex items-center gap-2 px-4 py-2 text-white rounded-lg shadow-sm transition-colors font-medium hover:shadow-md"
+                    style={{ 
+                      backgroundColor: colorPalette.abyssGreen.bg,
+                      color: colorPalette.abyssGreen.text 
+                    }}
+                  >
+                    <Plus className="w-4 h-4" />
+                    追加
+                  </button>
+                </div>
 
-          <div className="space-y-4">
-            {currentSchedules.map(schedule => (
-              <div key={schedule.id} className="border border-stone-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                {editingSchedule === schedule.id ? (
+                <div className="space-y-4">
+                        {daySchedules.map(schedule => (
+                    <div key={schedule.id} className="border border-stone-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                      {editingSchedule === schedule.id ? (
                   <div className="space-y-3">
                     <input
                       type="time"
@@ -246,7 +317,7 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                           return { ...currentTrip, schedules: updatedSchedules };
                         });
                       }}
-                      className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500"
                     />
                     <div>
                       <label className="block text-sm font-medium text-stone-700 mb-2">アイコン</label>
@@ -307,7 +378,7 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                           return { ...currentTrip, schedules: updatedSchedules };
                         });
                       }}
-                      className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500"
                     />
                     <input
                       type="text"
@@ -323,7 +394,7 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                           return { ...currentTrip, schedules: updatedSchedules };
                         });
                       }}
-                      className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500"
                     />
                     <textarea
                       placeholder="詳細・メモ（URLも自動でリンクになります）"
@@ -338,7 +409,7 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                           return { ...currentTrip, schedules: updatedSchedules };
                         });
                       }}
-                      className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500"
                       rows={2}
                     />
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -358,7 +429,7 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                               return { ...currentTrip, schedules: updatedSchedules };
                             });
                           }}
-                          className="w-full pl-7 pr-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          className="w-full pl-7 pr-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500"
                         />
                       </div>
                       <div className="relative">
@@ -376,7 +447,7 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                               return { ...currentTrip, schedules: updatedSchedules };
                             });
                           }}
-                          className="w-full pr-8 pl-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          className="w-full pr-8 pl-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500"
                           min="1"
                         />
                         <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-stone-500">人</span>
@@ -399,7 +470,7 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                               return { ...currentTrip, schedules: updatedSchedules };
                             });
                           }}
-                          className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500"
                         >
                           <option value="">立て替え中：なし</option>
                           {trip.members.map(member => (
@@ -432,7 +503,7 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                               return { ...currentTrip, schedules: updatedSchedules };
                             });
                           }}
-                          className="px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                          className="px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-sm"
                         />
                         <input
                           type="text"
@@ -451,7 +522,7 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                               return { ...currentTrip, schedules: updatedSchedules };
                             });
                           }}
-                          className="px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                          className="px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-sm"
                         />
                       </div>
                     </div>
@@ -517,19 +588,15 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
 
                     <h3 className="text-lg font-semibold text-stone-800 mb-1">{schedule.title}</h3>
                     {schedule.location && (
-                      <div className="flex items-center gap-2 mb-2">
-                        <p className="text-stone-600 flex items-center gap-1">
-                          <MapPin className="w-4 h-4" />
-                          {schedule.location}
-                        </p>
+                      <div className="mb-2">
                         <a
                           href={getGoogleMapsLink(schedule.location) || '#'}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-blue-600 hover:text-blue-800 flex items-center gap-1 text-sm"
+                          className="text-stone-600 hover:text-stone-800 underline inline-flex items-center gap-1"
                         >
-                          <ExternalLink className="w-3 h-3" />
-                          地図
+                          <MapPin className="w-4 h-4 flex-shrink-0" />
+                          {schedule.location}
                         </a>
                       </div>
                     )}
@@ -630,33 +697,40 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
 
                     <button
                       onClick={() => handleFileUpload(schedule.id)}
-                      className="flex items-center gap-2 px-3 py-1 text-sm bg-stone-100 text-stone-700 rounded-lg hover:bg-stone-200 transition-colors"
+                      disabled={uploadingFiles.has(schedule.id)}
+                      className="flex items-center gap-2 px-3 py-1 text-sm bg-stone-100 text-stone-700 rounded-lg hover:bg-stone-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Upload className="w-4 h-4" />
-                      ファイル追加
-                    </button>
-                  </>
-                )}
-              </div>
-            ))}
+                      {uploadingFiles.has(schedule.id) ? 'アップロード中...' : 'ファイル追加'}
+                          </button>
+                      </>
+                    )}
+                  </div>
+                ))}
 
-            {currentSchedules.length === 0 && (
-              <div className="text-center py-12 text-stone-500">
-                <Calendar className="w-12 h-12 mx-auto mb-4 text-stone-300" />
-                <p>この日のスケジュールはまだありません</p>
-                <button
-                  onClick={handleNewScheduleClick}
-                  className="mt-4 px-4 py-2 text-white rounded-lg transition-colors font-medium"
-                  style={{ 
-                    backgroundColor: colorPalette.abyssGreen.bg,
-                    color: colorPalette.abyssGreen.text 
-                  }}
-                >
-                  最初のスケジュールを追加
-                </button>
+                  {daySchedules.length === 0 && (
+                    <div className="text-center py-12 text-stone-500">
+                      <Calendar className="w-12 h-12 mx-auto mb-4 text-stone-300" />
+                      <p>この日のスケジュールはまだありません</p>
+                      <button
+                        onClick={() => {
+                          onDateChange(date);
+                          handleNewScheduleClick();
+                        }}
+                        className="mt-4 px-4 py-2 text-white rounded-lg transition-colors font-medium"
+                        style={{ 
+                          backgroundColor: colorPalette.abyssGreen.bg,
+                          color: colorPalette.abyssGreen.text 
+                        }}
+                      >
+                        最初のスケジュールを追加
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
-            )}
-          </div>
+            );
+          })}
         </div>
       </div>
 

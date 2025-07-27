@@ -5,21 +5,23 @@ import { Plus, X } from 'lucide-react';
 import { colorPalette, getIcon } from '@/lib/constants';
 import Modal from './Modal';
 
+interface NewScheduleData {
+  time: string;
+  title: string;
+  location: string;
+  description: string;
+  icon: string;
+  budget: number;
+  budgetPeople: number;
+  paidBy: string;
+  transport: { method: string; duration: string; cost: number };
+}
+
 interface NewScheduleModalProps {
   isOpen: boolean;
   onClose: () => void;
-  newSchedule: {
-    time: string;
-    title: string;
-    location: string;
-    description: string;
-    icon: string;
-    budget: number;
-    budgetPeople: number;
-    paidBy: string;
-    transport: { method: string; duration: string; cost: number };
-  };
-  onScheduleChange: (schedule: any) => void;
+  newSchedule: NewScheduleData;
+  onScheduleChange: (schedule: NewScheduleData) => void;
   onSubmit: () => void;
   tripMembers: Array<{ id: string; name: string }>;
   iconOptions: Array<{
@@ -53,7 +55,7 @@ export default function NewScheduleModal({
           type="time"
           value={newSchedule.time}
           onChange={(e) => onScheduleChange({ ...newSchedule, time: e.target.value })}
-          className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500"
         />
         
         <div>
@@ -93,7 +95,7 @@ export default function NewScheduleModal({
           placeholder="タイトル"
           value={newSchedule.title}
           onChange={(e) => onScheduleChange({ ...newSchedule, title: e.target.value })}
-          className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500"
         />
         
         <input
@@ -101,14 +103,14 @@ export default function NewScheduleModal({
           placeholder="場所"
           value={newSchedule.location}
           onChange={(e) => onScheduleChange({ ...newSchedule, location: e.target.value })}
-          className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500"
         />
         
         <textarea
           placeholder="詳細・メモ"
           value={newSchedule.description}
           onChange={(e) => onScheduleChange({ ...newSchedule, description: e.target.value })}
-          className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500"
           rows={3}
         />
         
@@ -120,7 +122,7 @@ export default function NewScheduleModal({
               placeholder="例: 3000"
               value={newSchedule.budget === 0 ? "" : newSchedule.budget}
               onChange={(e) => onScheduleChange({ ...newSchedule, budget: parseInt(e.target.value) || 0 })}
-              className="w-full pl-7 pr-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full pl-7 pr-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500"
             />
           </div>
           <div className="relative">
@@ -129,7 +131,7 @@ export default function NewScheduleModal({
               placeholder="例: 3"
               value={newSchedule.budgetPeople}
               onChange={(e) => onScheduleChange({ ...newSchedule, budgetPeople: parseInt(e.target.value) || 1 })}
-              className="w-full pr-8 pl-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full pr-8 pl-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500"
               min="1"
             />
             <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-stone-500">人</span>
@@ -138,7 +140,7 @@ export default function NewScheduleModal({
             <select
               value={newSchedule.paidBy}
               onChange={(e) => onScheduleChange({ ...newSchedule, paidBy: e.target.value })}
-              className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500"
             >
               <option value="">立て替え中：なし</option>
               {tripMembers.map(member => (
@@ -163,7 +165,7 @@ export default function NewScheduleModal({
                 ...newSchedule, 
                 transport: { ...newSchedule.transport, method: e.target.value }
               })}
-              className="px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+              className="px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-sm"
             />
             <input
               type="text"
@@ -173,7 +175,7 @@ export default function NewScheduleModal({
                 ...newSchedule, 
                 transport: { ...newSchedule.transport, duration: e.target.value }
               })}
-              className="px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+              className="px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-sm"
             />
           </div>
         </div>

@@ -1,12 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
-import { LogIn } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 import { User, Trip, LoginMode } from '@/types';
 import { colorPalette } from '../lib/constants';
 import { auth } from '@/lib/firebase';
 import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
-import Modal from './Modal';
 
 interface LoginModalProps {
   onLogin: (user: User) => void;
@@ -126,7 +125,7 @@ export default function LoginModal({ onLogin, trips }: LoginModalProps) {
                 value={guestName}
                 onChange={(e) => setGuestName(e.target.value)}
                 placeholder="例: 田中太郎"
-                className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500"
               />
             </div>
 
@@ -139,7 +138,7 @@ export default function LoginModal({ onLogin, trips }: LoginModalProps) {
                 value={inviteCode}
                 onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
                 placeholder="例: TOKYO2024"
-                className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 uppercase"
+                className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 uppercase"
               />
             </div>
 

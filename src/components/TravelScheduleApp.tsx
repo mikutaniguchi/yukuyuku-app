@@ -45,9 +45,9 @@ export default function TravelApp() {
   const navItems = [
     { id: "schedule" as const, label: "スケジュール", icon: Calendar },
     { id: "checklist" as const, label: "チェックリスト", icon: CheckSquare },
-    { id: "budget" as const, label: "予算管理", icon: DollarSign },
     { id: "files" as const, label: "ファイル", icon: FileText },
-    { id: "memo" as const, label: "メモ", icon: BookOpen }
+    { id: "memo" as const, label: "メモ", icon: BookOpen },
+    { id: "budget" as const, label: "予算管理", icon: DollarSign }
   ];
 
   // Firebase認証状態を監視
@@ -407,7 +407,7 @@ export default function TravelApp() {
                       if (e.key === 'Enter') handleSaveTripTitle();
                       if (e.key === 'Escape') handleCancelEditTitle();
                     }}
-                    className="text-xl sm:text-3xl font-bold text-stone-800 bg-transparent border-b-2 border-blue-300 focus:outline-none focus:border-blue-500"
+                    className="text-xl sm:text-3xl font-bold text-stone-800 bg-transparent border-b-2 border-stone-300 focus:outline-none focus:border-stone-500"
                     autoFocus
                   />
                   <button

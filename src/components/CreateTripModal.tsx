@@ -72,7 +72,7 @@ export default function CreateTripModal({ onCreateTrip, onClose, isOpen }: Creat
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="例: 京都旅行"
-            className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500"
             autoFocus
           />
         </div>
@@ -87,7 +87,7 @@ export default function CreateTripModal({ onCreateTrip, onClose, isOpen }: Creat
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500"
             />
           </div>
           
@@ -101,7 +101,7 @@ export default function CreateTripModal({ onCreateTrip, onClose, isOpen }: Creat
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
               min={startDate}
-              className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500"
             />
           </div>
         </div>

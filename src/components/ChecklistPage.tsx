@@ -156,7 +156,7 @@ export default function ChecklistPage({ trip, onTripUpdate }: ChecklistPageProps
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {trip.checklists.map(checklist => {
             const completionRate = getCompletionRate(checklist);
             return (
@@ -276,7 +276,7 @@ export default function ChecklistPage({ trip, onTripUpdate }: ChecklistPageProps
                         e.currentTarget.value = '';
                       }
                     }}
-                    className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-sm"
                   />
                 </div>
               </div>
@@ -322,7 +322,7 @@ export default function ChecklistPage({ trip, onTripUpdate }: ChecklistPageProps
                 placeholder="リスト名"
                 value={newChecklist.name}
                 onChange={(e) => setNewChecklist({ ...newChecklist, name: e.target.value })}
-                className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500"
               />
               <div className="space-y-2">
                 <label className="text-sm font-medium text-stone-700">項目</label>
@@ -337,7 +337,7 @@ export default function ChecklistPage({ trip, onTripUpdate }: ChecklistPageProps
                         updatedItems[index] = e.target.value;
                         setNewChecklist({ ...newChecklist, items: updatedItems });
                       }}
-                      className="flex-1 px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                      className="flex-1 px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-sm"
                     />
                     {newChecklist.items.length > 1 && (
                       <button
