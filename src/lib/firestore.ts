@@ -44,6 +44,41 @@ export const getUserTrips = async (userId: string) => {
   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Trip));
 };
 
+export const joinTripByCode = async (userId: string, inviteCode: string) => {
+  try {
+    // 招待コードで旅行を検索
+    const q = query(
+      collection(db, 'trips'),
+      where('inviteCode', '==', inviteCode)
+    );
+    const snapshot = await getDocs(q);
+    
+    if (snapshot.empty) {
+      return { success: false, error: 'Trip not found' };
+    }
+    
+    const tripDoc = snapshot.docs[0];
+    const trip = { id: tripDoc.id, ...tripDoc.data() } as Trip;
+    
+    // 既にメンバーかチェック
+    if (trip.memberIds.includes(userId)) {
+      return { success: true, tripName: trip.name, alreadyMember: true };
+    }
+    
+    // メンバーに追加
+    const updatedMemberIds = [...trip.memberIds, userId];
+    await updateDoc(doc(db, 'trips', trip.id), {
+      memberIds: updatedMemberIds,
+      updatedAt: serverTimestamp()
+    });
+    
+    return { success: true, tripName: trip.name };
+  } catch (error) {
+    console.error('Error joining trip:', error);
+    return { success: false, error: 'Failed to join trip' };
+  }
+};
+
 export const updateTrip = async (tripId: string, tripData: Partial<Trip>) => {
   const tripRef = doc(db, 'trips', tripId);
   await updateDoc(tripRef, {

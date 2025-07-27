@@ -90,13 +90,6 @@ export default function TravelApp() {
   const handleLogin = (userData: User) => {
     setAppUser(userData);
     setShowLoginModal(false);
-    
-    // 新規Googleユーザーの場合、旅行作成フォームを表示
-    if (userData.type === 'google' && !trips.some(trip => 
-      trip.members.some(m => m.id === userData.id)
-    )) {
-      setShowCreateTripModal(true);
-    }
   };
 
   const handleCreateTrip = async (tripData: { title: string; startDate: string; endDate: string }) => {

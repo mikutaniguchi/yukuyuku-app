@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { Calendar, Plus, MapPin, Edit2, Trash2, Save, X, Upload, FileText, Car, ExternalLink, DollarSign, ChevronDown, ChevronUp, Utensils, Plane, TrainFront, Bus, Camera, Bed } from 'lucide-react';
 import { Trip, Schedule, UploadedFile } from '@/types';
 import { colorPalette, getDatesInRange, formatDate, linkifyText, getGoogleMapsLink, getIcon } from '@/lib/constants';
+import ScheduleForm from './ScheduleForm';
 import { processAndUploadFile, deleteFileFromStorage } from '@/lib/fileStorage';
 import NewScheduleModal from './NewScheduleModal';
 import ImageModal from './ImageModal';
@@ -97,6 +98,28 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
       newExpanded.add(scheduleId);
     }
     setExpandedSchedules(newExpanded);
+  };
+
+  const handleEditScheduleChange = (scheduleId: string, scheduleData: any) => {
+    onTripUpdate(trip.id, currentTrip => {
+      const updatedSchedules = { ...currentTrip.schedules };
+      updatedSchedules[selectedDate] = updatedSchedules[selectedDate].map(s => 
+        s.id === scheduleId ? { 
+          ...s, 
+          startTime: scheduleData.startTime,
+          endTime: scheduleData.endTime,
+          title: scheduleData.title,
+          location: scheduleData.location,
+          description: scheduleData.description,
+          icon: scheduleData.icon,
+          budget: scheduleData.budget,
+          budgetPeople: scheduleData.budgetPeople,
+          paidBy: scheduleData.paidBy,
+          transport: scheduleData.transport
+        } : s
+      );
+      return { ...currentTrip, schedules: updatedSchedules };
+    });
   };
 
   const isImageFile = (file: UploadedFile) => {
@@ -304,228 +327,23 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                     <div key={schedule.id} className="border border-stone-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                       {editingSchedule === schedule.id ? (
                   <div className="space-y-3">
-                    <input
-                      type="time"
-                      value={schedule.startTime}
-                      onChange={(e) => {
-                        const updatedSchedule = { ...schedule, startTime: e.target.value };
-                        onTripUpdate(trip.id, currentTrip => {
-                          const updatedSchedules = { ...currentTrip.schedules };
-                          updatedSchedules[selectedDate] = updatedSchedules[selectedDate].map(s => 
-                            s.id === schedule.id ? updatedSchedule : s
-                          );
-                          return { ...currentTrip, schedules: updatedSchedules };
-                        });
+                    <ScheduleForm
+                      schedule={{
+                        startTime: schedule.startTime,
+                        endTime: schedule.endTime,
+                        title: schedule.title,
+                        location: schedule.location,
+                        description: schedule.description,
+                        icon: schedule.icon || '',
+                        budget: schedule.budget || 0,
+                        budgetPeople: schedule.budgetPeople || 1,
+                        paidBy: schedule.paidBy || '',
+                        transport: schedule.transport || { method: '', duration: '', cost: 0 }
                       }}
-                      className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500"
+                      onScheduleChange={(scheduleData) => handleEditScheduleChange(schedule.id, scheduleData)}
+                      tripMembers={trip.members}
+                      iconOptions={iconOptions}
                     />
-                    <div>
-                      <label className="block text-sm font-medium text-stone-700 mb-2">アイコン</label>
-                      <div className="flex gap-1">
-                        {iconOptions.map(option => (
-                          <button
-                            key={option.id}
-                            type="button"
-                            onClick={() => {
-                              const updatedSchedule = { ...schedule };
-                              if (option.id) {
-                                updatedSchedule.icon = option.id;
-                              } else {
-                                delete updatedSchedule.icon;
-                              }
-                              onTripUpdate(trip.id, currentTrip => {
-                                const updatedSchedules = { ...currentTrip.schedules };
-                                updatedSchedules[selectedDate] = updatedSchedules[selectedDate].map(s => 
-                                  s.id === schedule.id ? updatedSchedule : s
-                                );
-                                return { ...currentTrip, schedules: updatedSchedules };
-                              });
-                            }}
-                            className={`p-2 rounded-full transition-colors duration-200 ${
-                              (schedule.icon || '') === option.id 
-                                ? 'border-2' 
-                                : 'hover:bg-stone-100 border-2 border-transparent'
-                            }`}
-                            style={{
-                              backgroundColor: (schedule.icon || '') === option.id ? option.bgColor : 'transparent',
-                              color: (schedule.icon || '') === option.id ? option.iconColor : '#6B7280',
-                              borderColor: (schedule.icon || '') === option.id ? option.iconColor : 'transparent'
-                            }}
-                            title={option.name}
-                          >
-                            {option.id ? (
-                              <div className="w-4 h-4 flex items-center justify-center">
-                                {getIcon(option.id)}
-                              </div>
-                            ) : (
-                              <X className="w-4 h-4" />
-                            )}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    <input
-                      type="text"
-                      placeholder="タイトル"
-                      value={schedule.title}
-                      onChange={(e) => {
-                        const updatedSchedule = { ...schedule, title: e.target.value };
-                        onTripUpdate(trip.id, currentTrip => {
-                          const updatedSchedules = { ...currentTrip.schedules };
-                          updatedSchedules[selectedDate] = updatedSchedules[selectedDate].map(s => 
-                            s.id === schedule.id ? updatedSchedule : s
-                          );
-                          return { ...currentTrip, schedules: updatedSchedules };
-                        });
-                      }}
-                      className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500"
-                    />
-                    <input
-                      type="text"
-                      placeholder="場所"
-                      value={schedule.location}
-                      onChange={(e) => {
-                        const updatedSchedule = { ...schedule, location: e.target.value };
-                        onTripUpdate(trip.id, currentTrip => {
-                          const updatedSchedules = { ...currentTrip.schedules };
-                          updatedSchedules[selectedDate] = updatedSchedules[selectedDate].map(s => 
-                            s.id === schedule.id ? updatedSchedule : s
-                          );
-                          return { ...currentTrip, schedules: updatedSchedules };
-                        });
-                      }}
-                      className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500"
-                    />
-                    <textarea
-                      placeholder="詳細・メモ（URLも自動でリンクになります）"
-                      value={schedule.description}
-                      onChange={(e) => {
-                        const updatedSchedule = { ...schedule, description: e.target.value };
-                        onTripUpdate(trip.id, currentTrip => {
-                          const updatedSchedules = { ...currentTrip.schedules };
-                          updatedSchedules[selectedDate] = updatedSchedules[selectedDate].map(s => 
-                            s.id === schedule.id ? updatedSchedule : s
-                          );
-                          return { ...currentTrip, schedules: updatedSchedules };
-                        });
-                      }}
-                      className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500"
-                      rows={2}
-                    />
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                      <div className="relative">
-                        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-stone-500">¥</span>
-                        <input
-                          type="number"
-                          placeholder="例: 3000"
-                          value={schedule.budget === 0 ? "" : schedule.budget}
-                          onChange={(e) => {
-                            const updatedSchedule = { ...schedule, budget: parseInt(e.target.value) || 0 };
-                            onTripUpdate(trip.id, currentTrip => {
-                              const updatedSchedules = { ...currentTrip.schedules };
-                              updatedSchedules[selectedDate] = updatedSchedules[selectedDate].map(s => 
-                                s.id === schedule.id ? updatedSchedule : s
-                              );
-                              return { ...currentTrip, schedules: updatedSchedules };
-                            });
-                          }}
-                          className="w-full pl-7 pr-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500"
-                        />
-                      </div>
-                      <div className="relative">
-                        <input
-                          type="number"
-                          placeholder="例: 3"
-                          value={schedule.budgetPeople}
-                          onChange={(e) => {
-                            const updatedSchedule = { ...schedule, budgetPeople: parseInt(e.target.value) || 1 };
-                            onTripUpdate(trip.id, currentTrip => {
-                              const updatedSchedules = { ...currentTrip.schedules };
-                              updatedSchedules[selectedDate] = updatedSchedules[selectedDate].map(s => 
-                                s.id === schedule.id ? updatedSchedule : s
-                              );
-                              return { ...currentTrip, schedules: updatedSchedules };
-                            });
-                          }}
-                          className="w-full pr-8 pl-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500"
-                          min="1"
-                        />
-                        <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-stone-500">人</span>
-                      </div>
-                      {schedule.budget > 0 && schedule.budgetPeople >= 2 ? (
-                        <select
-                          value={schedule.paidBy || ""}
-                          onChange={(e) => {
-                            const updatedSchedule = { ...schedule };
-                            if (e.target.value) {
-                              updatedSchedule.paidBy = e.target.value;
-                            } else {
-                              delete updatedSchedule.paidBy;
-                            }
-                            onTripUpdate(trip.id, currentTrip => {
-                              const updatedSchedules = { ...currentTrip.schedules };
-                              updatedSchedules[selectedDate] = updatedSchedules[selectedDate].map(s => 
-                                s.id === schedule.id ? updatedSchedule : s
-                              );
-                              return { ...currentTrip, schedules: updatedSchedules };
-                            });
-                          }}
-                          className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500"
-                        >
-                          <option value="">立て替え中：なし</option>
-                          {trip.members.map(member => (
-                            <option key={member.id} value={member.id}>
-                              立て替え中：{member.name}
-                            </option>
-                          ))}
-                        </select>
-                      ) : (
-                        <div></div>
-                      )}
-                    </div>
-                    <div className="border-t pt-3">
-                      <h4 className="text-sm font-medium text-stone-700 mb-2">交通情報</h4>
-                      <div className="grid grid-cols-2 gap-2">
-                        <input
-                          type="text"
-                          placeholder="例: 電車"
-                          value={schedule.transport?.method || ""}
-                          onChange={(e) => {
-                            const updatedSchedule = { 
-                              ...schedule, 
-                              transport: { ...schedule.transport, method: e.target.value }
-                            };
-                            onTripUpdate(trip.id, currentTrip => {
-                              const updatedSchedules = { ...currentTrip.schedules };
-                              updatedSchedules[selectedDate] = updatedSchedules[selectedDate].map(s => 
-                                s.id === schedule.id ? updatedSchedule : s
-                              );
-                              return { ...currentTrip, schedules: updatedSchedules };
-                            });
-                          }}
-                          className="px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-sm"
-                        />
-                        <input
-                          type="text"
-                          placeholder="例: 30分"
-                          value={schedule.transport?.duration || ""}
-                          onChange={(e) => {
-                            const updatedSchedule = { 
-                              ...schedule, 
-                              transport: { ...schedule.transport, duration: e.target.value }
-                            };
-                            onTripUpdate(trip.id, currentTrip => {
-                              const updatedSchedules = { ...currentTrip.schedules };
-                              updatedSchedules[selectedDate] = updatedSchedules[selectedDate].map(s => 
-                                s.id === schedule.id ? updatedSchedule : s
-                              );
-                              return { ...currentTrip, schedules: updatedSchedules };
-                            });
-                          }}
-                          className="px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-sm"
-                        />
-                      </div>
-                    </div>
                     <div className="flex gap-2">
                       <button
                         onClick={() => setEditingSchedule(null)}

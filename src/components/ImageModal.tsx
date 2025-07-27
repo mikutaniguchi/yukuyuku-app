@@ -19,13 +19,12 @@ export default function ImageModal({ isOpen, imageUrl, alt = "拡大表示", onC
       onClick={onClose}
     >
       <div className="relative max-w-4xl max-h-4xl">
-        <Image 
+        <img 
           src={imageUrl} 
           alt={alt}
-          width={800}
-          height={600}
           className="max-w-full max-h-full object-contain rounded-lg"
           onClick={(e) => e.stopPropagation()}
+          style={{ maxWidth: '90vw', maxHeight: '90vh' }}
         />
       </div>
     </div>
