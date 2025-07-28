@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Calendar, Plus, MapPin, Edit2, Trash2, Save, X, Car, Minus } from 'lucide-react';
+import { Calendar, Plus, MapPin, Edit2, Trash2, Save, X, Car, Minus, Plane, Train, Navigation, Footprints } from 'lucide-react';
 import { Trip, Schedule, UploadedFile, ScheduleFormData } from '@/types';
 import { colorPalette, getDatesInRange, formatDate, linkifyText, getGoogleMapsLink, getIcon } from '@/lib/constants';
 import ScheduleForm from './ScheduleForm';
@@ -214,6 +214,21 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
 
   const getIconOption = (icon?: string) => {
     return iconOptions.find(option => option.id === (icon || '')) || iconOptions[0];
+  };
+
+  const getTransportIcon = (method: string) => {
+    switch (method) {
+      case '徒歩':
+        return <Footprints className="w-4 h-4" />;
+      case '電車':
+        return <Train className="w-4 h-4" />;
+      case 'タクシー':
+        return <Car className="w-4 h-4" />;
+      case '飛行機':
+        return <Plane className="w-4 h-4" />;
+      default:
+        return <Car className="w-4 h-4" />;
+    }
   };
 
   const handleFileUpload = async (scheduleId: string) => {
@@ -563,8 +578,7 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                     {(schedule.transport?.method || schedule.transport?.duration) && (
                       <div className="bg-stone-50 rounded-lg p-3 mb-3">
                         <div className="flex items-center gap-2 text-sm text-stone-600">
-                          <Car className="w-4 h-4" />
-                          <span className="font-medium">交通情報:</span>
+                          {schedule.transport.method ? getTransportIcon(schedule.transport.method) : <Car className="w-4 h-4" />}
                           {schedule.transport.method && <span>{schedule.transport.method}</span>}
                           {schedule.transport.duration && <span>({schedule.transport.duration})</span>}
                         </div>

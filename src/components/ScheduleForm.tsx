@@ -182,16 +182,20 @@ export default function ScheduleForm({
       <div className="border-t pt-3">
         <h4 className="text-sm font-medium text-stone-700 mb-2">交通情報</h4>
         <div className="grid grid-cols-2 gap-2">
-          <input
-            type="text"
-            placeholder="例: 電車"
+          <select
             value={schedule.transport.method}
             onChange={(e) => onScheduleChange({ 
               ...schedule, 
               transport: { ...schedule.transport, method: e.target.value }
             })}
             className="px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-sm"
-          />
+          >
+            <option value="">交通手段を選択</option>
+            <option value="徒歩">徒歩</option>
+            <option value="電車">電車</option>
+            <option value="タクシー">タクシー</option>
+            <option value="飛行機">飛行機</option>
+          </select>
           <input
             type="text"
             placeholder="例: 30分"
@@ -200,7 +204,7 @@ export default function ScheduleForm({
               ...schedule, 
               transport: { ...schedule.transport, duration: e.target.value }
             })}
-            className="px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-sm"
+            className="px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-sm"
           />
         </div>
       </div>
