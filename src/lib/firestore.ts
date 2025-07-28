@@ -62,7 +62,7 @@ export const joinTripByCode = async (userId: string, inviteCode: string) => {
     
     // 既にメンバーかチェック
     if (trip.memberIds.includes(userId)) {
-      return { success: true, tripName: trip.name, alreadyMember: true };
+      return { success: true, tripName: trip.title, alreadyMember: true };
     }
     
     // メンバーに追加
@@ -72,7 +72,7 @@ export const joinTripByCode = async (userId: string, inviteCode: string) => {
       updatedAt: serverTimestamp()
     });
     
-    return { success: true, tripName: trip.name };
+    return { success: true, tripName: trip.title };
   } catch (error) {
     console.error('Error joining trip:', error);
     return { success: false, error: 'Failed to join trip' };

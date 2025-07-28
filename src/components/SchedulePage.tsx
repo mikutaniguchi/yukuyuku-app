@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Calendar, Plus, MapPin, Edit2, Trash2, Save, X, Upload, FileText, Car, ExternalLink, DollarSign, ChevronDown, ChevronUp, Utensils, Plane, TrainFront, Bus, Camera, Bed } from 'lucide-react';
-import { Trip, Schedule, UploadedFile } from '@/types';
+import { Trip, Schedule, UploadedFile, ScheduleFormData } from '@/types';
 import { colorPalette, getDatesInRange, formatDate, linkifyText, getGoogleMapsLink, getIcon } from '@/lib/constants';
 import ScheduleForm from './ScheduleForm';
 import { processAndUploadFile, deleteFileFromStorage } from '@/lib/fileStorage';
@@ -31,7 +31,8 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
     const currentTime = `${hours}:00`;
     
     setNewSchedule({
-      time: currentTime,
+      startTime: currentTime,
+      endTime: undefined,
       title: "",
       location: "",
       description: "",
@@ -44,8 +45,9 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
     setShowNewScheduleModal(true);
   };
 
-  const [newSchedule, setNewSchedule] = useState({
-    time: "12:00", // 固定値に変更
+  const [newSchedule, setNewSchedule] = useState<ScheduleFormData>({
+    startTime: "12:00", // 固定値に変更
+    endTime: undefined,
     title: "",
     location: "",
     description: "",
@@ -100,7 +102,7 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
     setExpandedSchedules(newExpanded);
   };
 
-  const handleEditScheduleChange = (scheduleId: string, scheduleData: any) => {
+  const handleEditScheduleChange = (scheduleId: string, scheduleData: ScheduleFormData) => {
     onTripUpdate(trip.id, currentTrip => {
       const updatedSchedules = { ...currentTrip.schedules };
       updatedSchedules[selectedDate] = updatedSchedules[selectedDate].map(s => 
@@ -214,13 +216,14 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
   };
 
   const addNewSchedule = () => {
-    if (!newSchedule.title || !newSchedule.time) return;
+    if (!newSchedule.title || !newSchedule.startTime) return;
 
     const scheduleItem: Schedule = {
       id: Date.now().toString(),
       tripId: trip.id.toString(),
       date: selectedDate,
-      startTime: newSchedule.time,
+      startTime: newSchedule.startTime,
+      endTime: newSchedule.endTime,
       title: newSchedule.title,
       location: newSchedule.location,
       description: newSchedule.description,
@@ -239,7 +242,8 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
     });
 
     setNewSchedule({
-      time: "",
+      startTime: "",
+      endTime: undefined,
       title: "",
       location: "",
       description: "",

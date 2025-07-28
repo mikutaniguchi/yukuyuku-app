@@ -41,6 +41,19 @@ export interface Schedule {
   createdAt?: Date | string;
 }
 
+export interface ScheduleFormData {
+  startTime: string;
+  endTime?: string;
+  title: string;
+  location: string;
+  description: string;
+  icon: string;
+  budget: number;
+  budgetPeople: number;
+  paidBy: string;
+  transport: { method: string; duration: string; cost: number };
+}
+
 export interface UploadedFile {
   id: string | number;
   name: string;

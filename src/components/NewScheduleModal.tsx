@@ -5,25 +5,13 @@ import { Plus } from 'lucide-react';
 import { colorPalette } from '@/lib/constants';
 import Modal from './Modal';
 import ScheduleForm from './ScheduleForm';
-
-interface NewScheduleData {
-  startTime: string;
-  endTime?: string;
-  title: string;
-  location: string;
-  description: string;
-  icon: string;
-  budget: number;
-  budgetPeople: number;
-  paidBy: string;
-  transport: { method: string; duration: string; cost: number };
-}
+import { ScheduleFormData } from '@/types';
 
 interface NewScheduleModalProps {
   isOpen: boolean;
   onClose: () => void;
-  newSchedule: NewScheduleData;
-  onScheduleChange: (schedule: NewScheduleData) => void;
+  newSchedule: ScheduleFormData;
+  onScheduleChange: (schedule: ScheduleFormData) => void;
   onSubmit: () => void;
   tripMembers: Array<{ id: string; name: string }>;
   iconOptions: Array<{

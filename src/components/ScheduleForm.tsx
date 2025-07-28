@@ -3,23 +3,11 @@
 import React from 'react';
 import { X } from 'lucide-react';
 import { getIcon } from '@/lib/constants';
-
-interface ScheduleData {
-  startTime: string;
-  endTime?: string;
-  title: string;
-  location: string;
-  description: string;
-  icon: string;
-  budget: number;
-  budgetPeople: number;
-  paidBy: string;
-  transport: { method: string; duration: string; cost: number };
-}
+import { ScheduleFormData } from '@/types';
 
 interface ScheduleFormProps {
-  schedule: ScheduleData;
-  onScheduleChange: (schedule: ScheduleData) => void;
+  schedule: ScheduleFormData;
+  onScheduleChange: (schedule: ScheduleFormData) => void;
   tripMembers: Array<{ id: string; name: string }>;
   iconOptions: Array<{
     id: string;
