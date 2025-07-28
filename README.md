@@ -1,36 +1,112 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ゆくゆく
 
-## Getting Started
+## 概要
+ゆくゆくは、旅行の計画・管理を簡単にするWebアプリケーションです。友人や家族と一緒に旅行のスケジュール、持ち物チェックリスト、メモ、予算などを共有・管理できます。
 
-First, run the development server:
+### 主な機能
+- 📅 **スケジュール管理** - 日程ごとの予定を時間順に管理
+- ✅ **チェックリスト** - 持ち物や準備項目をリスト化
+- 📄 **ファイル管理** - 写真やPDFなどの旅行関連ファイルを保存
+- 📝 **メモ** - 旅行に関する情報をメモとして記録
+- 💰 **予算管理** - 旅行の予算と実際の支出を管理
+- 👥 **メンバー共有** - 招待リンクで旅行メンバーと情報を共有
 
+## 技術スタック
+- **フロントエンド**: Next.js 15.4.3, React 19, TypeScript
+- **スタイリング**: Tailwind CSS
+- **認証**: Firebase Authentication
+- **データベース**: Firebase Firestore
+- **ストレージ**: Firebase Storage
+- **ホスティング**: Vercel
+
+## 環境構築
+
+### 必要な環境
+- Node.js 18.0.0以上
+- npm または yarn
+
+### セットアップ手順
+
+1. リポジトリをクローン
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/yourusername/yukuyuku-app.git
+cd yukuyuku-app
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. 依存関係をインストール
+```bash
+npm install
+# または
+yarn install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. 環境変数を設定
+`.env.local`ファイルを作成し、以下のFirebase設定を追加：
+```env
+NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_auth_domain
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_storage_bucket
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
+NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. 開発サーバーを起動
+```bash
+npm run dev
+# または
+yarn dev
+```
 
-## Learn More
+5. ブラウザで [http://localhost:3000](http://localhost:3000) を開く
 
-To learn more about Next.js, take a look at the following resources:
+## Firebase設定
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. [Firebase Console](https://console.firebase.google.com/)でプロジェクトを作成
+2. Authentication、Firestore Database、Storageを有効化
+3. Webアプリを追加して設定情報を取得
+4. 取得した設定を`.env.local`に追加
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Firestore ルール
+```javascript
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /trips/{tripId} {
+      allow read: if request.auth != null && 
+        (request.auth.uid in resource.data.members || 
+         request.auth.uid == resource.data.createdBy);
+      allow write: if request.auth != null && 
+        request.auth.uid in resource.data.members;
+    }
+  }
+}
+```
 
-## Deploy on Vercel
+### Storage CORS設定
+`cors.json`を作成：
+```json
+[
+  {
+    "origin": ["*"],
+    "method": ["GET"],
+    "maxAgeSeconds": 3600
+  }
+]
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+適用：
+```bash
+gsutil cors set cors.json gs://your-storage-bucket
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## デプロイ
+
+### Vercelへのデプロイ
+1. [Vercel](https://vercel.com)にサインアップ
+2. GitHubリポジトリを連携
+3. 環境変数を設定
+4. デプロイ
+
+## ライセンス
+MIT
