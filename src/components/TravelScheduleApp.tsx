@@ -17,6 +17,7 @@ import MemoPage from './MemoPage';
 import ChecklistPage from './ChecklistPage';
 import BudgetPage from './BudgetPage';
 import FilesPage from './FilesPage';
+import Button from './Button';
 
 // モックデータ（初期は空）
 const initialTrips: Trip[] = [];
@@ -295,14 +296,15 @@ export default function TravelApp() {
         <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
           <h2 className="text-xl font-bold text-stone-800 mb-4">旅行がありません</h2>
           <p className="text-stone-600 mb-6">新しい旅行を作成して始めましょう</p>
-          <button
+          <Button
             onClick={() => setShowCreateTripModal(true)}
-            className="px-6 py-2 text-white rounded-lg flex items-center gap-2 mx-auto"
-            style={{ backgroundColor: colorPalette.abyssGreen.bg }}
+            color="abyssGreen"
+            size="md"
+            className="mx-auto"
           >
             <Plus className="w-5 h-5" />
             新しい旅行を作成
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -314,13 +316,13 @@ export default function TravelApp() {
         <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
           <h2 className="text-xl font-bold text-stone-800 mb-4">アクセス権限がありません</h2>
           <p className="text-stone-600 mb-6">この旅行にアクセスするには招待が必要です</p>
-          <button
+          <Button
             onClick={handleLogout}
-            className="px-6 py-2 text-white rounded-lg"
-            style={{ backgroundColor: colorPalette.sandRed.bg }}
+            color="sandRed"
+            size="md"
           >
             ログイン画面に戻る
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -450,28 +452,22 @@ export default function TravelApp() {
               )}
             </div>
             <div className="flex gap-2">
-              <button
+              <Button
                 onClick={() => setShowMembersModal(true)}
-                className="flex items-center gap-2 px-4 py-2 text-white rounded-lg shadow-sm transition-colors hover:shadow-md w-fit"
-                style={{ 
-                  backgroundColor: colorPalette.rubyGrey.bg,
-                  color: colorPalette.rubyGrey.text 
-                }}
+                color="rubyGrey"
+                size="md"
               >
                 <Users className="w-4 h-4" />
                 メンバー
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={() => setShowInviteModal(true)}
-                className="flex items-center gap-2 px-4 py-2 text-white rounded-lg shadow-sm transition-colors hover:shadow-md w-fit"
-                style={{ 
-                  backgroundColor: colorPalette.roseQuartz.bg,
-                  color: colorPalette.roseQuartz.text 
-                }}
+                color="roseQuartz"
+                size="md"
               >
                 <UserPlus className="w-4 h-4" />
                 招待
-              </button>
+              </Button>
             </div>
           </div>
 

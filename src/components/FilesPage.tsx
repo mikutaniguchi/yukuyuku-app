@@ -81,10 +81,6 @@ export default function FilesPage({ trip }: FilesPageProps) {
     }
   };
 
-  const formatFileSize = () => {
-    // ブラウザ環境では正確なファイルサイズを取得できないため、プレースホルダー
-    return "不明";
-  };
 
   const downloadFile = (file: UploadedFile) => {
     const link = document.createElement('a');
@@ -127,62 +123,60 @@ export default function FilesPage({ trip }: FilesPageProps) {
 
         {/* ファイル一覧 */}
         {filteredFiles.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="space-y-3">
             {filteredFiles.map((item, index) => (
-              <div key={`${item.scheduleId}-${item.file.id}-${index}`} className="bg-white rounded-lg border border-stone-200 p-4 hover:shadow-md transition-shadow">
-                {/* ファイルプレビュー */}
-                <div className="mb-3">
-                  {isImageFile(item.file) ? (
-                    <div className="relative w-full h-32 cursor-pointer" onClick={() => setShowImageModal(item.file.url)}>
-                      <Image 
-                        src={item.file.url} 
-                        alt={item.file.name}
-                        fill
-                        className="object-cover rounded-lg hover:opacity-80 transition-opacity"
-                      />
-                    </div>
-                  ) : (
-                    <div 
-                      className="w-full h-32 bg-stone-100 rounded-lg flex items-center justify-center cursor-pointer hover:bg-stone-200 transition-colors"
-                      onClick={() => isPDFFile(item.file) ? setShowPDFModal(item.file.url) : downloadFile(item.file)}
-                    >
-                      {getFileIcon(item.file)}
-                      <span className="ml-2 text-sm text-stone-600">
-                        {isPDFFile(item.file) ? 'PDFを開く' : 'ファイルを開く'}
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                {/* ファイル情報 */}
-                <div className="space-y-2">
-                  <h3 className="font-medium text-stone-800 truncate" title={item.file.name}>
-                    {item.file.name}
-                  </h3>
-                  
-                  <div className="flex items-center gap-2 text-xs text-stone-500">
-                    <Calendar className="w-3 h-3" />
-                    <span>{formatDate(item.date)}</span>
-                    <Clock className="w-3 h-3" />
-                    <span>{item.scheduleTime}</span>
-                  </div>
-                  
-                  <div className="text-sm text-stone-600 truncate">
-                    📍 {item.scheduleTitle}
+              <div 
+                key={`${item.scheduleId}-${item.file.id}-${index}`} 
+                className="bg-white rounded-lg border border-stone-200 p-4 hover:shadow-md transition-shadow cursor-pointer"
+                onClick={() => {
+                  if (isImageFile(item.file)) {
+                    setShowImageModal(item.file.url);
+                  } else if (isPDFFile(item.file)) {
+                    setShowPDFModal(item.file.url);
+                  } else {
+                    downloadFile(item.file);
+                  }
+                }}
+              >
+                <div className="flex items-center gap-4">
+                  {/* ファイルアイコン */}
+                  <div className="flex-shrink-0">
+                    {getFileIcon(item.file)}
                   </div>
 
-                  <div className="flex items-center justify-between pt-2">
-                    <span className="text-xs text-stone-500">
-                      サイズ: {formatFileSize()}
-                    </span>
-                    <button
-                      onClick={() => downloadFile(item.file)}
-                      className="flex items-center gap-1 px-2 py-1 text-xs text-blue-600 hover:text-blue-800 transition-colors"
-                    >
-                      <Download className="w-3 h-3" />
-                      ダウンロード
-                    </button>
+                  {/* ファイル情報 */}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-medium text-stone-800 truncate mb-1" title={item.file.name}>
+                      {item.file.name}
+                    </h3>
+                    
+                    <div className="flex items-center gap-4 text-sm text-stone-600">
+                      <div className="flex items-center gap-1">
+                        <Calendar className="w-3 h-3" />
+                        <span>{formatDate(item.date)}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        <span>{item.scheduleTime}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="text-sm text-stone-500 truncate mt-1">
+                      📍 {item.scheduleTitle}
+                    </div>
                   </div>
+
+                  {/* ダウンロードボタン */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      downloadFile(item.file);
+                    }}
+                    className="flex items-center gap-1 px-3 py-1 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors flex-shrink-0"
+                  >
+                    <Download className="w-4 h-4" />
+                    ダウンロード
+                  </button>
                 </div>
               </div>
             ))}

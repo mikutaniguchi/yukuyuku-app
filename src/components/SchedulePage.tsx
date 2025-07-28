@@ -1,11 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Image from 'next/image';
-import { Calendar, Plus, MapPin, Edit2, Trash2, Save, X, Upload, FileText, Car, ExternalLink, DollarSign, ChevronDown, ChevronUp, Utensils, Plane, TrainFront, Bus, Camera, Bed } from 'lucide-react';
+import { Calendar, Plus, MapPin, Edit2, Trash2, Save, X, Car } from 'lucide-react';
 import { Trip, Schedule, UploadedFile, ScheduleFormData } from '@/types';
 import { colorPalette, getDatesInRange, formatDate, linkifyText, getGoogleMapsLink, getIcon } from '@/lib/constants';
 import ScheduleForm from './ScheduleForm';
+import ScheduleFiles from './ScheduleFiles';
+import Button from './Button';
 import { processAndUploadFile, deleteFileFromStorage } from '@/lib/fileStorage';
 import NewScheduleModal from './NewScheduleModal';
 import ImageModal from './ImageModal';
@@ -222,11 +223,20 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
 
         onTripUpdate(trip.id, currentTrip => {
           const updatedSchedules = { ...currentTrip.schedules };
-          updatedSchedules[selectedDate] = updatedSchedules[selectedDate].map(schedule => 
-            schedule.id === scheduleId 
-              ? { ...schedule, files: [...schedule.files, ...uploadedFiles] }
-              : schedule
-          );
+          
+          // 全ての日付からスケジュールを探して更新
+          for (const [date, schedules] of Object.entries(updatedSchedules)) {
+            const scheduleIndex = schedules.findIndex(s => s.id === scheduleId);
+            if (scheduleIndex !== -1) {
+              updatedSchedules[date] = schedules.map(schedule => 
+                schedule.id === scheduleId 
+                  ? { ...schedule, files: [...schedule.files, ...uploadedFiles] }
+                  : schedule
+              );
+              break;
+            }
+          }
+          
           return { ...currentTrip, schedules: updatedSchedules };
         });
       } catch (error) {
@@ -262,11 +272,20 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
     // UIから削除
     onTripUpdate(trip.id, currentTrip => {
       const updatedSchedules = { ...currentTrip.schedules };
-      updatedSchedules[selectedDate] = updatedSchedules[selectedDate].map(schedule => 
-        schedule.id === scheduleId 
-          ? { ...schedule, files: schedule.files.filter(file => file.id !== fileId) }
-          : schedule
-      );
+      
+      // 全ての日付からスケジュールを探して更新
+      for (const [date, schedules] of Object.entries(updatedSchedules)) {
+        const scheduleIndex = schedules.findIndex(s => s.id === scheduleId);
+        if (scheduleIndex !== -1) {
+          updatedSchedules[date] = schedules.map(schedule => 
+            schedule.id === scheduleId 
+              ? { ...schedule, files: schedule.files.filter(file => file.id !== fileId) }
+              : schedule
+          );
+          break;
+        }
+      }
+      
       return { ...currentTrip, schedules: updatedSchedules };
     });
   };
@@ -341,7 +360,7 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                   element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                   onDateChange(date);
                 }}
-                className={`block w-full text-left px-3 py-2 rounded-lg transition-colors font-medium whitespace-nowrap ${
+                className={`block w-full text-left px-3 py-2 rounded-lg transition-colors font-medium whitespace-nowrap cursor-pointer ${
                   selectedDate === date
                     ? 'text-white shadow-sm'
                     : 'hover:bg-stone-100 text-stone-700'
@@ -372,20 +391,17 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                   <h2 className="text-xl font-semibold text-stone-800">
                     {formatDate(date)}
                   </h2>
-                  <button
+                  <Button
                     onClick={() => {
                       onDateChange(date);
                       handleNewScheduleClick(date);
                     }}
-                    className="flex items-center gap-2 px-4 py-2 text-white rounded-lg shadow-sm transition-colors font-medium hover:shadow-md"
-                    style={{ 
-                      backgroundColor: colorPalette.abyssGreen.bg,
-                      color: colorPalette.abyssGreen.text 
-                    }}
+                    color="abyssGreen"
+                    size="md"
                   >
                     <Plus className="w-4 h-4" />
                     追加
-                  </button>
+                  </Button>
                 </div>
 
                 <div className="space-y-4">
@@ -412,8 +428,24 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                       tripDates={tripDates}
                       iconOptions={iconOptions}
                     />
-                    <div className="flex gap-2">
-                      <button
+                    
+                    {/* 編集モードでのファイル表示 */}
+                    <div className="border-t pt-3">
+                      <ScheduleFiles
+                        files={schedule.files}
+                        scheduleId={schedule.id}
+                        onFileUpload={handleFileUpload}
+                        onFileDelete={handleFileDelete}
+                        uploadingFiles={uploadingFiles}
+                        expandedSchedules={expandedSchedules}
+                        onToggleExpand={toggleScheduleExpansion}
+                        onImageClick={(url) => setShowImageModal(url)}
+                        onPDFClick={(url) => setShowPDFModal(url)}
+                      />
+                    </div>
+                    
+                    <div className="flex gap-3 w-full">
+                      <Button
                         onClick={() => {
                           if (editingScheduleData) {
                             handleEditScheduleChange(schedule.id, editingScheduleData);
@@ -425,29 +457,25 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                           setEditingSchedule(null);
                           setEditingScheduleData(null);
                         }}
-                        className="flex items-center gap-1 px-3 py-1 text-white rounded-lg transition-colors font-medium"
-                        style={{ 
-                          backgroundColor: colorPalette.abyssGreen.bg,
-                          color: colorPalette.abyssGreen.text
-                        }}
+                        color="abyssGreen"
+                        size="md"
+                        className="w-1/2"
                       >
                         <Save className="w-4 h-4" />
                         保存
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         onClick={() => {
                           setEditingSchedule(null);
                           setEditingScheduleData(null);
                         }}
-                        className="flex items-center gap-1 px-3 py-1 text-white rounded-lg transition-colors font-medium"
-                        style={{ 
-                          backgroundColor: colorPalette.sandRed.bg,
-                          color: colorPalette.sandRed.text
-                        }}
+                        color="sandRed"
+                        size="md"
+                        className="w-1/2"
                       >
                         <X className="w-4 h-4" />
                         キャンセル
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 ) : (
@@ -487,13 +515,13 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                               transport: schedule.transport || { method: '', duration: '', cost: 0 }
                             });
                           }}
-                          className="p-1 text-stone-500 hover:text-blue-600 transition-colors"
+                          className="p-1 text-stone-500 hover:text-blue-600 transition-colors cursor-pointer"
                         >
                           <Edit2 className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => deleteSchedule(schedule.id)}
-                          className="p-1 text-stone-500 hover:text-red-600 transition-colors"
+                          className="p-1 text-stone-500 hover:text-red-600 transition-colors cursor-pointer"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -532,91 +560,20 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                       </div>
                     )}
 
-                    {schedule.files && schedule.files.length > 0 && (
-                      <div className="mb-3">
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                          {schedule.files.slice(0, expandedSchedules.has(schedule.id) ? undefined : 6).map(file => (
-                            <div key={file.id} className="group relative">
-                              {isImageFile(file) ? (
-                                <div className="relative">
-                                  <div className="relative w-full h-20 cursor-pointer" onClick={() => setShowImageModal(file.url)}>
-                                    <Image 
-                                      src={file.url} 
-                                      alt={file.name}
-                                      fill
-                                      unoptimized
-                                      className="object-cover rounded-lg hover:opacity-80 transition-opacity"
-                                    />
-                                  </div>
-                                  <div className="absolute bottom-1 left-1 bg-black bg-opacity-50 text-white text-xs px-1 rounded">
-                                    {file.name.length > 10 ? `${file.name.substring(0, 10)}...` : file.name}
-                                  </div>
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleFileDelete(schedule.id, file.id);
-                                    }}
-                                    className="absolute top-1 right-1 bg-stone-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-stone-700"
-                                  >
-                                    <X className="w-3 h-3" />
-                                  </button>
-                                </div>
-                              ) : (
-                                <div className="relative">
-                                  <div 
-                                    className="flex items-center gap-2 p-2 bg-stone-100 rounded-lg hover:bg-stone-200 cursor-pointer transition-colors"
-                                    onClick={() => isPDFFile(file) ? setShowPDFModal(file.url) : undefined}
-                                  >
-                                    <FileText className="w-4 h-4 text-stone-600" />
-                                    <span className="text-sm text-stone-700 truncate">
-                                      {file.name.length > 15 ? `${file.name.substring(0, 15)}...` : file.name}
-                                    </span>
-                                  </div>
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleFileDelete(schedule.id, file.id);
-                                    }}
-                                    className="absolute top-1 right-1 bg-stone-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-stone-700"
-                                  >
-                                    <X className="w-3 h-3" />
-                                  </button>
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                        
-                        {/* アコーディオン機能 */}
-                        {schedule.files.length > 6 && (
-                          <button
-                            onClick={() => toggleScheduleExpansion(schedule.id)}
-                            className="mt-2 flex items-center gap-1 text-sm text-stone-600 hover:text-stone-800 transition-colors"
-                          >
-                            {expandedSchedules.has(schedule.id) ? (
-                              <>
-                                <ChevronUp className="w-4 h-4" />
-                                ファイルを閉じる
-                              </>
-                            ) : (
-                              <>
-                                <ChevronDown className="w-4 h-4" />
-                                {schedule.files.length - 6}件のファイルを表示
-                              </>
-                            )}
-                          </button>
-                        )}
-                      </div>
-                    )}
-
-                    <button
-                      onClick={() => handleFileUpload(schedule.id)}
-                      disabled={uploadingFiles.has(schedule.id)}
-                      className="flex items-center gap-2 px-3 py-1 text-sm bg-stone-100 text-stone-700 rounded-lg hover:bg-stone-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <Upload className="w-4 h-4" />
-                      {uploadingFiles.has(schedule.id) ? 'アップロード中...' : 'ファイル追加'}
-                          </button>
+                    {/* 通常表示モードでのファイル表示 */}
+                    <div className="mb-3">
+                      <ScheduleFiles
+                        files={schedule.files}
+                        scheduleId={schedule.id}
+                        onFileUpload={handleFileUpload}
+                        onFileDelete={handleFileDelete}
+                        uploadingFiles={uploadingFiles}
+                        expandedSchedules={expandedSchedules}
+                        onToggleExpand={toggleScheduleExpansion}
+                        onImageClick={(url) => setShowImageModal(url)}
+                        onPDFClick={(url) => setShowPDFModal(url)}
+                      />
+                    </div>
                       </>
                     )}
                   </div>
@@ -626,19 +583,17 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                     <div className="text-center py-12 text-stone-500">
                       <Calendar className="w-12 h-12 mx-auto mb-4 text-stone-300" />
                       <p>この日のスケジュールはまだありません</p>
-                      <button
+                      <Button
                         onClick={() => {
                           onDateChange(date);
                           handleNewScheduleClick(date);
                         }}
-                        className="mt-4 px-4 py-2 text-white rounded-lg transition-colors font-medium"
-                        style={{ 
-                          backgroundColor: colorPalette.abyssGreen.bg,
-                          color: colorPalette.abyssGreen.text 
-                        }}
+                        color="abyssGreen"
+                        size="md"
+                        className="mt-4"
                       >
                         最初のスケジュールを追加
-                      </button>
+                      </Button>
                     </div>
                   )}
                 </div>
