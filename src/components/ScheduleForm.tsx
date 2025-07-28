@@ -2,13 +2,14 @@
 
 import React from 'react';
 import { X } from 'lucide-react';
-import { getIcon } from '@/lib/constants';
+import { getIcon, formatDate } from '@/lib/constants';
 import { ScheduleFormData } from '@/types';
 
 interface ScheduleFormProps {
   schedule: ScheduleFormData;
   onScheduleChange: (schedule: ScheduleFormData) => void;
   tripMembers: Array<{ id: string; name: string }>;
+  tripDates: string[];
   iconOptions: Array<{
     id: string;
     name: string;
@@ -21,6 +22,7 @@ export default function ScheduleForm({
   schedule,
   onScheduleChange,
   tripMembers,
+  tripDates,
   iconOptions,
 }: ScheduleFormProps) {
   // 現在時刻の時間のみを取得（分は00）
@@ -32,6 +34,21 @@ export default function ScheduleForm({
 
   return (
     <div className="space-y-4">
+      <div>
+        <label className="block text-sm font-medium text-stone-700 mb-2">日付</label>
+        <select
+          value={schedule.date}
+          onChange={(e) => onScheduleChange({ ...schedule, date: e.target.value })}
+          className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500"
+        >
+          {tripDates.map(date => (
+            <option key={date} value={date}>
+              {formatDate(date)}
+            </option>
+          ))}
+        </select>
+      </div>
+      
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-sm font-medium text-stone-700 mb-2">開始時間</label>

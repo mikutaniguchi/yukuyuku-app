@@ -14,6 +14,7 @@ interface NewScheduleModalProps {
   onScheduleChange: (schedule: ScheduleFormData) => void;
   onSubmit: () => void;
   tripMembers: Array<{ id: string; name: string }>;
+  tripDates: string[];
   iconOptions: Array<{
     id: string;
     name: string;
@@ -29,6 +30,7 @@ export default function NewScheduleModal({
   onScheduleChange,
   onSubmit,
   tripMembers,
+  tripDates,
   iconOptions,
 }: NewScheduleModalProps) {
   return (
@@ -44,6 +46,7 @@ export default function NewScheduleModal({
         schedule={newSchedule}
         onScheduleChange={onScheduleChange}
         tripMembers={tripMembers}
+        tripDates={tripDates}
         iconOptions={iconOptions}
       />
       

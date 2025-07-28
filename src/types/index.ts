@@ -42,6 +42,7 @@ export interface Schedule {
 }
 
 export interface ScheduleFormData {
+  date: string;
   startTime: string;
   endTime?: string;
   title: string;

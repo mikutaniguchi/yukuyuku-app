@@ -21,16 +21,27 @@ interface SchedulePageProps {
 export default function SchedulePage({ trip, selectedDate, onDateChange, onTripUpdate }: SchedulePageProps) {
   const [showNewScheduleModal, setShowNewScheduleModal] = useState(false);
   const [editingSchedule, setEditingSchedule] = useState<string | null>(null);
+  const [editingScheduleData, setEditingScheduleData] = useState<ScheduleFormData | null>(null);
   const [expandedSchedules, setExpandedSchedules] = useState<Set<string>>(new Set());
   const [showImageModal, setShowImageModal] = useState<string | null>(null);
   const [showPDFModal, setShowPDFModal] = useState<string | null>(null);
   const [uploadingFiles, setUploadingFiles] = useState<Set<string>>(new Set());
-  const handleNewScheduleClick = () => {
+  
+  // ユニークIDを生成する関数
+  const generateUniqueId = () => {
+    const timestamp = Date.now();
+    const randomPart = Math.random().toString(36).slice(2, 11);
+    const counter = Math.floor(Math.random() * 10000); // 追加のランダム要素
+    return `schedule_${timestamp}_${randomPart}_${counter}`;
+  };
+
+  const handleNewScheduleClick = (date?: string) => {
     const now = new Date();
     const hours = now.getHours().toString().padStart(2, '0');
     const currentTime = `${hours}:00`;
     
     setNewSchedule({
+      date: date || selectedDate,
       startTime: currentTime,
       endTime: undefined,
       title: "",
@@ -46,6 +57,7 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
   };
 
   const [newSchedule, setNewSchedule] = useState<ScheduleFormData>({
+    date: selectedDate,
     startTime: "12:00", // 固定値に変更
     endTime: undefined,
     title: "",
@@ -105,11 +117,36 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
   const handleEditScheduleChange = (scheduleId: string, scheduleData: ScheduleFormData) => {
     onTripUpdate(trip.id, currentTrip => {
       const updatedSchedules = { ...currentTrip.schedules };
-      updatedSchedules[selectedDate] = updatedSchedules[selectedDate].map(s => 
-        s.id === scheduleId ? { 
-          ...s, 
+      
+      // 全ての日付からスケジュールを探す
+      let originalSchedule = null;
+      let originalDate = null;
+      
+      for (const [date, schedules] of Object.entries(updatedSchedules)) {
+        const schedule = schedules.find(s => s.id === scheduleId);
+        if (schedule) {
+          originalSchedule = schedule;
+          originalDate = date;
+          break;
+        }
+      }
+      
+      if (!originalSchedule || !originalDate) return currentTrip;
+      
+      // 日付が変更された場合の処理
+      if (scheduleData.date !== originalDate) {
+        // 元の日付からスケジュールを削除
+        updatedSchedules[originalDate] = updatedSchedules[originalDate].filter(s => s.id !== scheduleId);
+        
+        // 新しい日付にスケジュールを追加
+        if (!updatedSchedules[scheduleData.date]) {
+          updatedSchedules[scheduleData.date] = [];
+        }
+        updatedSchedules[scheduleData.date].push({ 
+          ...originalSchedule, 
+          date: scheduleData.date,
           startTime: scheduleData.startTime,
-          endTime: scheduleData.endTime,
+          ...(scheduleData.endTime && { endTime: scheduleData.endTime }),
           title: scheduleData.title,
           location: scheduleData.location,
           description: scheduleData.description,
@@ -118,8 +155,27 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
           budgetPeople: scheduleData.budgetPeople,
           paidBy: scheduleData.paidBy,
           transport: scheduleData.transport
-        } : s
-      );
+        });
+      } else {
+        // 同じ日付内での変更
+        updatedSchedules[originalDate] = updatedSchedules[originalDate].map(s => 
+          s.id === scheduleId ? { 
+            ...s, 
+            date: scheduleData.date,
+            startTime: scheduleData.startTime,
+            ...(scheduleData.endTime && { endTime: scheduleData.endTime }),
+            title: scheduleData.title,
+            location: scheduleData.location,
+            description: scheduleData.description,
+            icon: scheduleData.icon,
+            budget: scheduleData.budget,
+            budgetPeople: scheduleData.budgetPeople,
+            paidBy: scheduleData.paidBy,
+            transport: scheduleData.transport
+          } : s
+        );
+      }
+      
       return { ...currentTrip, schedules: updatedSchedules };
     });
   };
@@ -219,11 +275,11 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
     if (!newSchedule.title || !newSchedule.startTime) return;
 
     const scheduleItem: Schedule = {
-      id: Date.now().toString(),
+      id: generateUniqueId(),
       tripId: trip.id.toString(),
-      date: selectedDate,
+      date: newSchedule.date,
       startTime: newSchedule.startTime,
-      endTime: newSchedule.endTime,
+      ...(newSchedule.endTime && { endTime: newSchedule.endTime }),
       title: newSchedule.title,
       location: newSchedule.location,
       description: newSchedule.description,
@@ -237,11 +293,15 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
 
     onTripUpdate(trip.id, currentTrip => {
       const updatedSchedules = { ...currentTrip.schedules };
-      updatedSchedules[selectedDate] = [...(updatedSchedules[selectedDate] || []), scheduleItem];
+      if (!updatedSchedules[newSchedule.date]) {
+        updatedSchedules[newSchedule.date] = [];
+      }
+      updatedSchedules[newSchedule.date] = [...updatedSchedules[newSchedule.date], scheduleItem];
       return { ...currentTrip, schedules: updatedSchedules };
     });
 
     setNewSchedule({
+      date: selectedDate,
       startTime: "",
       endTime: undefined,
       title: "",
@@ -299,7 +359,9 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
 
         <div className="space-y-8">
           {tripDates.map(date => {
-            const daySchedules = trip.schedules[date] || [];
+            const daySchedules = (trip.schedules[date] || []).sort((a, b) => {
+              return a.startTime.localeCompare(b.startTime);
+            });
             return (
               <div 
                 key={date} 
@@ -313,7 +375,7 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                   <button
                     onClick={() => {
                       onDateChange(date);
-                      handleNewScheduleClick();
+                      handleNewScheduleClick(date);
                     }}
                     className="flex items-center gap-2 px-4 py-2 text-white rounded-lg shadow-sm transition-colors font-medium hover:shadow-md"
                     style={{ 
@@ -327,12 +389,13 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                 </div>
 
                 <div className="space-y-4">
-                        {daySchedules.map(schedule => (
-                    <div key={schedule.id} className="border border-stone-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                        {daySchedules.map((schedule, index) => (
+                    <div key={`${schedule.id}-${index}-${schedule.startTime}`} className="border border-stone-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                       {editingSchedule === schedule.id ? (
                   <div className="space-y-3">
                     <ScheduleForm
-                      schedule={{
+                      schedule={editingScheduleData || {
+                        date: schedule.date,
                         startTime: schedule.startTime,
                         endTime: schedule.endTime,
                         title: schedule.title,
@@ -344,13 +407,24 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                         paidBy: schedule.paidBy || '',
                         transport: schedule.transport || { method: '', duration: '', cost: 0 }
                       }}
-                      onScheduleChange={(scheduleData) => handleEditScheduleChange(schedule.id, scheduleData)}
+                      onScheduleChange={(scheduleData) => setEditingScheduleData(scheduleData)}
                       tripMembers={trip.members}
+                      tripDates={tripDates}
                       iconOptions={iconOptions}
                     />
                     <div className="flex gap-2">
                       <button
-                        onClick={() => setEditingSchedule(null)}
+                        onClick={() => {
+                          if (editingScheduleData) {
+                            handleEditScheduleChange(schedule.id, editingScheduleData);
+                            // 日付が変更された場合、その日付に移動
+                            if (editingScheduleData.date !== selectedDate) {
+                              onDateChange(editingScheduleData.date);
+                            }
+                          }
+                          setEditingSchedule(null);
+                          setEditingScheduleData(null);
+                        }}
                         className="flex items-center gap-1 px-3 py-1 text-white rounded-lg transition-colors font-medium"
                         style={{ 
                           backgroundColor: colorPalette.abyssGreen.bg,
@@ -361,7 +435,10 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                         保存
                       </button>
                       <button
-                        onClick={() => setEditingSchedule(null)}
+                        onClick={() => {
+                          setEditingSchedule(null);
+                          setEditingScheduleData(null);
+                        }}
                         className="flex items-center gap-1 px-3 py-1 text-white rounded-lg transition-colors font-medium"
                         style={{ 
                           backgroundColor: colorPalette.sandRed.bg,
@@ -394,7 +471,22 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                       </div>
                       <div className="flex gap-2">
                         <button
-                          onClick={() => setEditingSchedule(schedule.id)}
+                          onClick={() => {
+                            setEditingSchedule(schedule.id);
+                            setEditingScheduleData({
+                              date: schedule.date,
+                              startTime: schedule.startTime,
+                              endTime: schedule.endTime,
+                              title: schedule.title,
+                              location: schedule.location,
+                              description: schedule.description,
+                              icon: schedule.icon || '',
+                              budget: schedule.budget || 0,
+                              budgetPeople: schedule.budgetPeople || 1,
+                              paidBy: schedule.paidBy || '',
+                              transport: schedule.transport || { method: '', duration: '', cost: 0 }
+                            });
+                          }}
                           className="p-1 text-stone-500 hover:text-blue-600 transition-colors"
                         >
                           <Edit2 className="w-4 h-4" />
@@ -537,7 +629,7 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                       <button
                         onClick={() => {
                           onDateChange(date);
-                          handleNewScheduleClick();
+                          handleNewScheduleClick(date);
                         }}
                         className="mt-4 px-4 py-2 text-white rounded-lg transition-colors font-medium"
                         style={{ 
@@ -575,6 +667,7 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
         onScheduleChange={setNewSchedule}
         onSubmit={addNewSchedule}
         tripMembers={trip.members}
+        tripDates={tripDates}
         iconOptions={iconOptions}
       />
     </>
