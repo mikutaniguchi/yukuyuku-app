@@ -393,7 +393,7 @@ export default function ChecklistPage({ trip, onTripUpdate }: ChecklistPageProps
                           ) : (
                             <>
                               <span 
-                                className={`flex-1 ${item.checked ? 'line-through text-stone-500' : 'text-stone-700'} cursor-pointer`}
+                                className={`flex-1 ${item.checked ? 'line-through text-stone-500' : 'text-stone-700'} cursor-pointer text-sm md:text-base`}
                                 onClick={() => startEditingItem(item)}
                               >
                                 {item.text}

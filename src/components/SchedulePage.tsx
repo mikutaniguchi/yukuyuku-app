@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Calendar, Plus, MapPin, Edit2, Trash2, Save, X, Car } from 'lucide-react';
+import { Calendar, Plus, MapPin, Edit2, Trash2, Save, X, Car, Minus } from 'lucide-react';
 import { Trip, Schedule, UploadedFile, ScheduleFormData } from '@/types';
 import { colorPalette, getDatesInRange, formatDate, linkifyText, getGoogleMapsLink, getIcon } from '@/lib/constants';
 import ScheduleForm from './ScheduleForm';
@@ -27,6 +27,7 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
   const [showImageModal, setShowImageModal] = useState<string | null>(null);
   const [showPDFModal, setShowPDFModal] = useState<string | null>(null);
   const [uploadingFiles, setUploadingFiles] = useState<Set<string>>(new Set());
+  const [expandedDetails, setExpandedDetails] = useState<Set<string>>(new Set());
   
   // ユニークIDを生成する関数
   const generateUniqueId = () => {
@@ -113,6 +114,16 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
       newExpanded.add(scheduleId);
     }
     setExpandedSchedules(newExpanded);
+  };
+
+  const toggleDetailExpansion = (scheduleId: string) => {
+    const newExpanded = new Set(expandedDetails);
+    if (newExpanded.has(scheduleId)) {
+      newExpanded.delete(scheduleId);
+    } else {
+      newExpanded.add(scheduleId);
+    }
+    setExpandedDetails(newExpanded);
   };
 
   const handleEditScheduleChange = (scheduleId: string, scheduleData: ScheduleFormData) => {
@@ -444,7 +455,31 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                       />
                     </div>
                     
-                    <div className="flex gap-3 w-full">
+                    <div className="flex gap-3 w-full mt-6">
+                      <button
+                        onClick={() => {
+                          if (confirm('このスケジュールを削除しますか？')) {
+                            deleteSchedule(schedule.id);
+                            setEditingSchedule(null);
+                            setEditingScheduleData(null);
+                          }
+                        }}
+                        className="flex items-center justify-center gap-2 px-4 py-2 bg-stone-200 text-stone-600 hover:bg-stone-300 hover:text-stone-800 rounded-lg font-medium transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                      <Button
+                        onClick={() => {
+                          setEditingSchedule(null);
+                          setEditingScheduleData(null);
+                        }}
+                        color="sandRed"
+                        size="md"
+                        className="flex-1"
+                      >
+                        <X className="w-4 h-4" />
+                        キャンセル
+                      </Button>
                       <Button
                         onClick={() => {
                           if (editingScheduleData) {
@@ -459,22 +494,10 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                         }}
                         color="abyssGreen"
                         size="md"
-                        className="w-1/2"
+                        className="flex-1"
                       >
                         <Save className="w-4 h-4" />
                         保存
-                      </Button>
-                      <Button
-                        onClick={() => {
-                          setEditingSchedule(null);
-                          setEditingScheduleData(null);
-                        }}
-                        color="sandRed"
-                        size="md"
-                        className="w-1/2"
-                      >
-                        <X className="w-4 h-4" />
-                        キャンセル
                       </Button>
                     </div>
                   </div>
@@ -519,12 +542,6 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                         >
                           <Edit2 className="w-4 h-4" />
                         </button>
-                        <button
-                          onClick={() => deleteSchedule(schedule.id)}
-                          className="p-1 text-stone-500 hover:text-red-600 transition-colors cursor-pointer"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
                       </div>
                     </div>
 
@@ -542,12 +559,6 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                         </a>
                       </div>
                     )}
-                    {schedule.description && (
-                      <div className="text-stone-700 mb-3 whitespace-pre-wrap break-words">
-                        {linkifyText(schedule.description)}
-                      </div>
-                    )}
-
 
                     {(schedule.transport?.method || schedule.transport?.duration) && (
                       <div className="bg-stone-50 rounded-lg p-3 mb-3">
@@ -560,20 +571,80 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                       </div>
                     )}
 
-                    {/* 通常表示モードでのファイル表示 */}
-                    <div className="mb-3">
-                      <ScheduleFiles
-                        files={schedule.files}
-                        scheduleId={schedule.id}
-                        onFileUpload={handleFileUpload}
-                        onFileDelete={handleFileDelete}
-                        uploadingFiles={uploadingFiles}
-                        expandedSchedules={expandedSchedules}
-                        onToggleExpand={toggleScheduleExpansion}
-                        onImageClick={(url) => setShowImageModal(url)}
-                        onPDFClick={(url) => setShowPDFModal(url)}
-                      />
-                    </div>
+                    {/* アコーディオンが閉じている時の開くボタン */}
+                    {(schedule.description || (schedule.budget && schedule.budget > 0) || (schedule.files && schedule.files.length > 0)) && !expandedDetails.has(schedule.id) && (
+                      <div className="relative">
+                        <button
+                          onClick={() => toggleDetailExpansion(schedule.id)}
+                          className="absolute inset-x-0 bottom-0 flex items-center justify-end py-3 pr-4 text-stone-500 hover:text-stone-700 hover:bg-stone-50 transition-colors rounded-b-lg"
+                          style={{ marginLeft: '-1rem', marginRight: '-1rem', marginBottom: '-1rem', width: 'calc(100% + 2rem)' }}
+                        >
+                          <div className="flex items-center gap-1">
+                            <span className="text-sm">詳細</span>
+                            <Plus className="w-5 h-5" />
+                          </div>
+                        </button>
+                        <div className="h-5"></div>
+                      </div>
+                    )}
+
+                    {/* アコーディオンで表示される詳細情報 */}
+                    {expandedDetails.has(schedule.id) && (
+                      <div>
+                        <div className="space-y-3 mb-3">
+                          {!!schedule.budget && schedule.budget > 0 && (
+                            <div className="bg-stone-50 rounded-lg p-3">
+                              <div className="flex items-center gap-2 text-sm text-stone-600">
+                                <span className="font-medium">予算:</span>
+                                <span>¥{schedule.budget.toLocaleString()}</span>
+                                {schedule.budgetPeople && schedule.budgetPeople > 1 && (
+                                  <span>({schedule.budgetPeople}人分)</span>
+                                )}
+                                {schedule.paidBy && schedule.paidBy.trim() && (
+                                  <span className="ml-2">支払い: {trip.members.find(member => member.id === schedule.paidBy)?.name || schedule.paidBy}</span>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {schedule.description && (
+                            <div className="text-stone-700 whitespace-pre-wrap break-words">
+                              {linkifyText(schedule.description)}
+                            </div>
+                          )}
+
+                          {/* 詳細モードでのファイル表示 */}
+                          <div>
+                            <ScheduleFiles
+                              files={schedule.files}
+                              scheduleId={schedule.id}
+                              onFileUpload={handleFileUpload}
+                              onFileDelete={handleFileDelete}
+                              uploadingFiles={uploadingFiles}
+                              expandedSchedules={expandedSchedules}
+                              onToggleExpand={toggleScheduleExpansion}
+                              onImageClick={(url) => setShowImageModal(url)}
+                              onPDFClick={(url) => setShowPDFModal(url)}
+                            />
+                          </div>
+                        </div>
+
+                        {/* アコーディオンが開いている時の閉じるボタン（下付き） */}
+                        <div className="relative">
+                          <button
+                            onClick={() => toggleDetailExpansion(schedule.id)}
+                            className="absolute inset-x-0 bottom-0 flex items-center justify-end py-3 pr-4 text-stone-500 hover:text-stone-700 hover:bg-stone-50 transition-colors rounded-b-lg"
+                            style={{ marginLeft: '-1rem', marginRight: '-1rem', marginBottom: '-1rem', width: 'calc(100% + 2rem)' }}
+                          >
+                            <div className="flex items-center gap-1">
+                              <span className="text-sm">詳細</span>
+                              <Minus className="w-5 h-5" />
+                            </div>
+                          </button>
+                          <div className="h-5"></div>
+                        </div>
+                      </div>
+                    )}
                       </>
                     )}
                   </div>
@@ -590,7 +661,7 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                         }}
                         color="abyssGreen"
                         size="md"
-                        className="mt-4"
+                        className="mt-4 mx-auto"
                       >
                         最初のスケジュールを追加
                       </Button>
