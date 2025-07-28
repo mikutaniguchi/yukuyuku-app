@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { X } from 'lucide-react';
 
 interface PDFModalProps {
@@ -10,6 +10,18 @@ interface PDFModalProps {
 }
 
 export default function PDFModal({ isOpen, pdfUrl, onClose }: PDFModalProps) {
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
   if (!isOpen || !pdfUrl) return null;
 
   return (

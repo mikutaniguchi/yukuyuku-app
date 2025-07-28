@@ -33,6 +33,8 @@ export default function NewScheduleModal({
   tripDates,
   iconOptions,
 }: NewScheduleModalProps) {
+  const isValid = newSchedule.title.trim() !== '' && newSchedule.startTime !== '';
+  
   return (
     <Modal
       isOpen={isOpen}
@@ -53,7 +55,8 @@ export default function NewScheduleModal({
       <div className="flex gap-3 mt-6">
         <button
           onClick={onSubmit}
-          className="flex-1 py-2 text-white rounded-lg transition-colors font-medium"
+          disabled={!isValid}
+          className="flex-1 py-2 text-white rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           style={{ 
             backgroundColor: colorPalette.abyssGreen.bg,
             color: colorPalette.abyssGreen.text 

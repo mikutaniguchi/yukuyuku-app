@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Image from 'next/image';
 
 interface ImageModalProps {
@@ -11,6 +11,18 @@ interface ImageModalProps {
 }
 
 export default function ImageModal({ isOpen, imageUrl, alt = "拡大表示", onClose }: ImageModalProps) {
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
   if (!isOpen || !imageUrl) return null;
 
   return (

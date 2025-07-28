@@ -118,7 +118,8 @@ export default function CreateTripModal({ onCreateTrip, onClose, isOpen }: Creat
           )}
           <button
             type="submit"
-            className="flex-1 py-2 px-4 rounded-lg font-medium text-white transition-colors"
+            disabled={!title.trim() || !startDate || !endDate}
+            className="flex-1 py-2 px-4 rounded-lg font-medium text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ backgroundColor: colorPalette.abyssGreen.bg }}
           >
             作成する

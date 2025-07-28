@@ -1,6 +1,6 @@
 // lib/constants.ts
 import React from 'react';
-import { Utensils, Car, Plane, TrainFront, Bus, Camera, Bed } from 'lucide-react';
+import { Utensils, Car, Plane, TrainFront, Bus, School, Bed } from 'lucide-react';
 import { ColorPalette } from '../types';
 
 export const colorPalette: ColorPalette = {
@@ -126,7 +126,7 @@ export const getIcon = (icon?: string) => {
     case 'plane': return <Plane className="w-4 h-4" />;
     case 'train': return <TrainFront className="w-4 h-4" />;
     case 'bus': return <Bus className="w-4 h-4" />;
-    case 'camera': return <Camera className="w-4 h-4" />;
+    case 'camera': return <School className="w-4 h-4" />;
     case 'bed': return <Bed className="w-4 h-4" />;
     default: return null;
   }

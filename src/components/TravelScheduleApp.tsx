@@ -389,7 +389,7 @@ export default function TravelApp() {
 
         {/* Header */}
         <div className="bg-white rounded-xl shadow-sm border border-stone-200 p-6 mb-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
             <div className="flex items-center gap-3">
               <Calendar className="w-8 h-8" style={{ color: colorPalette.aquaBlue.bg }} />
               {editingTripTitle ? (
@@ -402,7 +402,7 @@ export default function TravelApp() {
                       if (e.key === 'Enter') handleSaveTripTitle();
                       if (e.key === 'Escape') handleCancelEditTitle();
                     }}
-                    className="text-xl sm:text-3xl font-bold text-stone-800 bg-transparent border-b-2 border-stone-300 focus:outline-none focus:border-stone-500"
+                    className="text-xl md:text-3xl font-bold text-stone-800 bg-transparent border-b-2 border-stone-300 focus:outline-none focus:border-stone-500"
                     autoFocus
                   />
                   <button
@@ -420,7 +420,7 @@ export default function TravelApp() {
                 </div>
               ) : (
                 <div className="flex items-center gap-2 relative">
-                  <h1 className="text-xl sm:text-3xl font-bold text-stone-800">{selectedTrip.title}</h1>
+                  <h1 className="text-xl md:text-3xl font-bold text-stone-800">{selectedTrip.title}</h1>
                   <div className="relative" ref={settingsRef}>
                     <button
                       onClick={() => setShowTripSettings(!showTripSettings)}

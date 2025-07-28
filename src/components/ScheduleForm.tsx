@@ -139,43 +139,43 @@ export default function ScheduleForm({
         rows={3}
       />
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <div className="relative">
-          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-stone-500">¥</span>
-          <input
-            type="number"
-            placeholder="例: 3000"
-            value={schedule.budget === 0 ? "" : schedule.budget}
-            onChange={(e) => onScheduleChange({ ...schedule, budget: parseInt(e.target.value) || 0 })}
-            className="w-full pl-7 pr-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500"
-          />
+      <div className="space-y-3">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-stone-500">¥</span>
+            <input
+              type="number"
+              placeholder="例: 3000"
+              value={schedule.budget === 0 ? "" : schedule.budget}
+              onChange={(e) => onScheduleChange({ ...schedule, budget: parseInt(e.target.value) || 0 })}
+              className="w-full pl-7 pr-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500"
+            />
+          </div>
+          <div className="relative">
+            <input
+              type="number"
+              placeholder="例: 3"
+              value={schedule.budgetPeople}
+              onChange={(e) => onScheduleChange({ ...schedule, budgetPeople: parseInt(e.target.value) || 1 })}
+              className="w-full pr-8 pl-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500"
+              min="1"
+            />
+            <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-stone-500">人</span>
+          </div>
         </div>
-        <div className="relative">
-          <input
-            type="number"
-            placeholder="例: 3"
-            value={schedule.budgetPeople}
-            onChange={(e) => onScheduleChange({ ...schedule, budgetPeople: parseInt(e.target.value) || 1 })}
-            className="w-full pr-8 pl-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500"
-            min="1"
-          />
-          <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-stone-500">人</span>
-        </div>
-        {schedule.budget > 0 && schedule.budgetPeople >= 2 ? (
+        {schedule.budget > 0 && schedule.budgetPeople >= 2 && (
           <select
             value={schedule.paidBy}
             onChange={(e) => onScheduleChange({ ...schedule, paidBy: e.target.value })}
             className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500"
           >
-            <option value="">立て替え中：なし</option>
+            <option value="">立て替えなし</option>
             {tripMembers.map(member => (
               <option key={member.id} value={member.id}>
-                立て替え中：{member.name}
+                {member.name}が立て替え
               </option>
             ))}
           </select>
-        ) : (
-          <div></div>
         )}
       </div>
       

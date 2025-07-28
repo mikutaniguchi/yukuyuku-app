@@ -507,6 +507,7 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                           setEditingSchedule(null);
                           setEditingScheduleData(null);
                         }}
+                        disabled={!editingScheduleData || !editingScheduleData.title.trim() || !editingScheduleData.startTime}
                         color="abyssGreen"
                         size="md"
                         className="flex-1"

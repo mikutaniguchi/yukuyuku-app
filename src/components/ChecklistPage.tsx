@@ -536,7 +536,8 @@ export default function ChecklistPage({ trip, onTripUpdate }: ChecklistPageProps
             <div className="flex gap-3 mt-6">
               <button
                 onClick={addNewChecklistCategory}
-                className="flex-1 py-2 text-white rounded-lg transition-colors font-medium"
+                disabled={!newChecklist.name.trim()}
+                className="flex-1 py-2 text-white rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ 
                   backgroundColor: colorPalette.roseQuartz.bg,
                   color: colorPalette.roseQuartz.text 
