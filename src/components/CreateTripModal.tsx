@@ -4,14 +4,24 @@ import React, { useState } from 'react';
 import { Calendar } from 'lucide-react';
 import { colorPalette } from '@/lib/constants';
 import Modal from './Modal';
+import FormInput from './FormInput';
+import ErrorMessage from './ErrorMessage';
 
 interface CreateTripModalProps {
-  onCreateTrip: (tripData: { title: string; startDate: string; endDate: string }) => void;
+  onCreateTrip: (tripData: {
+    title: string;
+    startDate: string;
+    endDate: string;
+  }) => void;
   onClose?: () => void;
   isOpen: boolean;
 }
 
-export default function CreateTripModal({ onCreateTrip, onClose, isOpen }: CreateTripModalProps) {
+export default function CreateTripModal({
+  onCreateTrip,
+  onClose,
+  isOpen,
+}: CreateTripModalProps) {
   const [title, setTitle] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -19,26 +29,26 @@ export default function CreateTripModal({ onCreateTrip, onClose, isOpen }: Creat
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!title.trim()) {
       setError('旅行名を入力してください');
       return;
     }
-    
+
     if (!startDate || !endDate) {
       setError('日程を選択してください');
       return;
     }
-    
+
     if (new Date(startDate) > new Date(endDate)) {
       setError('終了日は開始日より後の日付を選択してください');
       return;
     }
-    
+
     onCreateTrip({
       title: title.trim(),
       startDate,
-      endDate
+      endDate,
     });
   };
 
@@ -56,52 +66,54 @@ export default function CreateTripModal({ onCreateTrip, onClose, isOpen }: Creat
       showCloseButton={!!onClose}
     >
       <form onSubmit={handleSubmit} className="space-y-4">
-        {error && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-            {error}
-          </div>
-        )}
-        
+        <ErrorMessage message={error} />
+
         <div>
-          <label htmlFor="title" className="block text-sm font-medium text-stone-700 mb-2">
+          <label
+            htmlFor="title"
+            className="block text-sm font-medium text-stone-700 mb-2"
+          >
             旅行名
           </label>
-          <input
+          <FormInput
             id="title"
             type="text"
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={setTitle}
             placeholder="例: 京都旅行"
-            className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500"
             autoFocus
           />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label htmlFor="startDate" className="block text-sm font-medium text-stone-700 mb-2">
+            <label
+              htmlFor="startDate"
+              className="block text-sm font-medium text-stone-700 mb-2"
+            >
               開始日
             </label>
-            <input
+            <FormInput
               id="startDate"
               type="date"
               value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500"
+              onChange={setStartDate}
             />
           </div>
-          
+
           <div>
-            <label htmlFor="endDate" className="block text-sm font-medium text-stone-700 mb-2">
+            <label
+              htmlFor="endDate"
+              className="block text-sm font-medium text-stone-700 mb-2"
+            >
               終了日
             </label>
-            <input
+            <FormInput
               id="endDate"
               type="date"
               value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
+              onChange={setEndDate}
               min={startDate}
-              className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500"
             />
           </div>
         </div>

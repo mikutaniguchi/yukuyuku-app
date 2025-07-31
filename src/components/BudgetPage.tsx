@@ -3,7 +3,8 @@
 import React from 'react';
 import { DollarSign, Users, Calendar, TrendingUp } from 'lucide-react';
 import { Trip } from '@/types';
-import { colorPalette, getDatesInRange, formatDate } from '@/lib/constants';
+import { getDatesInRange, formatDate, colorPalette } from '@/lib/constants';
+import SummaryCard from './SummaryCard';
 
 interface BudgetPageProps {
   trip: Trip;
@@ -14,9 +15,12 @@ export default function BudgetPage({ trip }: BudgetPageProps) {
 
   const calculateTotalBudget = () => {
     let total = 0;
-    Object.values(trip.schedules).forEach(daySchedules => {
-      daySchedules.forEach(schedule => {
-        const budgetPerPerson = schedule.budgetPeople > 0 ? (schedule.budget || 0) / schedule.budgetPeople : 0;
+    Object.values(trip.schedules).forEach((daySchedules) => {
+      daySchedules.forEach((schedule) => {
+        const budgetPerPerson =
+          schedule.budgetPeople > 0
+            ? (schedule.budget || 0) / schedule.budgetPeople
+            : 0;
         total += budgetPerPerson + (schedule.transport?.cost || 0);
       });
     });
@@ -25,31 +29,46 @@ export default function BudgetPage({ trip }: BudgetPageProps) {
 
   const calculateDayBudget = (date: string) => {
     const daySchedules = trip.schedules[date] || [];
-    return daySchedules.reduce((sum, schedule) => 
-      sum + (schedule.budgetPeople > 0 ? Math.round((schedule.budget || 0) / schedule.budgetPeople) : 0) + (schedule.transport?.cost || 0), 0
+    return daySchedules.reduce(
+      (sum, schedule) =>
+        sum +
+        (schedule.budgetPeople > 0
+          ? Math.round((schedule.budget || 0) / schedule.budgetPeople)
+          : 0) +
+        (schedule.transport?.cost || 0),
+      0
     );
   };
 
-
   const calculateAdvancePayments = () => {
-    const advances: Record<string, { memberId: string; memberName: string; totalAdvanced: number; perPersonPayment: number }> = {};
-    
-    Object.values(trip.schedules).forEach(daySchedules => {
-      daySchedules.forEach(schedule => {
+    const advances: Record<
+      string,
+      {
+        memberId: string;
+        memberName: string;
+        totalAdvanced: number;
+        perPersonPayment: number;
+      }
+    > = {};
+
+    Object.values(trip.schedules).forEach((daySchedules) => {
+      daySchedules.forEach((schedule) => {
         if (schedule.paidBy && schedule.budget > 0) {
-          const member = trip.members.find(m => m.id === schedule.paidBy);
+          const member = trip.members.find((m) => m.id === schedule.paidBy);
           if (member) {
             if (!advances[schedule.paidBy]) {
               advances[schedule.paidBy] = {
                 memberId: schedule.paidBy,
                 memberName: member.name,
                 totalAdvanced: 0,
-                perPersonPayment: 0
+                perPersonPayment: 0,
               };
             }
             advances[schedule.paidBy].totalAdvanced += schedule.budget;
             // 各スケジュールのbudgetPeopleを使って一人あたりの支払い額を計算
-            advances[schedule.paidBy].perPersonPayment += Math.round(schedule.budget / schedule.budgetPeople);
+            advances[schedule.paidBy].perPersonPayment += Math.round(
+              schedule.budget / schedule.budgetPeople
+            );
           }
         }
       });
@@ -59,70 +78,65 @@ export default function BudgetPage({ trip }: BudgetPageProps) {
   };
 
   const totalBudget = calculateTotalBudget();
-  const averageDailyBudget = tripDates.length > 0 ? Math.round(totalBudget / tripDates.length) : 0;
+  const averageDailyBudget =
+    tripDates.length > 0 ? Math.round(totalBudget / tripDates.length) : 0;
   const advancePayments = calculateAdvancePayments();
 
   return (
     <div className="space-y-6">
       <h2 className="text-xl font-semibold text-stone-800">予算管理</h2>
-      
+
       {/* サマリーカード */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="rounded-lg p-6 text-center" style={{ backgroundColor: colorPalette.strawBeige.light }}>
-          <DollarSign className="w-8 h-8 mx-auto mb-2" style={{ color: colorPalette.strawBeige.bg }} />
-          <h3 className="text-sm font-semibold mb-1" style={{ color: colorPalette.strawBeige.lightText }}>
-            1人あたり総予算
-          </h3>
-          <p className="text-2xl font-bold" style={{ color: colorPalette.strawBeige.bg }}>
-            ¥{Math.round(totalBudget).toLocaleString()}
-          </p>
-        </div>
+        <SummaryCard
+          icon={DollarSign}
+          title="1人あたり総予算"
+          value={`¥${Math.round(totalBudget).toLocaleString()}`}
+          colorKey="strawBeige"
+        />
 
-        <div className="rounded-lg p-6 text-center" style={{ backgroundColor: colorPalette.aquaBlue.light }}>
-          <Users className="w-8 h-8 mx-auto mb-2" style={{ color: colorPalette.aquaBlue.bg }} />
-          <h3 className="text-sm font-semibold mb-1" style={{ color: colorPalette.aquaBlue.lightText }}>
-            参加者数
-          </h3>
-          <p className="text-2xl font-bold" style={{ color: colorPalette.aquaBlue.bg }}>
-            {trip.members.length}人
-          </p>
-        </div>
+        <SummaryCard
+          icon={Users}
+          title="参加者数"
+          value={`${trip.members.length}人`}
+          colorKey="aquaBlue"
+        />
 
-        <div className="rounded-lg p-6 text-center" style={{ backgroundColor: colorPalette.roseQuartz.light }}>
-          <Calendar className="w-8 h-8 mx-auto mb-2" style={{ color: colorPalette.roseQuartz.bg }} />
-          <h3 className="text-sm font-semibold mb-1" style={{ color: colorPalette.roseQuartz.lightText }}>
-            日平均予算
-          </h3>
-          <p className="text-2xl font-bold" style={{ color: colorPalette.roseQuartz.bg }}>
-            ¥{averageDailyBudget.toLocaleString()}
-          </p>
-        </div>
+        <SummaryCard
+          icon={Calendar}
+          title="日平均予算"
+          value={`¥${averageDailyBudget.toLocaleString()}`}
+          colorKey="roseQuartz"
+        />
 
-        <div className="rounded-lg p-6 text-center" style={{ backgroundColor: colorPalette.abyssGreen.light }}>
-          <TrendingUp className="w-8 h-8 mx-auto mb-2" style={{ color: colorPalette.abyssGreen.bg }} />
-          <h3 className="text-sm font-semibold mb-1" style={{ color: colorPalette.abyssGreen.lightText }}>
-            総額（全員分）
-          </h3>
-          <p className="text-2xl font-bold" style={{ color: colorPalette.abyssGreen.bg }}>
-            ¥{Math.round(totalBudget * trip.members.length).toLocaleString()}
-          </p>
-        </div>
+        <SummaryCard
+          icon={TrendingUp}
+          title="総額（全員分）"
+          value={`¥${Math.round(totalBudget * trip.members.length).toLocaleString()}`}
+          colorKey="abyssGreen"
+        />
       </div>
-
 
       {/* 日別予算詳細 */}
       <div className="bg-white rounded-xl shadow-sm border border-stone-200 p-6">
-        <h3 className="text-lg font-semibold text-stone-800 mb-4">日別予算詳細（1人あたり）</h3>
+        <h3 className="text-lg font-semibold text-stone-800 mb-4">
+          日別予算詳細（1人あたり）
+        </h3>
         <div className="space-y-4">
-          {tripDates.map(date => {
+          {tripDates.map((date) => {
             const daySchedules = trip.schedules[date] || [];
             const dayTotal = calculateDayBudget(date);
-            
+
             if (dayTotal === 0) {
               return (
-                <div key={date} className="border border-stone-200 rounded-lg p-4 opacity-50">
+                <div
+                  key={date}
+                  className="border border-stone-200 rounded-lg p-4 opacity-50"
+                >
                   <div className="flex items-center justify-between">
-                    <h4 className="font-semibold text-stone-600">{formatDate(date)}</h4>
+                    <h4 className="font-semibold text-stone-600">
+                      {formatDate(date)}
+                    </h4>
                     <span className="text-stone-500">予算なし</span>
                   </div>
                 </div>
@@ -130,30 +144,55 @@ export default function BudgetPage({ trip }: BudgetPageProps) {
             }
 
             return (
-              <div key={date} className="border border-stone-200 rounded-lg p-4">
+              <div
+                key={date}
+                className="border border-stone-200 rounded-lg p-4"
+              >
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="font-semibold text-stone-800">{formatDate(date)}</h4>
-                  <span className="text-lg font-bold" style={{ color: colorPalette.strawBeige.bg }}>
+                  <h4 className="font-semibold text-stone-800">
+                    {formatDate(date)}
+                  </h4>
+                  <span
+                    className="text-lg font-bold"
+                    style={{ color: colorPalette.strawBeige.bg }}
+                  >
                     ¥{dayTotal.toLocaleString()}/人
                   </span>
                 </div>
                 <div className="space-y-2">
-                  {daySchedules.map(schedule => {
-                    const budgetPerPerson = schedule.budgetPeople > 0 ? Math.round((schedule.budget || 0) / schedule.budgetPeople) : 0;
-                    const scheduleTotal = budgetPerPerson + (schedule.transport?.cost || 0);
+                  {daySchedules.map((schedule) => {
+                    const budgetPerPerson =
+                      schedule.budgetPeople > 0
+                        ? Math.round(
+                            (schedule.budget || 0) / schedule.budgetPeople
+                          )
+                        : 0;
+                    const scheduleTotal =
+                      budgetPerPerson + (schedule.transport?.cost || 0);
                     if (scheduleTotal === 0) return null;
-                    
+
                     return (
-                      <div key={schedule.id} className="flex items-center justify-between text-sm bg-stone-50 rounded-lg p-3">
+                      <div
+                        key={schedule.id}
+                        className="flex items-center justify-between text-sm bg-stone-50 rounded-lg p-3"
+                      >
                         <div className="flex items-center gap-2">
-                          <span className="font-medium text-stone-600">{schedule.startTime}</span>
-                          <span className="text-stone-700">{schedule.title}</span>
+                          <span className="font-medium text-stone-600">
+                            {schedule.startTime}
+                          </span>
+                          <span className="text-stone-700">
+                            {schedule.title}
+                          </span>
                           <div className="text-xs text-stone-500">
-                            {schedule.budget > 0 && `(¥${schedule.budget}÷${schedule.budgetPeople}人)`}
-                            {schedule.transport?.cost > 0 && ` + 交通費¥${schedule.transport.cost}`}
+                            {schedule.budget > 0 &&
+                              `(¥${schedule.budget}÷${schedule.budgetPeople}人)`}
+                            {schedule.transport?.cost > 0 &&
+                              ` + 交通費¥${schedule.transport.cost}`}
                           </div>
                         </div>
-                        <span className="font-medium text-stone-800">¥{scheduleTotal.toLocaleString()}</span>
+                        <span className="font-medium text-stone-800">
+                          ¥{scheduleTotal.toLocaleString()}
+                        </span>
                       </div>
                     );
                   })}
@@ -167,13 +206,23 @@ export default function BudgetPage({ trip }: BudgetPageProps) {
       {/* 立て替え集計 */}
       {advancePayments.length > 0 && (
         <div className="bg-white rounded-xl shadow-sm border border-stone-200 p-6">
-          <h3 className="text-lg font-semibold text-stone-800 mb-4">立て替え集計</h3>
+          <h3 className="text-lg font-semibold text-stone-800 mb-4">
+            立て替え集計
+          </h3>
           <div className="space-y-4">
-            {advancePayments.map(advance => (
-              <div key={advance.memberId} className="border border-stone-200 rounded-lg p-4">
+            {advancePayments.map((advance) => (
+              <div
+                key={advance.memberId}
+                className="border border-stone-200 rounded-lg p-4"
+              >
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="font-semibold text-stone-800">{advance.memberName}</h4>
-                  <span className="text-lg font-bold" style={{ color: colorPalette.sandRed.bg }}>
+                  <h4 className="font-semibold text-stone-800">
+                    {advance.memberName}
+                  </h4>
+                  <span
+                    className="text-lg font-bold"
+                    style={{ color: colorPalette.sandRed.bg }}
+                  >
                     立て替え合計: ¥{advance.totalAdvanced.toLocaleString()}
                   </span>
                 </div>
@@ -197,8 +246,12 @@ export default function BudgetPage({ trip }: BudgetPageProps) {
       {totalBudget === 0 && (
         <div className="text-center py-12 text-stone-500">
           <DollarSign className="w-12 h-12 mx-auto mb-4 text-stone-300" />
-          <p className="text-lg font-medium mb-2">まだ予算が設定されていません</p>
-          <p className="text-sm">スケジュールページで各イベントに予算を追加してください</p>
+          <p className="text-lg font-medium mb-2">
+            まだ予算が設定されていません
+          </p>
+          <p className="text-sm">
+            スケジュールページで各イベントに予算を追加してください
+          </p>
         </div>
       )}
     </div>
