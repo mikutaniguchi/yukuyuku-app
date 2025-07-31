@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { DollarSign, Users, Calendar, TrendingUp } from 'lucide-react';
 import { Trip } from '@/types';
 import { getDatesInRange, formatDate, colorPalette } from '@/lib/constants';
@@ -13,7 +13,7 @@ interface BudgetPageProps {
 export default function BudgetPage({ trip }: BudgetPageProps) {
   const tripDates = getDatesInRange(trip.startDate, trip.endDate);
 
-  const calculateTotalBudget = () => {
+  const calculateTotalBudget = useMemo(() => {
     let total = 0;
     Object.values(trip.schedules).forEach((daySchedules) => {
       daySchedules.forEach((schedule) => {
@@ -25,22 +25,25 @@ export default function BudgetPage({ trip }: BudgetPageProps) {
       });
     });
     return total;
-  };
+  }, [trip.schedules]);
 
-  const calculateDayBudget = (date: string) => {
-    const daySchedules = trip.schedules[date] || [];
-    return daySchedules.reduce(
-      (sum, schedule) =>
-        sum +
-        (schedule.budgetPeople > 0
-          ? Math.round((schedule.budget || 0) / schedule.budgetPeople)
-          : 0) +
-        (schedule.transport?.cost || 0),
-      0
-    );
-  };
+  const calculateDayBudget = useMemo(() => {
+    const budgetByDate: Record<string, number> = {};
+    Object.entries(trip.schedules).forEach(([date, daySchedules]) => {
+      budgetByDate[date] = daySchedules.reduce(
+        (sum, schedule) =>
+          sum +
+          (schedule.budgetPeople > 0
+            ? Math.round((schedule.budget || 0) / schedule.budgetPeople)
+            : 0) +
+          (schedule.transport?.cost || 0),
+        0
+      );
+    });
+    return (date: string) => budgetByDate[date] || 0;
+  }, [trip.schedules]);
 
-  const calculateAdvancePayments = () => {
+  const calculateAdvancePayments = useMemo(() => {
     const advances: Record<
       string,
       {
@@ -75,12 +78,15 @@ export default function BudgetPage({ trip }: BudgetPageProps) {
     });
 
     return Object.values(advances);
-  };
+  }, [trip.schedules, trip.members]);
 
-  const totalBudget = calculateTotalBudget();
-  const averageDailyBudget =
-    tripDates.length > 0 ? Math.round(totalBudget / tripDates.length) : 0;
-  const advancePayments = calculateAdvancePayments();
+  const totalBudget = calculateTotalBudget;
+  const averageDailyBudget = useMemo(
+    () =>
+      tripDates.length > 0 ? Math.round(totalBudget / tripDates.length) : 0,
+    [totalBudget, tripDates.length]
+  );
+  const advancePayments = calculateAdvancePayments;
 
   return (
     <div className="space-y-6">
