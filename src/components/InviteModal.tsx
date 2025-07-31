@@ -33,21 +33,6 @@ export default function InviteModal({ isOpen, trip, onClose }: InviteModalProps)
     >
       <div className="space-y-4 mb-6">
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-2">招待コード</label>
-          <div className="flex items-center gap-2">
-            <div className="flex-1 px-3 py-2 bg-stone-100 rounded-lg font-mono text-lg font-bold text-center">
-              {trip.inviteCode}
-            </div>
-            <button
-              onClick={() => copyInviteLink(trip.inviteCode)}
-              className="p-2 text-stone-600 hover:text-stone-800 transition-colors"
-            >
-              {copiedInvite ? <Check className="w-5 h-5 text-green-600" /> : <Copy className="w-5 h-5" />}
-            </button>
-          </div>
-        </div>
-
-        <div>
           <label className="block text-sm font-medium text-stone-700 mb-2">招待リンク</label>
           <div className="flex items-center gap-2">
             <div className="flex-1 px-3 py-2 bg-stone-100 rounded-lg text-sm break-all">
@@ -64,9 +49,9 @@ export default function InviteModal({ isOpen, trip, onClose }: InviteModalProps)
 
         <div className="text-sm text-stone-600 bg-stone-50 p-3 rounded-lg">
           <p className="font-medium mb-1">使い方：</p>
-          <p>1. 招待コードまたはリンクを友達に送信</p>
-          <p>2. 友達がゲストログインで招待コードを入力</p>
-          <p>3. 自動的に旅行メンバーに追加されます</p>
+          <p>1. 招待リンクを友達に送信</p>
+          <p>2. 友達がリンクをクリックしてアクセス</p>
+          <p>3. ゲストとして旅行を閲覧/編集できます</p>
         </div>
       </div>
 

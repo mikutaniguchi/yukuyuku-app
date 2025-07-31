@@ -98,6 +98,8 @@ export interface Trip {
   schedules: Record<string, Schedule[]>;
   customTags: CustomTag[];
   checklists: Checklist[];
+  guestPermission?: 'view' | 'edit';  // ゲスト権限（デフォルト: 'view'）
+  guestAccessEnabled?: boolean;        // ゲストアクセスの有効/無効（デフォルト: true）
   createdAt?: Date | string;
   updatedAt?: Date | string;
 }

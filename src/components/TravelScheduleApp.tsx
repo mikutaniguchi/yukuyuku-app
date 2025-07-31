@@ -4,6 +4,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { logout } from '@/lib/auth';
 import { createTrip as createTripInFirestore, getUserTrips, updateTrip as updateTripInFirestore, deleteTrip as deleteTripFromFirestore } from '@/lib/firestore';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 import { Calendar, Users, Plus, LogOut, UserPlus, Settings, BookOpen, CheckSquare, DollarSign, FileText, Edit2, Trash2, Save, X, Aperture } from 'lucide-react';
 import { User, Trip, PageType } from '@/types';
 import { colorPalette, getDatesInRange, formatDate } from '@/lib/constants';
@@ -88,9 +90,33 @@ export default function TravelApp() {
     }
   };
 
-  const handleLogin = (userData: User) => {
+  const handleLogin = async (userData: User) => {
     setAppUser(userData);
     setShowLoginModal(false);
+    
+    // ゲストユーザーの場合、招待コードから旅行を選択
+    if (userData.type === 'guest' && (userData as any).inviteCode) {
+      const inviteCode = (userData as any).inviteCode;
+      // 全ての旅行から招待コードで検索
+      try {
+        const q = query(
+          collection(db, 'trips'),
+          where('inviteCode', '==', inviteCode)
+        );
+        const snapshot = await getDocs(q);
+        
+        if (!snapshot.empty) {
+          const tripData = snapshot.docs[0].data() as Trip;
+          const trip = { id: snapshot.docs[0].id, ...tripData };
+          
+          setTrips([trip]);
+          setSelectedTrip(trip);
+          setSelectedDate(getDatesInRange(trip.startDate, trip.endDate)[0]);
+        }
+      } catch (error) {
+        console.error('Failed to load guest trip:', error);
+      }
+    }
   };
 
   const handleCreateTrip = async (tripData: { title: string; startDate: string; endDate: string }) => {
@@ -224,15 +250,21 @@ export default function TravelApp() {
     setTempTripTitle('');
   };
 
-  const hasAccess = appUser && selectedTrip && selectedTrip.members.some(m => 
-    (m.id === appUser.id) || (m.name === appUser.name && m.type === appUser.type)
+  const hasAccess = appUser && selectedTrip && (
+    // 通常メンバーのアクセス
+    selectedTrip.members.some(m => 
+      (m.id === appUser.id) || (m.name === appUser.name && m.type === appUser.type)
+    ) ||
+    // ゲストユーザーのアクセス（招待コード経由）
+    (appUser.type === 'guest' && selectedTrip.guestAccessEnabled !== false)
   );
 
   // Auto-select first accessible trip
   useEffect(() => {
     if (appUser && trips.length > 0) {
       const userTrips = trips.filter(trip => 
-        trip.members.some(m => m.id === appUser.id || (m.name === appUser.name && m.type === appUser.type))
+        trip.members.some(m => m.id === appUser.id || (m.name === appUser.name && m.type === appUser.type)) ||
+        (appUser.type === 'guest' && trip.guestAccessEnabled !== false)
       );
       if (userTrips.length > 0) {
         setSelectedTrip(userTrips[0]);
@@ -328,6 +360,11 @@ export default function TravelApp() {
     );
   }
 
+  // ゲストユーザーの権限チェック
+  const isGuest = appUser?.type === 'guest';
+  const canEdit = !isGuest || (isGuest && selectedTrip?.guestPermission === 'edit');
+  const isCreator = selectedTrip?.creator === appUser?.id;
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-stone-50 to-neutral-100">
       <CreateTripModal 
@@ -359,7 +396,8 @@ export default function TravelApp() {
         {/* Trip Selector Tabs */}
         <div className="flex flex-wrap gap-2 mb-4">
           {trips.filter(trip => 
-            trip.members.some(m => m.id === appUser?.id || (m.name === appUser?.name && m.type === appUser?.type))
+            trip.members.some(m => m.id === appUser?.id || (m.name === appUser?.name && m.type === appUser?.type)) ||
+            (appUser?.type === 'guest' && trip.guestAccessEnabled !== false)
           ).map(trip => (
             <button
               key={trip.id}
@@ -438,6 +476,39 @@ export default function TravelApp() {
                           <Edit2 className="w-4 h-4" />
                           タイトル変更
                         </button>
+                        {isCreator && (
+                          <>
+                            <div className="border-t border-stone-200 my-1" />
+                            <div className="px-4 py-2 text-xs text-stone-500">ゲスト権限</div>
+                            <button
+                              onClick={() => updateTrip(selectedTrip.id, trip => ({
+                                ...trip,
+                                guestPermission: trip.guestPermission === 'edit' ? 'view' : 'edit'
+                              }))}
+                              className="w-full px-4 py-2 text-left text-stone-700 hover:bg-stone-50 flex items-center justify-between"
+                            >
+                              <span className="text-sm">
+                                {selectedTrip.guestPermission === 'edit' ? '編集可能' : '閲覧のみ'}
+                              </span>
+                              <div className={`w-2 h-2 rounded-full ${
+                                selectedTrip.guestPermission === 'edit' ? 'bg-green-500' : 'bg-orange-500'
+                              }`} />
+                            </button>
+                            <button
+                              onClick={() => updateTrip(selectedTrip.id, trip => ({
+                                ...trip,
+                                guestAccessEnabled: !(trip.guestAccessEnabled ?? true)
+                              }))}
+                              className="w-full px-4 py-2 text-left text-stone-700 hover:bg-stone-50 flex items-center justify-between"
+                            >
+                              <span className="text-sm">ゲストアクセス</span>
+                              <div className={`w-2 h-2 rounded-full ${
+                                selectedTrip.guestAccessEnabled !== false ? 'bg-green-500' : 'bg-red-500'
+                              }`} />
+                            </button>
+                            <div className="border-t border-stone-200 my-1" />
+                          </>
+                        )}
                         <button
                           onClick={handleDeleteTrip}
                           className="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 flex items-center gap-2"
@@ -516,14 +587,23 @@ export default function TravelApp() {
             trip={selectedTrip} 
             selectedDate={selectedDate}
             onDateChange={setSelectedDate}
-            onTripUpdate={updateTrip}
+            onTripUpdate={canEdit ? updateTrip : () => {}}
+            canEdit={canEdit}
           />
         )}
         {currentPage === "memo" && (
-          <MemoPage trip={selectedTrip} onTripUpdate={updateTrip} />
+          <MemoPage 
+            trip={selectedTrip} 
+            onTripUpdate={canEdit ? updateTrip : () => {}}
+            canEdit={canEdit}
+          />
         )}
         {currentPage === "checklist" && (
-          <ChecklistPage trip={selectedTrip} onTripUpdate={updateTrip} />
+          <ChecklistPage 
+            trip={selectedTrip} 
+            onTripUpdate={canEdit ? updateTrip : () => {}}
+            canEdit={canEdit}
+          />
         )}
         {currentPage === "budget" && (
           <BudgetPage trip={selectedTrip} />

@@ -17,9 +17,10 @@ interface SchedulePageProps {
   selectedDate: string;
   onDateChange: (date: string) => void;
   onTripUpdate: (tripId: string, updateFunction: (trip: Trip) => Trip) => void;
+  canEdit?: boolean;
 }
 
-export default function SchedulePage({ trip, selectedDate, onDateChange, onTripUpdate }: SchedulePageProps) {
+export default function SchedulePage({ trip, selectedDate, onDateChange, onTripUpdate, canEdit = true }: SchedulePageProps) {
   const [showNewScheduleModal, setShowNewScheduleModal] = useState(false);
   const [editingSchedule, setEditingSchedule] = useState<string | null>(null);
   const [editingScheduleData, setEditingScheduleData] = useState<ScheduleFormData | null>(null);
@@ -81,6 +82,19 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
   };
 
   const tripDates = getDatesInRange(trip.startDate, trip.endDate);
+
+  // ESCキーでキャンセル
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && editingSchedule) {
+        setEditingSchedule(null);
+        setEditingScheduleData(null);
+      }
+    };
+    
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [editingSchedule]);
 
   // スクロール時に現在の日付を検出
   useEffect(() => {
@@ -417,24 +431,48 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                   <h2 className="text-xl font-semibold text-stone-800">
                     {formatDate(date)}
                   </h2>
-                  <Button
-                    onClick={() => {
-                      onDateChange(date);
-                      handleNewScheduleClick(date);
-                    }}
-                    color="abyssGreen"
-                    size="md"
-                  >
-                    <Plus className="w-4 h-4" />
-                    追加
-                  </Button>
+                  {canEdit && (
+                    <Button
+                      onClick={() => {
+                        onDateChange(date);
+                        handleNewScheduleClick(date);
+                      }}
+                      color="abyssGreen"
+                      size="md"
+                    >
+                      <Plus className="w-4 h-4" />
+                      追加
+                    </Button>
+                  )}
                 </div>
 
                 <div className="space-y-4">
                         {daySchedules.map((schedule, index) => (
-                    <div key={`${schedule.id}-${index}-${schedule.startTime}`} className="border border-stone-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div key={`${schedule.id}-${index}-${schedule.startTime}`} className="relative">
+                      {editingSchedule === schedule.id && (
+                        <div 
+                          className="fixed inset-0 z-40" 
+                          onClick={() => {
+                            setEditingSchedule(null);
+                            setEditingScheduleData(null);
+                          }}
+                        />
+                      )}
+                      <div className={`border border-stone-200 rounded-lg p-4 transition-shadow ${editingSchedule === schedule.id ? 'shadow-lg z-50 relative' : 'hover:shadow-md'}`}>
                       {editingSchedule === schedule.id ? (
-                  <div className="space-y-3">
+                  <div className="space-y-3 relative">
+                    {/* 右上のバツボタン */}
+                    <button
+                      onClick={() => {
+                        setEditingSchedule(null);
+                        setEditingScheduleData(null);
+                      }}
+                      className="absolute -top-2 -right-2 w-10 h-10 flex items-center justify-center bg-stone-100 hover:bg-stone-200 rounded-full transition-colors z-10"
+                      aria-label="キャンセル"
+                    >
+                      <X className="w-5 h-5 text-stone-600" />
+                    </button>
+                    
                     <ScheduleForm
                       schedule={editingScheduleData || {
                         date: schedule.date,
@@ -470,7 +508,8 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                       />
                     </div>
                     
-                    <div className="flex gap-3 w-full mt-6">
+                    <div className="flex justify-between items-center w-full mt-6 gap-4">
+                      {/* 左寄せ：削除ボタン */}
                       <button
                         onClick={() => {
                           if (confirm('このスケジュールを削除しますか？')) {
@@ -482,19 +521,10 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                         className="flex items-center justify-center gap-2 px-4 py-2 bg-stone-200 text-stone-600 hover:bg-stone-300 hover:text-stone-800 rounded-lg font-medium transition-colors"
                       >
                         <Trash2 className="w-4 h-4" />
+                        削除
                       </button>
-                      <Button
-                        onClick={() => {
-                          setEditingSchedule(null);
-                          setEditingScheduleData(null);
-                        }}
-                        color="sandRed"
-                        size="md"
-                        className="flex-1"
-                      >
-                        <X className="w-4 h-4" />
-                        キャンセル
-                      </Button>
+                      
+                      {/* 右寄せ：保存ボタン（幅50%） */}
                       <Button
                         onClick={() => {
                           if (editingScheduleData) {
@@ -510,7 +540,7 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                         disabled={!editingScheduleData || !editingScheduleData.title.trim() || !editingScheduleData.startTime}
                         color="abyssGreen"
                         size="md"
-                        className="flex-1"
+                        className="w-1/2"
                       >
                         <Save className="w-4 h-4" />
                         保存
@@ -536,29 +566,31 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                           </span>
                         )}
                       </div>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => {
-                            setEditingSchedule(schedule.id);
-                            setEditingScheduleData({
-                              date: schedule.date,
-                              startTime: schedule.startTime,
-                              endTime: schedule.endTime,
-                              title: schedule.title,
-                              location: schedule.location,
-                              description: schedule.description,
-                              icon: schedule.icon || '',
-                              budget: schedule.budget || 0,
-                              budgetPeople: schedule.budgetPeople || 1,
-                              paidBy: schedule.paidBy || '',
-                              transport: schedule.transport || { method: '', duration: '', cost: 0 }
-                            });
-                          }}
-                          className="p-1 text-stone-500 hover:text-blue-600 transition-colors cursor-pointer"
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                      </div>
+                      {canEdit && (
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => {
+                              setEditingSchedule(schedule.id);
+                              setEditingScheduleData({
+                                date: schedule.date,
+                                startTime: schedule.startTime,
+                                endTime: schedule.endTime,
+                                title: schedule.title,
+                                location: schedule.location,
+                                description: schedule.description,
+                                icon: schedule.icon || '',
+                                budget: schedule.budget || 0,
+                                budgetPeople: schedule.budgetPeople || 1,
+                                paidBy: schedule.paidBy || '',
+                                transport: schedule.transport || { method: '', duration: '', cost: 0 }
+                              });
+                            }}
+                            className="p-1 text-stone-500 hover:text-blue-600 transition-colors cursor-pointer"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      )}
                     </div>
 
                     <h3 className="text-lg font-semibold text-stone-800 mb-1">{schedule.title}</h3>
@@ -662,24 +694,27 @@ export default function SchedulePage({ trip, selectedDate, onDateChange, onTripU
                     )}
                       </>
                     )}
-                  </div>
+                      </div>
+                    </div>
                 ))}
 
                   {daySchedules.length === 0 && (
                     <div className="text-center py-12 text-stone-500">
                       <Calendar className="w-12 h-12 mx-auto mb-4 text-stone-300" />
                       <p>この日のスケジュールはまだありません</p>
-                      <Button
-                        onClick={() => {
-                          onDateChange(date);
-                          handleNewScheduleClick(date);
-                        }}
-                        color="abyssGreen"
-                        size="md"
-                        className="mt-4 mx-auto"
-                      >
-                        最初のスケジュールを追加
-                      </Button>
+                      {canEdit && (
+                        <Button
+                          onClick={() => {
+                            onDateChange(date);
+                            handleNewScheduleClick(date);
+                          }}
+                          color="abyssGreen"
+                          size="md"
+                          className="mt-4 mx-auto"
+                        >
+                          最初のスケジュールを追加
+                        </Button>
+                      )}
                     </div>
                   )}
                 </div>

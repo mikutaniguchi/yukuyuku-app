@@ -81,9 +81,9 @@ export default function JoinPage() {
 
         {status === 'not-found' && (
           <>
-            <h1 className="text-2xl font-bold text-red-600 mb-4">招待コードが見つかりません</h1>
+            <h1 className="text-2xl font-bold text-red-600 mb-4">招待リンクが無効です</h1>
             <p className="text-stone-600 mb-6">
-              招待コードが無効または期限切れの可能性があります
+              招待リンクが無効または期限切れの可能性があります
             </p>
             <button
               onClick={() => router.push('/')}

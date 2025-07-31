@@ -7,9 +7,10 @@ import { linkifyText } from '@/lib/constants';
 interface MemoPageProps {
   trip: Trip;
   onTripUpdate: (tripId: string, updateFunction: (trip: Trip) => Trip) => void;
+  canEdit?: boolean;
 }
 
-export default function MemoPage({ trip, onTripUpdate }: MemoPageProps) {
+export default function MemoPage({ trip, onTripUpdate, canEdit = true }: MemoPageProps) {
   const handleMemoChange = (newMemo: string) => {
     onTripUpdate(trip.id, (currentTrip) => ({
       ...currentTrip,
@@ -22,12 +23,18 @@ export default function MemoPage({ trip, onTripUpdate }: MemoPageProps) {
       <h2 className="text-xl font-semibold text-stone-800 mb-4">メモ</h2>
       
       <div className="space-y-4">
-        <textarea
-          value={trip.memo}
-          onChange={(e) => handleMemoChange(e.target.value)}
-          placeholder="宿泊先情報、緊急連絡先、全体の注意事項など...&#10;&#10;💡 URLを入力すると自動的にリンクになります&#10;例: https://example.com/hotel"
-          className="w-full h-96 px-4 py-3 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 resize-none"
-        />
+        {canEdit ? (
+          <textarea
+            value={trip.memo}
+            onChange={(e) => handleMemoChange(e.target.value)}
+            placeholder="宿泊先情報、緊急連絡先、全体の注意事項など...&#10;&#10;💡 URLを入力すると自動的にリンクになります&#10;例: https://example.com/hotel"
+            className="w-full h-96 px-4 py-3 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 resize-none"
+          />
+        ) : (
+          <div className="w-full h-96 px-4 py-3 bg-stone-50 border border-stone-200 rounded-lg whitespace-pre-wrap break-words overflow-y-auto">
+            {trip.memo || 'メモがありません'}
+          </div>
+        )}
         
         {trip.memo && (
           <div className="border-t pt-4">

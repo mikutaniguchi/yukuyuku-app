@@ -52,27 +52,17 @@ export default function NewScheduleModal({
         iconOptions={iconOptions}
       />
       
-      <div className="flex gap-3 mt-6">
+      <div className="mt-6">
         <button
           onClick={onSubmit}
           disabled={!isValid}
-          className="flex-1 py-2 text-white rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full py-2 text-white rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           style={{ 
             backgroundColor: colorPalette.abyssGreen.bg,
             color: colorPalette.abyssGreen.text 
           }}
         >
           追加
-        </button>
-        <button
-          onClick={onClose}
-          className="flex-1 py-2 text-white rounded-lg transition-colors font-medium"
-          style={{ 
-            backgroundColor: colorPalette.sandRed.bg,
-            color: colorPalette.sandRed.text 
-          }}
-        >
-          キャンセル
         </button>
       </div>
     </Modal>

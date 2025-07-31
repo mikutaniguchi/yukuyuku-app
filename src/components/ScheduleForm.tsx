@@ -39,7 +39,7 @@ export default function ScheduleForm({
         <select
           value={schedule.date}
           onChange={(e) => onScheduleChange({ ...schedule, date: e.target.value })}
-          className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500"
+          className="w-full md:w-1/2 px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500"
         >
           {tripDates.map(date => (
             <option key={date} value={date}>

@@ -8,9 +8,10 @@ import { colorPalette } from '@/lib/constants';
 interface ChecklistPageProps {
   trip: Trip;
   onTripUpdate: (tripId: string, updateFunction: (trip: Trip) => Trip) => void;
+  canEdit?: boolean;
 }
 
-export default function ChecklistPage({ trip, onTripUpdate }: ChecklistPageProps) {
+export default function ChecklistPage({ trip, onTripUpdate, canEdit = true }: ChecklistPageProps) {
   const [showNewChecklistModal, setShowNewChecklistModal] = useState(false);
   const [newChecklist, setNewChecklist] = useState({ name: "", items: [""] });
   const [editingItem, setEditingItem] = useState<string | null>(null);
@@ -20,6 +21,8 @@ export default function ChecklistPage({ trip, onTripUpdate }: ChecklistPageProps
   const [tempChecklistName, setTempChecklistName] = useState("");
   const [swipedItem, setSwipedItem] = useState<string | null>(null);
   const settingsRef = useRef<HTMLDivElement>(null);
+  const editingInputRef = useRef<HTMLInputElement>(null);
+  const [isAddingItem, setIsAddingItem] = useState(false);
 
   const toggleChecklistItem = (checklistId: string, itemId: string) => {
     onTripUpdate(trip.id, (currentTrip) => ({
@@ -38,11 +41,12 @@ export default function ChecklistPage({ trip, onTripUpdate }: ChecklistPageProps
     }));
   };
 
-  const addChecklistItem = (checklistId: string, text: string) => {
-    if (!text.trim()) return;
+  const addChecklistItem = async (checklistId: string, text: string) => {
+    if (!text.trim() || isAddingItem) return;
 
+    setIsAddingItem(true);
     const newItem: ChecklistItem = {
-      id: Date.now().toString(),
+      id: `${Date.now()}_${Math.random()}`,
       text: text.trim(),
       checked: false
     };
@@ -58,6 +62,8 @@ export default function ChecklistPage({ trip, onTripUpdate }: ChecklistPageProps
           : checklist
       )
     }));
+    
+    setTimeout(() => setIsAddingItem(false), 100);
   };
 
   const deleteChecklistItem = (checklistId: string, itemId: string) => {
@@ -80,7 +86,8 @@ export default function ChecklistPage({ trip, onTripUpdate }: ChecklistPageProps
   };
 
   const saveEditingItem = (checklistId: string, itemId: string) => {
-    if (!editingText.trim()) return;
+    const inputValue = editingInputRef.current?.value || editingText;
+    if (!inputValue.trim()) return;
     
     onTripUpdate(trip.id, (currentTrip) => ({
       ...currentTrip,
@@ -90,7 +97,7 @@ export default function ChecklistPage({ trip, onTripUpdate }: ChecklistPageProps
               ...checklist, 
               items: checklist.items.map(item => 
                 item.id === itemId 
-                  ? { ...item, text: editingText.trim() }
+                  ? { ...item, text: inputValue.trim() }
                   : item
               )
             }
@@ -242,17 +249,19 @@ export default function ChecklistPage({ trip, onTripUpdate }: ChecklistPageProps
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold text-stone-800">チェックリスト</h2>
-          <button
-            onClick={() => setShowNewChecklistModal(true)}
-            className="flex items-center gap-2 px-4 py-2 text-white rounded-lg shadow-sm transition-colors font-medium"
-            style={{ 
-              backgroundColor: colorPalette.roseQuartz.bg,
-              color: colorPalette.roseQuartz.text 
-            }}
-          >
-            <Plus className="w-4 h-4" />
-            新しいリスト
-          </button>
+          {canEdit && (
+            <button
+              onClick={() => setShowNewChecklistModal(true)}
+              className="flex items-center gap-2 px-4 py-2 text-white rounded-lg shadow-sm transition-colors font-medium"
+              style={{ 
+                backgroundColor: colorPalette.roseQuartz.bg,
+                color: colorPalette.roseQuartz.text 
+              }}
+            >
+              <Plus className="w-4 h-4" />
+              新しいリスト
+            </button>
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -268,9 +277,14 @@ export default function ChecklistPage({ trip, onTripUpdate }: ChecklistPageProps
                           type="text"
                           value={tempChecklistName}
                           onChange={(e) => setTempChecklistName(e.target.value)}
-                          onKeyPress={(e) => {
-                            if (e.key === 'Enter') saveChecklistName(checklist.id);
-                            if (e.key === 'Escape') cancelEditChecklistName();
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' && !e.isComposing) {
+                              e.preventDefault();
+                              saveChecklistName(checklist.id);
+                            } else if (e.key === 'Escape') {
+                              e.preventDefault();
+                              cancelEditChecklistName();
+                            }
                           }}
                           className="text-lg font-semibold text-stone-800 bg-transparent border-b-2 border-stone-300 focus:outline-none focus:border-stone-500"
                           autoFocus
@@ -304,33 +318,35 @@ export default function ChecklistPage({ trip, onTripUpdate }: ChecklistPageProps
                       <span className="text-sm text-stone-600 font-medium">{completionRate}%</span>
                     </div>
                   </div>
-                  <div className="relative" ref={settingsRef}>
-                    <button
-                      onClick={() => setShowSettings(showSettings === checklist.id ? null : checklist.id)}
-                      className="p-1 text-stone-400 hover:text-stone-600 transition-colors opacity-60 hover:opacity-100"
-                    >
-                      <Settings className="w-4 h-4" />
-                    </button>
-                    
-                    {showSettings === checklist.id && (
-                      <div className="absolute top-8 right-0 bg-white border border-stone-200 rounded-lg shadow-lg py-2 w-40 z-10">
-                        <button
-                          onClick={() => handleEditChecklistName(checklist.id, checklist.name)}
-                          className="w-full px-4 py-2 text-left text-stone-700 hover:bg-stone-50 flex items-center gap-2"
-                        >
-                          <Edit2 className="w-4 h-4" />
-                          名前を変更
-                        </button>
-                        <button
-                          onClick={() => deleteChecklist(checklist.id)}
-                          className="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 flex items-center gap-2"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                          リストを削除
-                        </button>
-                      </div>
-                    )}
-                  </div>
+                  {canEdit && (
+                    <div className="relative" ref={settingsRef}>
+                      <button
+                        onClick={() => setShowSettings(showSettings === checklist.id ? null : checklist.id)}
+                        className="p-1 text-stone-400 hover:text-stone-600 transition-colors opacity-60 hover:opacity-100"
+                      >
+                        <Settings className="w-4 h-4" />
+                      </button>
+                      
+                      {showSettings === checklist.id && (
+                        <div className="absolute top-8 right-0 bg-white border border-stone-200 rounded-lg shadow-lg py-2 w-40 z-10">
+                          <button
+                            onClick={() => handleEditChecklistName(checklist.id, checklist.name)}
+                            className="w-full px-4 py-2 text-left text-stone-700 hover:bg-stone-50 flex items-center gap-2"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                            名前を変更
+                          </button>
+                          <button
+                            onClick={() => deleteChecklist(checklist.id)}
+                            className="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 flex items-center gap-2"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                            リストを削除
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-2 mb-4">
@@ -362,13 +378,15 @@ export default function ChecklistPage({ trip, onTripUpdate }: ChecklistPageProps
                           {editingItem === item.id ? (
                             <div className="flex-1 flex items-center gap-2">
                               <input
+                                ref={editingInputRef}
                                 type="text"
-                                value={editingText}
-                                onChange={(e) => setEditingText(e.target.value)}
-                                onKeyPress={(e) => {
-                                  if (e.key === 'Enter') {
+                                defaultValue={editingText}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' && !e.isComposing) {
+                                    e.preventDefault();
                                     saveEditingItem(checklist.id, item.id);
                                   } else if (e.key === 'Escape') {
+                                    e.preventDefault();
                                     cancelEditingItem();
                                   }
                                 }}
@@ -393,28 +411,30 @@ export default function ChecklistPage({ trip, onTripUpdate }: ChecklistPageProps
                           ) : (
                             <>
                               <span 
-                                className={`flex-1 ${item.checked ? 'line-through text-stone-500' : 'text-stone-700'} cursor-pointer text-sm md:text-base`}
-                                onClick={() => startEditingItem(item)}
+                                className={`flex-1 ${item.checked ? 'line-through text-stone-500' : 'text-stone-700'} ${canEdit ? 'cursor-pointer' : ''} text-sm md:text-base`}
+                                onClick={canEdit ? () => startEditingItem(item) : undefined}
                               >
                                 {item.text}
                               </span>
                               {/* デスクトップ用ボタン（hover表示） */}
-                              <div className="hidden md:flex gap-1">
-                                <button
-                                  onClick={() => startEditingItem(item)}
-                                  className="opacity-0 group-hover:opacity-100 p-1 text-stone-400 hover:text-blue-600 transition-all"
-                                >
-                                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                                  </svg>
-                                </button>
-                                <button
-                                  onClick={() => deleteChecklistItem(checklist.id, item.id)}
-                                  className="opacity-0 group-hover:opacity-100 p-1 text-stone-400 hover:text-red-600 transition-all"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
-                              </div>
+                              {canEdit && (
+                                <div className="hidden md:flex gap-1">
+                                  <button
+                                    onClick={() => startEditingItem(item)}
+                                    className="opacity-0 group-hover:opacity-100 p-1 text-stone-400 hover:text-blue-600 transition-all"
+                                  >
+                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                      <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                                    </svg>
+                                  </button>
+                                  <button
+                                    onClick={() => deleteChecklistItem(checklist.id, item.id)}
+                                    className="opacity-0 group-hover:opacity-100 p-1 text-stone-400 hover:text-red-600 transition-all"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              )}
                             </>
                           )}
                         </div>
@@ -438,19 +458,22 @@ export default function ChecklistPage({ trip, onTripUpdate }: ChecklistPageProps
                   ))}
                 </div>
 
-                <div>
-                  <input
-                    type="text"
-                    placeholder="新しい項目を追加..."
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter' && e.currentTarget.value.trim()) {
-                        addChecklistItem(checklist.id, e.currentTarget.value);
-                        e.currentTarget.value = '';
-                      }
-                    }}
-                    className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-sm"
-                  />
-                </div>
+                {canEdit && (
+                  <div>
+                    <input
+                      type="text"
+                      placeholder="新しい項目を追加..."
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.isComposing && e.currentTarget.value.trim()) {
+                          e.preventDefault();
+                          addChecklistItem(checklist.id, e.currentTarget.value);
+                          e.currentTarget.value = '';
+                        }
+                      }}
+                      className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-sm"
+                    />
+                  </div>
+                )}
               </div>
             );
           })}
@@ -460,16 +483,18 @@ export default function ChecklistPage({ trip, onTripUpdate }: ChecklistPageProps
           <div className="text-center py-12 text-stone-500">
             <CheckSquare className="w-12 h-12 mx-auto mb-4 text-stone-300" />
             <p>チェックリストがまだありません</p>
-            <button
-              onClick={() => setShowNewChecklistModal(true)}
-              className="mt-4 px-4 py-2 text-white rounded-lg transition-colors font-medium"
-              style={{ 
-                backgroundColor: colorPalette.roseQuartz.bg,
-                color: colorPalette.roseQuartz.text 
-              }}
-            >
-              最初のリストを作成
-            </button>
+            {canEdit && (
+              <button
+                onClick={() => setShowNewChecklistModal(true)}
+                className="mt-4 px-4 py-2 text-white rounded-lg transition-colors font-medium"
+                style={{ 
+                  backgroundColor: colorPalette.roseQuartz.bg,
+                  color: colorPalette.roseQuartz.text 
+                }}
+              >
+                最初のリストを作成
+              </button>
+            )}
           </div>
         )}
       </div>

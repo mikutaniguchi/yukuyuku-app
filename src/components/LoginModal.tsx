@@ -2,10 +2,10 @@
 
 import React, { useState } from 'react';
 import { Calendar } from 'lucide-react';
-import { User, Trip, LoginMode } from '@/types';
+import { User, Trip } from '@/types';
 import { colorPalette } from '../lib/constants';
-import { auth } from '@/lib/firebase';
 import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 
 interface LoginModalProps {
   onLogin: (user: User) => void;
@@ -13,9 +13,6 @@ interface LoginModalProps {
 }
 
 export default function LoginModal({ onLogin, trips }: LoginModalProps) {
-  const [loginMode, setLoginMode] = useState<LoginMode>('select');
-  const [guestName, setGuestName] = useState('');
-  const [inviteCode, setInviteCode] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   const handleGoogleLogin = async () => {
@@ -34,31 +31,6 @@ export default function LoginModal({ onLogin, trips }: LoginModalProps) {
     }
   };
 
-  const handleGuestLogin = () => {
-    if (!guestName.trim()) return;
-    
-    // Check for invite code
-    if (inviteCode) {
-      const trip = trips.find(t => t.inviteCode === inviteCode.toUpperCase());
-      if (trip) {
-        const guestUser: User = {
-          id: `guest_${Date.now()}`,
-          name: guestName,
-          type: "guest"
-        };
-        onLogin(guestUser);
-        return;
-      }
-    }
-    
-    // Regular guest login
-    const guestUser: User = {
-      id: `guest_${Date.now()}`,
-      name: guestName,
-      type: "guest"
-    };
-    onLogin(guestUser);
-  };
 
   const handleGuestReLogin = (memberName: string) => {
     const member = trips[0]?.members.find(m => m.name === memberName && m.type === "guest");
@@ -81,32 +53,24 @@ export default function LoginModal({ onLogin, trips }: LoginModalProps) {
           <p className="text-stone-600">友達と一緒に旅行計画を立てよう</p>
         </div>
 
-        {loginMode === 'select' && (
-          <div className="space-y-4">
-            <button
-              onClick={handleGoogleLogin}
-              className="w-full py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center gap-3"
-              style={{ backgroundColor: colorPalette.aquaBlue.bg, color: colorPalette.aquaBlue.text }}
-            >
-              <div className="w-5 h-5 bg-white rounded flex items-center justify-center">
-                <span className="text-xs font-bold text-blue-600">G</span>
-              </div>
-              Googleアカウントでログイン
-            </button>
-            
-            <button
-              onClick={() => setLoginMode('guest')}
-              className="w-full py-3 px-4 border-2 border-stone-300 rounded-lg font-medium text-stone-700 hover:border-stone-400 transition-colors"
-            >
-              ゲストとして参加
-            </button>
-
-            <div className="text-center text-sm text-stone-500 mt-6">
-              <p>招待リンクをお持ちの方は</p>
-              <p>「ゲストとして参加」を選択してください</p>
+        <div className="space-y-4">
+          <button
+            onClick={handleGoogleLogin}
+            className="w-full py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center gap-3"
+            style={{ backgroundColor: colorPalette.aquaBlue.bg, color: colorPalette.aquaBlue.text }}
+          >
+            <div className="w-5 h-5 bg-white rounded flex items-center justify-center">
+              <span className="text-xs font-bold text-blue-600">G</span>
             </div>
+            Googleアカウントでログイン
+          </button>
+
+          <div className="text-center text-sm text-stone-500 mt-6 p-4 bg-stone-50 rounded-lg">
+            <p className="font-medium text-stone-700 mb-2">ゲスト参加について</p>
+            <p>招待URLを受け取った方は、</p>
+            <p>そのリンクから直接アクセスしてください</p>
           </div>
-        )}
+        </div>
 
         {error && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
@@ -114,70 +78,6 @@ export default function LoginModal({ onLogin, trips }: LoginModalProps) {
           </div>
         )}
 
-        {loginMode === 'guest' && (
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-stone-700 mb-2">
-                お名前
-              </label>
-              <input
-                type="text"
-                value={guestName}
-                onChange={(e) => setGuestName(e.target.value)}
-                placeholder="例: 田中太郎"
-                className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-stone-700 mb-2">
-                招待コード（任意）
-              </label>
-              <input
-                type="text"
-                value={inviteCode}
-                onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
-                placeholder="例: TOKYO2024"
-                className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 uppercase"
-              />
-            </div>
-
-            {trips.length > 0 && trips[0].members.filter(m => m.type === 'guest').length > 0 && (
-              <div>
-                <p className="text-sm font-medium text-stone-700 mb-2">
-                  または既存のメンバーを選択
-                </p>
-                <div className="space-y-2">
-                  {trips[0].members.filter(m => m.type === 'guest').map(member => (
-                    <button
-                      key={member.id}
-                      onClick={() => handleGuestReLogin(member.name)}
-                      className="w-full py-2 px-3 text-left border border-stone-300 rounded-lg hover:bg-stone-50 transition-colors text-stone-700"
-                    >
-                      {member.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <button
-              onClick={handleGuestLogin}
-              disabled={!guestName.trim()}
-              className="w-full py-3 px-4 rounded-lg font-medium text-white disabled:bg-stone-400 transition-colors"
-              style={{ backgroundColor: guestName.trim() ? colorPalette.roseQuartz.bg : undefined }}
-            >
-              参加する
-            </button>
-
-            <button
-              onClick={() => setLoginMode('select')}
-              className="w-full py-2 text-stone-600 hover:text-stone-800 transition-colors"
-            >
-              ← 戻る
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );
