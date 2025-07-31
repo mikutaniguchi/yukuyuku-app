@@ -3,6 +3,7 @@
 import React, { useEffect } from 'react';
 import { X, LucideIcon } from 'lucide-react';
 import { colorPalette } from '@/lib/constants';
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
 
 interface ModalProps {
   isOpen: boolean;
@@ -25,20 +26,7 @@ export default function Modal({
   showCloseButton = true,
   children,
 }: ModalProps) {
-  useEffect(() => {
-    if (isOpen) {
-      // モーダルが開いたときにbodyのスクロールを無効化
-      document.body.style.overflow = 'hidden';
-    } else {
-      // モーダルが閉じたときにスクロールを元に戻す
-      document.body.style.overflow = 'unset';
-    }
-
-    // クリーンアップ関数
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [isOpen]);
+  useBodyScrollLock(isOpen);
 
   useEffect(() => {
     if (!isOpen) return; // 早期リターン
