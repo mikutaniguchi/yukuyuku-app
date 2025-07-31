@@ -58,6 +58,30 @@ export default function EditScheduleModal({
     editingScheduleData.title.trim() !== '' &&
     editingScheduleData.startTime !== '';
 
+  const footerButtons = (
+    <div className="flex flex-col sm:flex-row gap-3">
+      <Button
+        onClick={onDelete}
+        color="strawBeige"
+        size="md"
+        className="sm:w-auto"
+      >
+        <Trash2 className="w-4 h-4" />
+        削除
+      </Button>
+      <Button
+        onClick={onSave}
+        disabled={!isValid}
+        color="abyssGreen"
+        size="md"
+        className="flex-1"
+      >
+        <Save className="w-4 h-4" />
+        保存
+      </Button>
+    </div>
+  );
+
   return (
     <Modal
       isOpen={isOpen}
@@ -67,6 +91,7 @@ export default function EditScheduleModal({
       iconColor={colorPalette.aquaBlue.bg}
       maxWidth="lg"
       scrollable
+      fixedFooter={footerButtons}
     >
       <div className="space-y-6">
         {/* スケジュールフォーム */}
@@ -91,29 +116,6 @@ export default function EditScheduleModal({
             onImageClick={onImageClick}
             onPDFClick={onPDFClick}
           />
-        </div>
-
-        {/* アクションボタン */}
-        <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-stone-200">
-          <Button
-            onClick={onDelete}
-            color="strawBeige"
-            size="md"
-            className="sm:w-auto"
-          >
-            <Trash2 className="w-4 h-4" />
-            削除
-          </Button>
-          <Button
-            onClick={onSave}
-            disabled={!isValid}
-            color="abyssGreen"
-            size="md"
-            className="flex-1"
-          >
-            <Save className="w-4 h-4" />
-            保存
-          </Button>
         </div>
       </div>
     </Modal>

@@ -14,6 +14,7 @@ interface ModalProps {
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '4xl';
   showCloseButton?: boolean;
   scrollable?: boolean;
+  fixedFooter?: React.ReactNode;
   children: React.ReactNode;
 }
 
@@ -26,6 +27,7 @@ export default function Modal({
   maxWidth = 'md',
   showCloseButton = true,
   scrollable = false,
+  fixedFooter,
   children,
 }: ModalProps) {
   useBodyScrollLock(isOpen);
@@ -91,6 +93,13 @@ export default function Modal({
         <div className={`p-6 ${scrollable ? 'overflow-y-auto flex-1' : ''}`}>
           {children}
         </div>
+
+        {/* Fixed Footer */}
+        {fixedFooter && (
+          <div className="border-t border-stone-200 p-6 flex-shrink-0 bg-white rounded-b-xl">
+            {fixedFooter}
+          </div>
+        )}
       </div>
     </div>
   );
