@@ -15,15 +15,15 @@ interface ModalProps {
   children: React.ReactNode;
 }
 
-export default function Modal({ 
-  isOpen, 
-  onClose, 
-  title, 
-  icon: Icon, 
+export default function Modal({
+  isOpen,
+  onClose,
+  title,
+  icon: Icon,
   iconColor,
   maxWidth = 'md',
   showCloseButton = true,
-  children 
+  children,
 }: ModalProps) {
   useEffect(() => {
     if (isOpen) {
@@ -41,36 +41,36 @@ export default function Modal({
   }, [isOpen]);
 
   useEffect(() => {
-    if (isOpen) {
-      const handleEsc = (e: KeyboardEvent) => {
-        if (e.key === 'Escape') {
-          onClose();
-        }
-      };
-      
-      window.addEventListener('keydown', handleEsc);
-      return () => window.removeEventListener('keydown', handleEsc);
-    }
+    if (!isOpen) return; // 早期リターン
+
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
   const maxWidthClasses = {
     sm: 'max-w-sm',
-    md: 'max-w-md', 
+    md: 'max-w-md',
     lg: 'max-w-lg',
     xl: 'max-w-xl',
     '2xl': 'max-w-2xl',
-    '4xl': 'max-w-4xl'
+    '4xl': 'max-w-4xl',
   };
 
   return (
-    <div 
+    <div
       className="fixed inset-0 flex items-center justify-center p-4 z-50"
       style={{ backgroundColor: 'rgba(248, 248, 248, 0.7)' }}
       onClick={onClose}
     >
-      <div 
+      <div
         className={`bg-white rounded-xl shadow-xl border border-stone-200 w-full ${maxWidthClasses[maxWidth]}`}
         onClick={(e) => e.stopPropagation()}
       >
@@ -78,9 +78,9 @@ export default function Modal({
         <div className="flex items-center justify-between p-6 border-b border-stone-200">
           <div className="flex items-center gap-3">
             {Icon && (
-              <Icon 
-                className="w-6 h-6" 
-                style={{ color: iconColor || colorPalette.aquaBlue.bg }} 
+              <Icon
+                className="w-6 h-6"
+                style={{ color: iconColor || colorPalette.aquaBlue.bg }}
               />
             )}
             <h2 className="text-xl font-semibold text-stone-800">{title}</h2>
@@ -96,9 +96,7 @@ export default function Modal({
         </div>
 
         {/* Content */}
-        <div className="p-6">
-          {children}
-        </div>
+        <div className="p-6">{children}</div>
       </div>
     </div>
   );

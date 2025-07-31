@@ -1,9 +1,18 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { CheckSquare, Plus, Trash2, X, Settings, Edit2, Save } from 'lucide-react';
+import {
+  CheckSquare,
+  Plus,
+  Trash2,
+  X,
+  Settings,
+  Edit2,
+  Save,
+} from 'lucide-react';
 import { Trip, Checklist, ChecklistItem } from '@/types';
 import { colorPalette } from '@/lib/constants';
+import { useKeyboardEvent } from '@/hooks/useKeyboardEvent';
 
 interface ChecklistPageProps {
   trip: Trip;
@@ -11,25 +20,33 @@ interface ChecklistPageProps {
   canEdit?: boolean;
 }
 
-export default function ChecklistPage({ trip, onTripUpdate, canEdit = true }: ChecklistPageProps) {
+export default function ChecklistPage({
+  trip,
+  onTripUpdate,
+  canEdit = true,
+}: ChecklistPageProps) {
   const [showNewChecklistModal, setShowNewChecklistModal] = useState(false);
-  const [newChecklist, setNewChecklist] = useState({ name: "", items: [""] });
+  const [newChecklist, setNewChecklist] = useState({ name: '', items: [''] });
   const [editingItem, setEditingItem] = useState<string | null>(null);
-  const [editingText, setEditingText] = useState("");
+  const [editingText, setEditingText] = useState('');
   const [showSettings, setShowSettings] = useState<string | null>(null);
-  const [editingChecklistName, setEditingChecklistName] = useState<string | null>(null);
-  const [tempChecklistName, setTempChecklistName] = useState("");
+  const [editingChecklistName, setEditingChecklistName] = useState<
+    string | null
+  >(null);
+  const [tempChecklistName, setTempChecklistName] = useState('');
   const [swipedItem, setSwipedItem] = useState<string | null>(null);
   const settingsRef = useRef<HTMLDivElement>(null);
   const editingInputRef = useRef<HTMLInputElement>(null);
   const [isAddingItem, setIsAddingItem] = useState(false);
 
+  const { handleEnterKey, handleEscapeKey } = useKeyboardEvent();
+
   const toggleChecklistItem = (checklistId: string, itemId: string) => {
     onTripUpdate(trip.id, (currentTrip) => ({
       ...currentTrip,
-      checklists: currentTrip.checklists.map(checklist => {
+      checklists: currentTrip.checklists.map((checklist) => {
         if (checklist.id === checklistId) {
-          const updatedItems = checklist.items.map(item => 
+          const updatedItems = checklist.items.map((item) =>
             item.id === itemId ? { ...item, checked: !item.checked } : item
           );
           // チェック済みアイテムを下に移動
@@ -37,7 +54,7 @@ export default function ChecklistPage({ trip, onTripUpdate, canEdit = true }: Ch
           return { ...checklist, items: updatedItems };
         }
         return checklist;
-      })
+      }),
     }));
   };
 
@@ -48,35 +65,35 @@ export default function ChecklistPage({ trip, onTripUpdate, canEdit = true }: Ch
     const newItem: ChecklistItem = {
       id: `${Date.now()}_${Math.random()}`,
       text: text.trim(),
-      checked: false
+      checked: false,
     };
 
     onTripUpdate(trip.id, (currentTrip) => ({
       ...currentTrip,
-      checklists: currentTrip.checklists.map(checklist => 
-        checklist.id === checklistId 
-          ? { 
-              ...checklist, 
-              items: [...checklist.items, newItem] 
+      checklists: currentTrip.checklists.map((checklist) =>
+        checklist.id === checklistId
+          ? {
+              ...checklist,
+              items: [...checklist.items, newItem],
             }
           : checklist
-      )
+      ),
     }));
-    
+
     setTimeout(() => setIsAddingItem(false), 100);
   };
 
   const deleteChecklistItem = (checklistId: string, itemId: string) => {
     onTripUpdate(trip.id, (currentTrip) => ({
       ...currentTrip,
-      checklists: currentTrip.checklists.map(checklist => 
-        checklist.id === checklistId 
-          ? { 
-              ...checklist, 
-              items: checklist.items.filter(item => item.id !== itemId) 
+      checklists: currentTrip.checklists.map((checklist) =>
+        checklist.id === checklistId
+          ? {
+              ...checklist,
+              items: checklist.items.filter((item) => item.id !== itemId),
             }
           : checklist
-      )
+      ),
     }));
   };
 
@@ -88,41 +105,44 @@ export default function ChecklistPage({ trip, onTripUpdate, canEdit = true }: Ch
   const saveEditingItem = (checklistId: string, itemId: string) => {
     const inputValue = editingInputRef.current?.value || editingText;
     if (!inputValue.trim()) return;
-    
+
     onTripUpdate(trip.id, (currentTrip) => ({
       ...currentTrip,
-      checklists: currentTrip.checklists.map(checklist => 
-        checklist.id === checklistId 
-          ? { 
-              ...checklist, 
-              items: checklist.items.map(item => 
-                item.id === itemId 
-                  ? { ...item, text: inputValue.trim() }
-                  : item
-              )
+      checklists: currentTrip.checklists.map((checklist) =>
+        checklist.id === checklistId
+          ? {
+              ...checklist,
+              items: checklist.items.map((item) =>
+                item.id === itemId ? { ...item, text: inputValue.trim() } : item
+              ),
             }
           : checklist
-      )
+      ),
     }));
-    
+
     setEditingItem(null);
-    setEditingText("");
+    setEditingText('');
   };
 
   const cancelEditingItem = () => {
     setEditingItem(null);
-    setEditingText("");
+    setEditingText('');
   };
 
   const deleteChecklist = (checklistId: string) => {
     onTripUpdate(trip.id, (currentTrip) => ({
       ...currentTrip,
-      checklists: currentTrip.checklists.filter(checklist => checklist.id !== checklistId)
+      checklists: currentTrip.checklists.filter(
+        (checklist) => checklist.id !== checklistId
+      ),
     }));
     setShowSettings(null);
   };
 
-  const handleEditChecklistName = (checklistId: string, currentName: string) => {
+  const handleEditChecklistName = (
+    checklistId: string,
+    currentName: string
+  ) => {
     setEditingChecklistName(checklistId);
     setTempChecklistName(currentName);
     setShowSettings(null);
@@ -130,23 +150,23 @@ export default function ChecklistPage({ trip, onTripUpdate, canEdit = true }: Ch
 
   const saveChecklistName = (checklistId: string) => {
     if (!tempChecklistName.trim()) return;
-    
+
     onTripUpdate(trip.id, (currentTrip) => ({
       ...currentTrip,
-      checklists: currentTrip.checklists.map(checklist => 
-        checklist.id === checklistId 
+      checklists: currentTrip.checklists.map((checklist) =>
+        checklist.id === checklistId
           ? { ...checklist, name: tempChecklistName.trim() }
           : checklist
-      )
+      ),
     }));
-    
+
     setEditingChecklistName(null);
-    setTempChecklistName("");
+    setTempChecklistName('');
   };
 
   const cancelEditChecklistName = () => {
     setEditingChecklistName(null);
-    setTempChecklistName("");
+    setTempChecklistName('');
   };
 
   const handleSwipe = (itemId: string, deltaX: number) => {
@@ -159,9 +179,13 @@ export default function ChecklistPage({ trip, onTripUpdate, canEdit = true }: Ch
     }
   };
 
-  const SwipeableItem = ({ children, itemId, onSwipe }: { 
-    children: React.ReactNode; 
-    itemId: string; 
+  const SwipeableItem = ({
+    children,
+    itemId,
+    onSwipe,
+  }: {
+    children: React.ReactNode;
+    itemId: string;
     onSwipe: (itemId: string, deltaX: number) => void;
   }) => {
     const [startX, setStartX] = useState(0);
@@ -205,32 +229,41 @@ export default function ChecklistPage({ trip, onTripUpdate, canEdit = true }: Ch
       id: Date.now().toString(),
       tripId: trip.id.toString(),
       name: newChecklist.name,
-      items: newChecklist.items.filter(item => item.trim()).map((item, index): ChecklistItem => ({
-        id: (Date.now() + index).toString(),
-        text: item.trim(),
-        checked: false
-      }))
+      items: newChecklist.items
+        .filter((item) => item.trim())
+        .map(
+          (item, index): ChecklistItem => ({
+            id: (Date.now() + index).toString(),
+            text: item.trim(),
+            checked: false,
+          })
+        ),
     };
 
     onTripUpdate(trip.id, (currentTrip) => ({
       ...currentTrip,
-      checklists: [...currentTrip.checklists, checklistCategory]
+      checklists: [...currentTrip.checklists, checklistCategory],
     }));
 
-    setNewChecklist({ name: "", items: [""] });
+    setNewChecklist({ name: '', items: [''] });
     setShowNewChecklistModal(false);
   };
 
   const getCompletionRate = (checklist: Checklist) => {
     if (checklist.items.length === 0) return 0;
-    const completedItems = checklist.items.filter(item => item.checked).length;
+    const completedItems = checklist.items.filter(
+      (item) => item.checked
+    ).length;
     return Math.round((completedItems / checklist.items.length) * 100);
   };
 
   // Close settings menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (settingsRef.current && !settingsRef.current.contains(event.target as Node)) {
+      if (
+        settingsRef.current &&
+        !settingsRef.current.contains(event.target as Node)
+      ) {
         setShowSettings(null);
       }
     };
@@ -248,14 +281,16 @@ export default function ChecklistPage({ trip, onTripUpdate, canEdit = true }: Ch
     <>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-stone-800">チェックリスト</h2>
+          <h2 className="text-xl font-semibold text-stone-800">
+            チェックリスト
+          </h2>
           {canEdit && (
             <button
               onClick={() => setShowNewChecklistModal(true)}
               className="flex items-center gap-2 px-4 py-2 text-white rounded-lg shadow-sm transition-colors font-medium"
-              style={{ 
+              style={{
                 backgroundColor: colorPalette.roseQuartz.bg,
-                color: colorPalette.roseQuartz.text 
+                color: colorPalette.roseQuartz.text,
               }}
             >
               <Plus className="w-4 h-4" />
@@ -265,10 +300,13 @@ export default function ChecklistPage({ trip, onTripUpdate, canEdit = true }: Ch
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {trip.checklists.map(checklist => {
+          {trip.checklists.map((checklist) => {
             const completionRate = getCompletionRate(checklist);
             return (
-              <div key={checklist.id} className="bg-white rounded-xl shadow-sm border border-stone-200 p-6">
+              <div
+                key={checklist.id}
+                className="bg-white rounded-xl shadow-sm border border-stone-200 p-6"
+              >
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
                     {editingChecklistName === checklist.id ? (
@@ -278,13 +316,10 @@ export default function ChecklistPage({ trip, onTripUpdate, canEdit = true }: Ch
                           value={tempChecklistName}
                           onChange={(e) => setTempChecklistName(e.target.value)}
                           onKeyDown={(e) => {
-                            if (e.key === 'Enter' && !e.isComposing) {
-                              e.preventDefault();
-                              saveChecklistName(checklist.id);
-                            } else if (e.key === 'Escape') {
-                              e.preventDefault();
-                              cancelEditChecklistName();
-                            }
+                            handleEnterKey(e, () =>
+                              saveChecklistName(checklist.id)
+                            );
+                            handleEscapeKey(e, () => cancelEditChecklistName());
                           }}
                           className="text-lg font-semibold text-stone-800 bg-transparent border-b-2 border-stone-300 focus:outline-none focus:border-stone-500"
                           autoFocus
@@ -303,34 +338,47 @@ export default function ChecklistPage({ trip, onTripUpdate, canEdit = true }: Ch
                         </button>
                       </div>
                     ) : (
-                      <h3 className="text-lg font-semibold text-stone-800">{checklist.name}</h3>
+                      <h3 className="text-lg font-semibold text-stone-800">
+                        {checklist.name}
+                      </h3>
                     )}
                     <div className="flex items-center gap-2 mt-1">
                       <div className="w-full bg-stone-200 rounded-full h-2 flex-1">
-                        <div 
+                        <div
                           className="h-2 rounded-full transition-all duration-300"
-                          style={{ 
+                          style={{
                             width: `${completionRate}%`,
-                            backgroundColor: colorPalette.abyssGreen.bg
+                            backgroundColor: colorPalette.abyssGreen.bg,
                           }}
                         />
                       </div>
-                      <span className="text-sm text-stone-600 font-medium">{completionRate}%</span>
+                      <span className="text-sm text-stone-600 font-medium">
+                        {completionRate}%
+                      </span>
                     </div>
                   </div>
                   {canEdit && (
                     <div className="relative" ref={settingsRef}>
                       <button
-                        onClick={() => setShowSettings(showSettings === checklist.id ? null : checklist.id)}
+                        onClick={() =>
+                          setShowSettings(
+                            showSettings === checklist.id ? null : checklist.id
+                          )
+                        }
                         className="p-1 text-stone-400 hover:text-stone-600 transition-colors opacity-60 hover:opacity-100"
                       >
                         <Settings className="w-4 h-4" />
                       </button>
-                      
+
                       {showSettings === checklist.id && (
                         <div className="absolute top-8 right-0 bg-white border border-stone-200 rounded-lg shadow-lg py-2 w-40 z-10">
                           <button
-                            onClick={() => handleEditChecklistName(checklist.id, checklist.name)}
+                            onClick={() =>
+                              handleEditChecklistName(
+                                checklist.id,
+                                checklist.name
+                              )
+                            }
                             className="w-full px-4 py-2 text-left text-stone-700 hover:bg-stone-50 flex items-center gap-2"
                           >
                             <Edit2 className="w-4 h-4" />
@@ -350,28 +398,50 @@ export default function ChecklistPage({ trip, onTripUpdate, canEdit = true }: Ch
                 </div>
 
                 <div className="space-y-2 mb-4">
-                  {checklist.items.map(item => (
-                    <SwipeableItem key={item.id} itemId={item.id} onSwipe={handleSwipe}>
+                  {checklist.items.map((item) => (
+                    <SwipeableItem
+                      key={item.id}
+                      itemId={item.id}
+                      onSwipe={handleSwipe}
+                    >
                       <div className="relative overflow-hidden">
-                        <div className={`flex items-center gap-3 group transition-transform duration-200 ${
-                          swipedItem === item.id ? '-translate-x-16' : 'translate-x-0'
-                        }`}>
+                        <div
+                          className={`flex items-center gap-3 group transition-transform duration-200 ${
+                            swipedItem === item.id
+                              ? '-translate-x-16'
+                              : 'translate-x-0'
+                          }`}
+                        >
                           <button
-                            onClick={() => toggleChecklistItem(checklist.id, item.id)}
+                            onClick={() =>
+                              toggleChecklistItem(checklist.id, item.id)
+                            }
                             className={`flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
-                              item.checked 
-                                ? 'text-white shadow-sm' 
+                              item.checked
+                                ? 'text-white shadow-sm'
                                 : 'border-stone-300 hover:border-stone-400'
                             }`}
-                            style={item.checked ? {
-                              backgroundColor: colorPalette.abyssGreen.bg,
-                              borderColor: colorPalette.abyssGreen.bg,
-                              color: colorPalette.abyssGreen.text
-                            } : {}}
+                            style={
+                              item.checked
+                                ? {
+                                    backgroundColor: colorPalette.abyssGreen.bg,
+                                    borderColor: colorPalette.abyssGreen.bg,
+                                    color: colorPalette.abyssGreen.text,
+                                  }
+                                : {}
+                            }
                           >
                             {item.checked && (
-                              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              <svg
+                                className="w-3 h-3"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                              >
+                                <path
+                                  fillRule="evenodd"
+                                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                  clipRule="evenodd"
+                                />
                               </svg>
                             )}
                           </button>
@@ -382,23 +452,30 @@ export default function ChecklistPage({ trip, onTripUpdate, canEdit = true }: Ch
                                 type="text"
                                 defaultValue={editingText}
                                 onKeyDown={(e) => {
-                                  if (e.key === 'Enter' && !e.isComposing) {
-                                    e.preventDefault();
-                                    saveEditingItem(checklist.id, item.id);
-                                  } else if (e.key === 'Escape') {
-                                    e.preventDefault();
-                                    cancelEditingItem();
-                                  }
+                                  handleEnterKey(e, () =>
+                                    saveEditingItem(checklist.id, item.id)
+                                  );
+                                  handleEscapeKey(e, () => cancelEditingItem());
                                 }}
                                 className="flex-1 px-2 py-1 border border-stone-300 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                                 autoFocus
                               />
                               <button
-                                onClick={() => saveEditingItem(checklist.id, item.id)}
+                                onClick={() =>
+                                  saveEditingItem(checklist.id, item.id)
+                                }
                                 className="p-1 text-green-600 hover:text-green-700 transition-colors"
                               >
-                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                <svg
+                                  className="w-4 h-4"
+                                  fill="currentColor"
+                                  viewBox="0 0 20 20"
+                                >
+                                  <path
+                                    fillRule="evenodd"
+                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                    clipRule="evenodd"
+                                  />
                                 </svg>
                               </button>
                               <button
@@ -410,9 +487,13 @@ export default function ChecklistPage({ trip, onTripUpdate, canEdit = true }: Ch
                             </div>
                           ) : (
                             <>
-                              <span 
+                              <span
                                 className={`flex-1 ${item.checked ? 'line-through text-stone-500' : 'text-stone-700'} ${canEdit ? 'cursor-pointer' : ''} text-sm md:text-base`}
-                                onClick={canEdit ? () => startEditingItem(item) : undefined}
+                                onClick={
+                                  canEdit
+                                    ? () => startEditingItem(item)
+                                    : undefined
+                                }
                               >
                                 {item.text}
                               </span>
@@ -423,12 +504,18 @@ export default function ChecklistPage({ trip, onTripUpdate, canEdit = true }: Ch
                                     onClick={() => startEditingItem(item)}
                                     className="opacity-0 group-hover:opacity-100 p-1 text-stone-400 hover:text-blue-600 transition-all"
                                   >
-                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <svg
+                                      className="w-4 h-4"
+                                      fill="currentColor"
+                                      viewBox="0 0 20 20"
+                                    >
                                       <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
                                     </svg>
                                   </button>
                                   <button
-                                    onClick={() => deleteChecklistItem(checklist.id, item.id)}
+                                    onClick={() =>
+                                      deleteChecklistItem(checklist.id, item.id)
+                                    }
                                     className="opacity-0 group-hover:opacity-100 p-1 text-stone-400 hover:text-red-600 transition-all"
                                   >
                                     <Trash2 className="w-4 h-4" />
@@ -438,11 +525,15 @@ export default function ChecklistPage({ trip, onTripUpdate, canEdit = true }: Ch
                             </>
                           )}
                         </div>
-                        
+
                         {/* スマホ用：スワイプで表示される削除ボタン */}
-                        <div className={`md:hidden absolute right-0 top-0 h-full flex items-center transition-transform duration-200 ${
-                          swipedItem === item.id ? 'translate-x-0' : 'translate-x-full'
-                        }`}>
+                        <div
+                          className={`md:hidden absolute right-0 top-0 h-full flex items-center transition-transform duration-200 ${
+                            swipedItem === item.id
+                              ? 'translate-x-0'
+                              : 'translate-x-full'
+                          }`}
+                        >
                           <button
                             onClick={() => {
                               deleteChecklistItem(checklist.id, item.id);
@@ -464,11 +555,20 @@ export default function ChecklistPage({ trip, onTripUpdate, canEdit = true }: Ch
                       type="text"
                       placeholder="新しい項目を追加..."
                       onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.isComposing && e.currentTarget.value.trim()) {
-                          e.preventDefault();
-                          addChecklistItem(checklist.id, e.currentTarget.value);
-                          e.currentTarget.value = '';
-                        }
+                        handleEnterKey(
+                          e,
+                          () => {
+                            addChecklistItem(
+                              checklist.id,
+                              e.currentTarget.value
+                            );
+                            e.currentTarget.value = '';
+                          },
+                          {
+                            requireValue: true,
+                            target: e.currentTarget,
+                          }
+                        );
                       }}
                       className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-sm"
                     />
@@ -487,9 +587,9 @@ export default function ChecklistPage({ trip, onTripUpdate, canEdit = true }: Ch
               <button
                 onClick={() => setShowNewChecklistModal(true)}
                 className="mt-4 px-4 py-2 text-white rounded-lg transition-colors font-medium"
-                style={{ 
+                style={{
                   backgroundColor: colorPalette.roseQuartz.bg,
-                  color: colorPalette.roseQuartz.text 
+                  color: colorPalette.roseQuartz.text,
                 }}
               >
                 最初のリストを作成
@@ -501,28 +601,34 @@ export default function ChecklistPage({ trip, onTripUpdate, canEdit = true }: Ch
 
       {/* New Checklist Modal */}
       {showNewChecklistModal && (
-        <div 
+        <div
           className="fixed inset-0 flex items-center justify-center p-4 z-50"
           onClick={() => {
             setShowNewChecklistModal(false);
-            setNewChecklist({ name: "", items: [""] });
+            setNewChecklist({ name: '', items: [''] });
           }}
         >
-          <div 
+          <div
             className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl border border-stone-200"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-xl font-semibold mb-4 text-stone-800">新しいチェックリスト</h3>
+            <h3 className="text-xl font-semibold mb-4 text-stone-800">
+              新しいチェックリスト
+            </h3>
             <div className="space-y-4">
               <input
                 type="text"
                 placeholder="リスト名"
                 value={newChecklist.name}
-                onChange={(e) => setNewChecklist({ ...newChecklist, name: e.target.value })}
+                onChange={(e) =>
+                  setNewChecklist({ ...newChecklist, name: e.target.value })
+                }
                 className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500"
               />
               <div className="space-y-2">
-                <label className="text-sm font-medium text-stone-700">項目</label>
+                <label className="text-sm font-medium text-stone-700">
+                  項目
+                </label>
                 {newChecklist.items.map((item, index) => (
                   <div key={index} className="flex gap-2">
                     <input
@@ -532,15 +638,23 @@ export default function ChecklistPage({ trip, onTripUpdate, canEdit = true }: Ch
                       onChange={(e) => {
                         const updatedItems = [...newChecklist.items];
                         updatedItems[index] = e.target.value;
-                        setNewChecklist({ ...newChecklist, items: updatedItems });
+                        setNewChecklist({
+                          ...newChecklist,
+                          items: updatedItems,
+                        });
                       }}
                       className="flex-1 px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-sm"
                     />
                     {newChecklist.items.length > 1 && (
                       <button
                         onClick={() => {
-                          const updatedItems = newChecklist.items.filter((_, i) => i !== index);
-                          setNewChecklist({ ...newChecklist, items: updatedItems });
+                          const updatedItems = newChecklist.items.filter(
+                            (_, i) => i !== index
+                          );
+                          setNewChecklist({
+                            ...newChecklist,
+                            items: updatedItems,
+                          });
                         }}
                         className="p-2 text-stone-500 hover:text-red-600 transition-colors"
                       >
@@ -550,7 +664,12 @@ export default function ChecklistPage({ trip, onTripUpdate, canEdit = true }: Ch
                   </div>
                 ))}
                 <button
-                  onClick={() => setNewChecklist({ ...newChecklist, items: [...newChecklist.items, ""] })}
+                  onClick={() =>
+                    setNewChecklist({
+                      ...newChecklist,
+                      items: [...newChecklist.items, ''],
+                    })
+                  }
                   className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1"
                 >
                   <Plus className="w-4 h-4" />
@@ -563,9 +682,9 @@ export default function ChecklistPage({ trip, onTripUpdate, canEdit = true }: Ch
                 onClick={addNewChecklistCategory}
                 disabled={!newChecklist.name.trim()}
                 className="flex-1 py-2 text-white rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ 
+                style={{
                   backgroundColor: colorPalette.roseQuartz.bg,
-                  color: colorPalette.roseQuartz.text 
+                  color: colorPalette.roseQuartz.text,
                 }}
               >
                 作成
@@ -573,12 +692,12 @@ export default function ChecklistPage({ trip, onTripUpdate, canEdit = true }: Ch
               <button
                 onClick={() => {
                   setShowNewChecklistModal(false);
-                  setNewChecklist({ name: "", items: [""] });
+                  setNewChecklist({ name: '', items: [''] });
                 }}
                 className="flex-1 py-2 text-white rounded-lg transition-colors font-medium"
-                style={{ 
+                style={{
                   backgroundColor: colorPalette.sandRed.bg,
-                  color: colorPalette.sandRed.text 
+                  color: colorPalette.sandRed.text,
                 }}
               >
                 キャンセル

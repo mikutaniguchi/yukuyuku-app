@@ -1,0 +1,10 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Vercelビルドエラーを防ぐ軽量チェック
+echo "🔍 Pre-commit checks..."
+
+# lint-stagedを実行
+npm run pre-commit
+
+echo "✅ Pre-commit checks passed!"

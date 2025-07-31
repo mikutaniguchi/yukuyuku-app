@@ -3,10 +3,31 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { logout } from '@/lib/auth';
-import { createTrip as createTripInFirestore, getUserTrips, updateTrip as updateTripInFirestore, deleteTrip as deleteTripFromFirestore } from '@/lib/firestore';
+import {
+  createTrip as createTripInFirestore,
+  getUserTrips,
+  updateTrip as updateTripInFirestore,
+  deleteTrip as deleteTripFromFirestore,
+} from '@/lib/firestore';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Calendar, Users, Plus, LogOut, UserPlus, Settings, BookOpen, CheckSquare, DollarSign, FileText, Edit2, Trash2, Save, X, Aperture } from 'lucide-react';
+import {
+  Calendar,
+  Users,
+  Plus,
+  LogOut,
+  UserPlus,
+  Settings,
+  BookOpen,
+  CheckSquare,
+  DollarSign,
+  FileText,
+  Edit2,
+  Trash2,
+  Save,
+  X,
+  Aperture,
+} from 'lucide-react';
 import { User, Trip, PageType } from '@/types';
 import { colorPalette, getDatesInRange, formatDate } from '@/lib/constants';
 import LoginModal from './LoginModal';
@@ -29,8 +50,8 @@ export default function TravelApp() {
   const [appUser, setAppUser] = useState<User | null>(null);
   const [trips, setTrips] = useState<Trip[]>(initialTrips);
   const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
-  const [selectedDate, setSelectedDate] = useState<string>("");
-  const [currentPage, setCurrentPage] = useState<PageType>("schedule");
+  const [selectedDate, setSelectedDate] = useState<string>('');
+  const [currentPage, setCurrentPage] = useState<PageType>('schedule');
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showMembersModal, setShowMembersModal] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
@@ -46,11 +67,11 @@ export default function TravelApp() {
   const settingsRef = useRef<HTMLDivElement>(null);
 
   const navItems = [
-    { id: "schedule" as const, label: "スケジュール", icon: Calendar },
-    { id: "checklist" as const, label: "チェックリスト", icon: CheckSquare },
-    { id: "files" as const, label: "ファイル", icon: FileText },
-    { id: "memo" as const, label: "メモ", icon: BookOpen },
-    { id: "budget" as const, label: "予算管理", icon: DollarSign }
+    { id: 'schedule' as const, label: 'スケジュール', icon: Calendar },
+    { id: 'checklist' as const, label: 'チェックリスト', icon: CheckSquare },
+    { id: 'files' as const, label: 'ファイル', icon: FileText },
+    { id: 'memo' as const, label: 'メモ', icon: BookOpen },
+    { id: 'budget' as const, label: '予算管理', icon: DollarSign },
   ];
 
   // Firebase認証状態を監視
@@ -59,9 +80,9 @@ export default function TravelApp() {
       if (firebaseUser) {
         const userData: User = {
           id: firebaseUser.uid,
-          name: firebaseUser.displayName || "ユーザー",
-          email: firebaseUser.email || "",
-          type: "google"
+          name: firebaseUser.displayName || 'ユーザー',
+          email: firebaseUser.email || '',
+          type: 'google',
         };
         setAppUser(userData);
         setShowLoginModal(false);
@@ -81,7 +102,9 @@ export default function TravelApp() {
         setShowCreateTripModal(true);
       } else {
         setSelectedTrip(userTrips[0]);
-        setSelectedDate(getDatesInRange(userTrips[0].startDate, userTrips[0].endDate)[0]);
+        setSelectedDate(
+          getDatesInRange(userTrips[0].startDate, userTrips[0].endDate)[0]
+        );
       }
     } catch (error) {
       console.error('Failed to load trips:', error);
@@ -93,10 +116,10 @@ export default function TravelApp() {
   const handleLogin = async (userData: User) => {
     setAppUser(userData);
     setShowLoginModal(false);
-    
+
     // ゲストユーザーの場合、招待コードから旅行を選択
-    if (userData.type === 'guest' && (userData as any).inviteCode) {
-      const inviteCode = (userData as any).inviteCode;
+    if (userData.type === 'guest' && 'inviteCode' in userData) {
+      const inviteCode = (userData as { inviteCode: string }).inviteCode;
       // 全ての旅行から招待コードで検索
       try {
         const q = query(
@@ -104,11 +127,11 @@ export default function TravelApp() {
           where('inviteCode', '==', inviteCode)
         );
         const snapshot = await getDocs(q);
-        
+
         if (!snapshot.empty) {
-          const tripData = snapshot.docs[0].data() as Trip;
-          const trip = { id: snapshot.docs[0].id, ...tripData };
-          
+          const tripData = snapshot.docs[0].data() as Omit<Trip, 'id'>;
+          const trip: Trip = { ...tripData, id: snapshot.docs[0].id };
+
           setTrips([trip]);
           setSelectedTrip(trip);
           setSelectedDate(getDatesInRange(trip.startDate, trip.endDate)[0]);
@@ -119,9 +142,13 @@ export default function TravelApp() {
     }
   };
 
-  const handleCreateTrip = async (tripData: { title: string; startDate: string; endDate: string }) => {
+  const handleCreateTrip = async (tripData: {
+    title: string;
+    startDate: string;
+    endDate: string;
+  }) => {
     if (!appUser) return;
-    
+
     try {
       const newTrip: Omit<Trip, 'id' | 'createdAt' | 'updatedAt'> = {
         title: tripData.title,
@@ -131,12 +158,12 @@ export default function TravelApp() {
         memberIds: [appUser.id],
         members: [appUser],
         inviteCode: Math.random().toString(36).substring(2, 8).toUpperCase(),
-        memo: "",
+        memo: '',
         schedules: {},
         customTags: [],
-        checklists: []
+        checklists: [],
       };
-      
+
       const tripId = await createTripInFirestore(newTrip);
       const createdTrip = { ...newTrip, id: tripId } as Trip;
       setTrips([...trips, createdTrip]);
@@ -160,10 +187,13 @@ export default function TravelApp() {
     }
   };
 
-  const updateTrip = async (tripId: string, updateFunction: (trip: Trip) => Trip) => {
+  const updateTrip = async (
+    tripId: string,
+    updateFunction: (trip: Trip) => Trip
+  ) => {
     // ローカル状態を更新
-    setTrips(prevTrips => 
-      prevTrips.map(trip => {
+    setTrips((prevTrips) =>
+      prevTrips.map((trip) => {
         if (trip.id === tripId) {
           const updatedTrip = updateFunction(trip);
           if (selectedTrip?.id === tripId) {
@@ -177,7 +207,7 @@ export default function TravelApp() {
 
     // Firestoreを更新
     try {
-      const currentTrip = trips.find(trip => trip.id === tripId);
+      const currentTrip = trips.find((trip) => trip.id === tripId);
       if (currentTrip) {
         const updatedTrip = updateFunction(currentTrip);
         await updateTripInFirestore(tripId, updatedTrip);
@@ -200,17 +230,19 @@ export default function TravelApp() {
 
     try {
       await deleteTripFromFirestore(selectedTrip.id);
-      const updatedTrips = trips.filter(trip => trip.id !== selectedTrip.id);
+      const updatedTrips = trips.filter((trip) => trip.id !== selectedTrip.id);
       setTrips(updatedTrips);
-      
+
       if (updatedTrips.length > 0) {
         setSelectedTrip(updatedTrips[0]);
-        setSelectedDate(getDatesInRange(updatedTrips[0].startDate, updatedTrips[0].endDate)[0]);
+        setSelectedDate(
+          getDatesInRange(updatedTrips[0].startDate, updatedTrips[0].endDate)[0]
+        );
       } else {
         setSelectedTrip(null);
         setShowCreateTripModal(true);
       }
-      
+
       setShowDeleteConfirm(false);
       setDeleteConfirmTitle('');
     } catch (error) {
@@ -232,11 +264,11 @@ export default function TravelApp() {
 
   const handleSaveTripTitle = async () => {
     if (!selectedTrip || !tempTripTitle.trim()) return;
-    
+
     try {
       await updateTrip(selectedTrip.id, (trip) => ({
         ...trip,
-        title: tempTripTitle.trim()
+        title: tempTripTitle.trim(),
       }));
       setEditingTripTitle(false);
     } catch (error) {
@@ -250,25 +282,35 @@ export default function TravelApp() {
     setTempTripTitle('');
   };
 
-  const hasAccess = appUser && selectedTrip && (
+  const hasAccess =
+    appUser &&
+    selectedTrip &&
     // 通常メンバーのアクセス
-    selectedTrip.members.some(m => 
-      (m.id === appUser.id) || (m.name === appUser.name && m.type === appUser.type)
+    (selectedTrip.members.some(
+      (m) =>
+        m.id === appUser.id ||
+        (m.name === appUser.name && m.type === appUser.type)
     ) ||
-    // ゲストユーザーのアクセス（招待コード経由）
-    (appUser.type === 'guest' && selectedTrip.guestAccessEnabled !== false)
-  );
+      // ゲストユーザーのアクセス（招待コード経由）
+      (appUser.type === 'guest' && selectedTrip.guestAccessEnabled !== false));
 
   // Auto-select first accessible trip
   useEffect(() => {
     if (appUser && trips.length > 0) {
-      const userTrips = trips.filter(trip => 
-        trip.members.some(m => m.id === appUser.id || (m.name === appUser.name && m.type === appUser.type)) ||
-        (appUser.type === 'guest' && trip.guestAccessEnabled !== false)
+      const userTrips = trips.filter(
+        (trip) =>
+          trip.members.some(
+            (m) =>
+              m.id === appUser.id ||
+              (m.name === appUser.name && m.type === appUser.type)
+          ) ||
+          (appUser.type === 'guest' && trip.guestAccessEnabled !== false)
       );
       if (userTrips.length > 0) {
         setSelectedTrip(userTrips[0]);
-        setSelectedDate(getDatesInRange(userTrips[0].startDate, userTrips[0].endDate)[0]);
+        setSelectedDate(
+          getDatesInRange(userTrips[0].startDate, userTrips[0].endDate)[0]
+        );
       }
     }
   }, [appUser, trips]);
@@ -287,12 +329,18 @@ export default function TravelApp() {
   // Close settings menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (settingsRef.current && !settingsRef.current.contains(event.target as Node)) {
+      if (
+        settingsRef.current &&
+        !settingsRef.current.contains(event.target as Node)
+      ) {
         setShowTripSettings(false);
       }
-      
+
       // Also close floating menu when clicking outside
-      if (!event.target || !(event.target as Element).closest('.floating-menu')) {
+      if (
+        !event.target ||
+        !(event.target as Element).closest('.floating-menu')
+      ) {
         setShowFloatingMenu(false);
       }
     };
@@ -321,13 +369,22 @@ export default function TravelApp() {
   // 旅行がない場合は作成フォームを表示
   if (!selectedTrip && appUser) {
     if (showCreateTripModal) {
-      return <CreateTripModal isOpen={showCreateTripModal} onCreateTrip={handleCreateTrip} />;
+      return (
+        <CreateTripModal
+          isOpen={showCreateTripModal}
+          onCreateTrip={handleCreateTrip}
+        />
+      );
     }
     return (
       <div className="min-h-screen bg-gradient-to-br from-stone-50 to-neutral-100 flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
-          <h2 className="text-xl font-bold text-stone-800 mb-4">旅行がありません</h2>
-          <p className="text-stone-600 mb-6">新しい旅行を作成して始めましょう</p>
+          <h2 className="text-xl font-bold text-stone-800 mb-4">
+            旅行がありません
+          </h2>
+          <p className="text-stone-600 mb-6">
+            新しい旅行を作成して始めましょう
+          </p>
           <Button
             onClick={() => setShowCreateTripModal(true)}
             color="abyssGreen"
@@ -346,13 +403,13 @@ export default function TravelApp() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-stone-50 to-neutral-100 flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
-          <h2 className="text-xl font-bold text-stone-800 mb-4">アクセス権限がありません</h2>
-          <p className="text-stone-600 mb-6">この旅行にアクセスするには招待が必要です</p>
-          <Button
-            onClick={handleLogout}
-            color="sandRed"
-            size="md"
-          >
+          <h2 className="text-xl font-bold text-stone-800 mb-4">
+            アクセス権限がありません
+          </h2>
+          <p className="text-stone-600 mb-6">
+            この旅行にアクセスするには招待が必要です
+          </p>
+          <Button onClick={handleLogout} color="sandRed" size="md">
             ログイン画面に戻る
           </Button>
         </div>
@@ -362,12 +419,13 @@ export default function TravelApp() {
 
   // ゲストユーザーの権限チェック
   const isGuest = appUser?.type === 'guest';
-  const canEdit = !isGuest || (isGuest && selectedTrip?.guestPermission === 'edit');
+  const canEdit =
+    !isGuest || (isGuest && selectedTrip?.guestPermission === 'edit');
   const isCreator = selectedTrip?.creator === appUser?.id;
-  
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-stone-50 to-neutral-100">
-      <CreateTripModal 
+      <CreateTripModal
         isOpen={showCreateTripModal}
         onCreateTrip={handleCreateTrip}
         onClose={() => setShowCreateTripModal(false)}
@@ -376,9 +434,12 @@ export default function TravelApp() {
         {/* User info bar */}
         <div className="flex items-center justify-between mb-4 bg-white rounded-lg shadow-sm border border-stone-200 px-4 py-2">
           <div className="flex items-center gap-3">
-            <div 
-              className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium" 
-              style={{ backgroundColor: colorPalette.aquaBlue.light, color: colorPalette.aquaBlue.bg }}
+            <div
+              className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium"
+              style={{
+                backgroundColor: colorPalette.aquaBlue.light,
+                color: colorPalette.aquaBlue.bg,
+              }}
             >
               {appUser?.name.charAt(0)}
             </div>
@@ -395,30 +456,43 @@ export default function TravelApp() {
 
         {/* Trip Selector Tabs */}
         <div className="flex flex-wrap gap-2 mb-4">
-          {trips.filter(trip => 
-            trip.members.some(m => m.id === appUser?.id || (m.name === appUser?.name && m.type === appUser?.type)) ||
-            (appUser?.type === 'guest' && trip.guestAccessEnabled !== false)
-          ).map(trip => (
-            <button
-              key={trip.id}
-              onClick={() => {
-                setSelectedTrip(trip);
-                setSelectedDate(getDatesInRange(trip.startDate, trip.endDate)[0]);
-                setCurrentPage("schedule");
-              }}
-              className={`px-4 py-2 rounded-lg transition-colors shadow-sm font-medium ${
-                selectedTrip.id === trip.id
-                  ? 'text-white shadow-md'
-                  : 'bg-white border border-stone-200 text-stone-700 hover:shadow-md hover:border-stone-300'
-              }`}
-              style={selectedTrip.id === trip.id ? {
-                backgroundColor: colorPalette.aquaBlue.bg,
-                color: colorPalette.aquaBlue.text
-              } : {}}
-            >
-              {trip.title}
-            </button>
-          ))}
+          {trips
+            .filter(
+              (trip) =>
+                trip.members.some(
+                  (m) =>
+                    m.id === appUser?.id ||
+                    (m.name === appUser?.name && m.type === appUser?.type)
+                ) ||
+                (appUser?.type === 'guest' && trip.guestAccessEnabled !== false)
+            )
+            .map((trip) => (
+              <button
+                key={trip.id}
+                onClick={() => {
+                  setSelectedTrip(trip);
+                  setSelectedDate(
+                    getDatesInRange(trip.startDate, trip.endDate)[0]
+                  );
+                  setCurrentPage('schedule');
+                }}
+                className={`px-4 py-2 rounded-lg transition-colors shadow-sm font-medium ${
+                  selectedTrip.id === trip.id
+                    ? 'text-white shadow-md'
+                    : 'bg-white border border-stone-200 text-stone-700 hover:shadow-md hover:border-stone-300'
+                }`}
+                style={
+                  selectedTrip.id === trip.id
+                    ? {
+                        backgroundColor: colorPalette.aquaBlue.bg,
+                        color: colorPalette.aquaBlue.text,
+                      }
+                    : {}
+                }
+              >
+                {trip.title}
+              </button>
+            ))}
           <button className="flex items-center gap-2 px-4 py-2 bg-white border-2 border-dashed border-stone-300 text-stone-600 rounded-lg hover:border-stone-400 hover:text-stone-700 transition-colors">
             <Plus className="w-4 h-4" />
             新しい旅行
@@ -429,7 +503,10 @@ export default function TravelApp() {
         <div className="bg-white rounded-xl shadow-sm border border-stone-200 p-6 mb-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
             <div className="flex items-center gap-3">
-              <Calendar className="w-8 h-8" style={{ color: colorPalette.aquaBlue.bg }} />
+              <Calendar
+                className="w-8 h-8"
+                style={{ color: colorPalette.aquaBlue.bg }}
+              />
               {editingTripTitle ? (
                 <div className="flex items-center gap-2">
                   <input
@@ -458,7 +535,9 @@ export default function TravelApp() {
                 </div>
               ) : (
                 <div className="flex items-center gap-2 relative">
-                  <h1 className="text-xl md:text-3xl font-bold text-stone-800">{selectedTrip.title}</h1>
+                  <h1 className="text-xl md:text-3xl font-bold text-stone-800">
+                    {selectedTrip.title}
+                  </h1>
                   <div className="relative" ref={settingsRef}>
                     <button
                       onClick={() => setShowTripSettings(!showTripSettings)}
@@ -466,7 +545,7 @@ export default function TravelApp() {
                     >
                       <Settings className="w-5 h-5" />
                     </button>
-                    
+
                     {showTripSettings && (
                       <div className="absolute top-8 right-0 bg-white border border-stone-200 rounded-lg shadow-lg py-2 w-40 z-10">
                         <button
@@ -479,32 +558,53 @@ export default function TravelApp() {
                         {isCreator && (
                           <>
                             <div className="border-t border-stone-200 my-1" />
-                            <div className="px-4 py-2 text-xs text-stone-500">ゲスト権限</div>
+                            <div className="px-4 py-2 text-xs text-stone-500">
+                              ゲスト権限
+                            </div>
                             <button
-                              onClick={() => updateTrip(selectedTrip.id, trip => ({
-                                ...trip,
-                                guestPermission: trip.guestPermission === 'edit' ? 'view' : 'edit'
-                              }))}
+                              onClick={() =>
+                                updateTrip(selectedTrip.id, (trip) => ({
+                                  ...trip,
+                                  guestPermission:
+                                    trip.guestPermission === 'edit'
+                                      ? 'view'
+                                      : 'edit',
+                                }))
+                              }
                               className="w-full px-4 py-2 text-left text-stone-700 hover:bg-stone-50 flex items-center justify-between"
                             >
                               <span className="text-sm">
-                                {selectedTrip.guestPermission === 'edit' ? '編集可能' : '閲覧のみ'}
+                                {selectedTrip.guestPermission === 'edit'
+                                  ? '編集可能'
+                                  : '閲覧のみ'}
                               </span>
-                              <div className={`w-2 h-2 rounded-full ${
-                                selectedTrip.guestPermission === 'edit' ? 'bg-green-500' : 'bg-orange-500'
-                              }`} />
+                              <div
+                                className={`w-2 h-2 rounded-full ${
+                                  selectedTrip.guestPermission === 'edit'
+                                    ? 'bg-green-500'
+                                    : 'bg-orange-500'
+                                }`}
+                              />
                             </button>
                             <button
-                              onClick={() => updateTrip(selectedTrip.id, trip => ({
-                                ...trip,
-                                guestAccessEnabled: !(trip.guestAccessEnabled ?? true)
-                              }))}
+                              onClick={() =>
+                                updateTrip(selectedTrip.id, (trip) => ({
+                                  ...trip,
+                                  guestAccessEnabled: !(
+                                    trip.guestAccessEnabled ?? true
+                                  ),
+                                }))
+                              }
                               className="w-full px-4 py-2 text-left text-stone-700 hover:bg-stone-50 flex items-center justify-between"
                             >
                               <span className="text-sm">ゲストアクセス</span>
-                              <div className={`w-2 h-2 rounded-full ${
-                                selectedTrip.guestAccessEnabled !== false ? 'bg-green-500' : 'bg-red-500'
-                              }`} />
+                              <div
+                                className={`w-2 h-2 rounded-full ${
+                                  selectedTrip.guestAccessEnabled !== false
+                                    ? 'bg-green-500'
+                                    : 'bg-red-500'
+                                }`}
+                              />
                             </button>
                             <div className="border-t border-stone-200 my-1" />
                           </>
@@ -545,7 +645,8 @@ export default function TravelApp() {
           <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-stone-600">
             <span className="flex items-center gap-1">
               <Calendar className="w-4 h-4" />
-              {formatDate(selectedTrip.startDate)} - {formatDate(selectedTrip.endDate)}
+              {formatDate(selectedTrip.startDate)} -{' '}
+              {formatDate(selectedTrip.endDate)}
             </span>
             <span className="flex items-center gap-1">
               <Users className="w-4 h-4" />
@@ -569,10 +670,14 @@ export default function TravelApp() {
                     ? 'text-white shadow-md'
                     : 'bg-white border border-stone-200 text-stone-600 hover:shadow-md hover:border-stone-300'
                 }`}
-                style={currentPage === item.id ? {
-                  backgroundColor: color.bg,
-                  color: color.text
-                } : {}}
+                style={
+                  currentPage === item.id
+                    ? {
+                        backgroundColor: color.bg,
+                        color: color.text,
+                      }
+                    : {}
+                }
               >
                 <Icon className="w-4 h-4" />
                 {item.label}
@@ -582,39 +687,35 @@ export default function TravelApp() {
         </div>
 
         {/* Page Content */}
-        {currentPage === "schedule" && (
-          <SchedulePage 
-            trip={selectedTrip} 
+        {currentPage === 'schedule' && (
+          <SchedulePage
+            trip={selectedTrip}
             selectedDate={selectedDate}
             onDateChange={setSelectedDate}
             onTripUpdate={canEdit ? updateTrip : () => {}}
             canEdit={canEdit}
           />
         )}
-        {currentPage === "memo" && (
-          <MemoPage 
-            trip={selectedTrip} 
+        {currentPage === 'memo' && (
+          <MemoPage
+            trip={selectedTrip}
             onTripUpdate={canEdit ? updateTrip : () => {}}
             canEdit={canEdit}
           />
         )}
-        {currentPage === "checklist" && (
-          <ChecklistPage 
-            trip={selectedTrip} 
+        {currentPage === 'checklist' && (
+          <ChecklistPage
+            trip={selectedTrip}
             onTripUpdate={canEdit ? updateTrip : () => {}}
             canEdit={canEdit}
           />
         )}
-        {currentPage === "budget" && (
-          <BudgetPage trip={selectedTrip} />
-        )}
-        {currentPage === "files" && (
-          <FilesPage trip={selectedTrip} />
-        )}
+        {currentPage === 'budget' && <BudgetPage trip={selectedTrip} />}
+        {currentPage === 'files' && <FilesPage trip={selectedTrip} />}
       </div>
 
       {/* Modals */}
-      <MembersModal 
+      <MembersModal
         isOpen={showMembersModal}
         trip={selectedTrip}
         user={appUser}
@@ -622,7 +723,7 @@ export default function TravelApp() {
         onTripUpdate={updateTrip}
       />
 
-      <InviteModal 
+      <InviteModal
         isOpen={showInviteModal}
         trip={selectedTrip}
         onClose={() => setShowInviteModal(false)}
@@ -659,13 +760,19 @@ export default function TravelApp() {
                         currentPage === item.id ? 'bg-stone-100' : ''
                       }`}
                     >
-                      <Icon 
-                        className="w-5 h-5" 
-                        style={{ color: currentPage === item.id ? color.bg : '#6B7280' }}
+                      <Icon
+                        className="w-5 h-5"
+                        style={{
+                          color: currentPage === item.id ? color.bg : '#6B7280',
+                        }}
                       />
-                      <span className={`font-medium ${
-                        currentPage === item.id ? 'text-stone-800' : 'text-stone-600'
-                      }`}>
+                      <span
+                        className={`font-medium ${
+                          currentPage === item.id
+                            ? 'text-stone-800'
+                            : 'text-stone-600'
+                        }`}
+                      >
                         {item.label}
                       </span>
                     </button>
@@ -673,7 +780,7 @@ export default function TravelApp() {
                 })}
               </div>
             )}
-            
+
             {/* Floating Button */}
             <button
               onClick={() => setShowFloatingMenu(!showFloatingMenu)}
