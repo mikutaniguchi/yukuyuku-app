@@ -4,12 +4,12 @@
 ゆくゆくは、旅行の計画・管理を簡単にするWebアプリケーションです。友人や家族と一緒に旅行のスケジュール、持ち物チェックリスト、メモ、予算などを共有・管理できます。
 
 ### 主な機能
-- 📅 **スケジュール管理** - 日程ごとの予定を時間順に管理
-- ✅ **チェックリスト** - 持ち物や準備項目をリスト化
-- 📄 **ファイル管理** - 写真やPDFなどの旅行関連ファイルを保存
-- 📝 **メモ** - 旅行に関する情報をメモとして記録
-- 💰 **予算管理** - 旅行の予算と実際の支出を管理
-- 👥 **メンバー共有** - 招待リンクで旅行メンバーと情報を共有
+-  **スケジュール管理** - 日程ごとの予定を時間順に管理
+-  **チェックリスト** - 持ち物や準備項目をリスト化
+-  **ファイル管理** - 写真やPDFなどの旅行関連ファイルを保存
+-  **メモ** - 旅行に関する情報をメモとして記録
+-  **予算管理** - 旅行の予算と実際の支出を管理
+-  **メンバー共有** - 招待リンクで旅行メンバーと情報を共有
 
 ## 技術スタック
 - **フロントエンド**: Next.js 15.4.3, React 19, TypeScript
@@ -59,54 +59,3 @@ yarn dev
 ```
 
 5. ブラウザで [http://localhost:3000](http://localhost:3000) を開く
-
-## Firebase設定
-
-1. [Firebase Console](https://console.firebase.google.com/)でプロジェクトを作成
-2. Authentication、Firestore Database、Storageを有効化
-3. Webアプリを追加して設定情報を取得
-4. 取得した設定を`.env.local`に追加
-
-### Firestore ルール
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /trips/{tripId} {
-      allow read: if request.auth != null && 
-        (request.auth.uid in resource.data.members || 
-         request.auth.uid == resource.data.createdBy);
-      allow write: if request.auth != null && 
-        request.auth.uid in resource.data.members;
-    }
-  }
-}
-```
-
-### Storage CORS設定
-`cors.json`を作成：
-```json
-[
-  {
-    "origin": ["*"],
-    "method": ["GET"],
-    "maxAgeSeconds": 3600
-  }
-]
-```
-
-適用：
-```bash
-gsutil cors set cors.json gs://your-storage-bucket
-```
-
-## デプロイ
-
-### Vercelへのデプロイ
-1. [Vercel](https://vercel.com)にサインアップ
-2. GitHubリポジトリを連携
-3. 環境変数を設定
-4. デプロイ
-
-## ライセンス
-MIT
