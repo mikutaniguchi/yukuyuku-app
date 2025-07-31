@@ -166,7 +166,7 @@ export default function BudgetPage({ trip }: BudgetPageProps) {
                   </span>
                 </div>
                 <div className="space-y-2">
-                  {daySchedules.map((schedule) => {
+                  {daySchedules.map((schedule, scheduleIndex) => {
                     const budgetPerPerson =
                       schedule.budgetPeople > 0
                         ? Math.round(
@@ -179,7 +179,7 @@ export default function BudgetPage({ trip }: BudgetPageProps) {
 
                     return (
                       <div
-                        key={schedule.id}
+                        key={`${date}-${schedule.id}-${scheduleIndex}`}
                         className="flex items-center justify-between text-sm bg-stone-50 rounded-lg p-3"
                       >
                         <div className="flex items-center gap-2">
