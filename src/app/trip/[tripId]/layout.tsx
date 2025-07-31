@@ -32,6 +32,7 @@ import Button from '@/components/Button';
 import MembersModal from '@/components/MembersModal';
 import InviteModal from '@/components/InviteModal';
 import DeleteTripModal from '@/components/DeleteTripModal';
+import FloatingNavMenu from '@/components/FloatingNavMenu';
 
 interface TripLayoutProps {
   children: React.ReactNode;
@@ -56,26 +57,31 @@ export default function TripLayout({ children }: TripLayoutProps) {
 
   const navItems = [
     {
-      id: 'schedule',
+      id: 'schedule' as const,
       path: `/trip/${tripId}`,
       label: 'スケジュール',
       icon: Calendar,
     },
     {
-      id: 'checklist',
+      id: 'checklist' as const,
       path: `/trip/${tripId}/checklist`,
       label: 'チェックリスト',
       icon: CheckSquare,
     },
     {
-      id: 'files',
+      id: 'files' as const,
       path: `/trip/${tripId}/files`,
       label: 'ファイル',
       icon: FileText,
     },
-    { id: 'memo', path: `/trip/${tripId}/memo`, label: 'メモ', icon: BookOpen },
     {
-      id: 'budget',
+      id: 'memo' as const,
+      path: `/trip/${tripId}/memo`,
+      label: 'メモ',
+      icon: BookOpen,
+    },
+    {
+      id: 'budget' as const,
       path: `/trip/${tripId}/budget`,
       label: '予算管理',
       icon: DollarSign,
@@ -190,6 +196,29 @@ export default function TripLayout({ children }: TripLayoutProps) {
 
   const isCreator = trip.creator === appUser.id;
   const canEdit = trip.members.some((m) => m.id === appUser.id);
+
+  // 現在のページを判定
+  const getCurrentPage = ():
+    | 'schedule'
+    | 'checklist'
+    | 'files'
+    | 'memo'
+    | 'budget' => {
+    if (pathname === `/trip/${tripId}/checklist`) return 'checklist';
+    if (pathname === `/trip/${tripId}/files`) return 'files';
+    if (pathname === `/trip/${tripId}/memo`) return 'memo';
+    if (pathname === `/trip/${tripId}/budget`) return 'budget';
+    return 'schedule'; // default
+  };
+
+  const handlePageChange = (
+    pageId: 'schedule' | 'checklist' | 'files' | 'memo' | 'budget'
+  ) => {
+    const targetItem = navItems.find((item) => item.id === pageId);
+    if (targetItem) {
+      router.push(targetItem.path);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-stone-50 to-neutral-100">
@@ -404,6 +433,13 @@ export default function TripLayout({ children }: TripLayoutProps) {
           setShowDeleteConfirm(false);
           setDeleteConfirmTitle('');
         }}
+      />
+
+      {/* Floating Navigation Menu */}
+      <FloatingNavMenu
+        navItems={navItems}
+        currentPage={getCurrentPage()}
+        onPageChange={handlePageChange}
       />
     </div>
   );

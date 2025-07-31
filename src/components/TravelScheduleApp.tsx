@@ -62,8 +62,6 @@ export default function TravelApp() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteConfirmTitle, setDeleteConfirmTitle] = useState('');
   const [showTripSettings, setShowTripSettings] = useState(false);
-  const [showFloatingMenu, setShowFloatingMenu] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
   const settingsRef = useRef<HTMLDivElement>(null);
 
   const navItems = [
@@ -315,17 +313,6 @@ export default function TravelApp() {
     }
   }, [appUser, trips]);
 
-  // Handle scroll detection for floating menu
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollPosition = window.scrollY;
-      setIsScrolled(scrollPosition > 200); // Show after 200px scroll
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
   // Close settings menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -335,24 +322,16 @@ export default function TravelApp() {
       ) {
         setShowTripSettings(false);
       }
-
-      // Also close floating menu when clicking outside
-      if (
-        !event.target ||
-        !(event.target as Element).closest('.floating-menu')
-      ) {
-        setShowFloatingMenu(false);
-      }
     };
 
-    if (showTripSettings || showFloatingMenu) {
+    if (showTripSettings) {
       document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [showTripSettings, showFloatingMenu]);
+  }, [showTripSettings]);
 
   if (loading || loadingTrips) {
     return (
@@ -737,64 +716,6 @@ export default function TravelApp() {
         onConfirmDelete={confirmDeleteTrip}
         onCancel={cancelDeleteTrip}
       />
-
-      {/* Floating Navigation Menu */}
-      {isScrolled && (
-        <div className="floating-menu fixed bottom-6 right-6 z-50">
-          <div className="relative">
-            {/* Menu Items */}
-            {showFloatingMenu && (
-              <div className="absolute bottom-16 right-0 bg-white rounded-lg shadow-xl border border-stone-200 py-2 w-48 mb-2 animate-in slide-in-from-bottom-4 fade-in duration-300">
-                {navItems.map((item, index) => {
-                  const Icon = item.icon;
-                  const colors = Object.values(colorPalette);
-                  const color = colors[index % colors.length];
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => {
-                        setCurrentPage(item.id);
-                        setShowFloatingMenu(false);
-                      }}
-                      className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-stone-50 transition-colors ${
-                        currentPage === item.id ? 'bg-stone-100' : ''
-                      }`}
-                    >
-                      <Icon
-                        className="w-5 h-5"
-                        style={{
-                          color: currentPage === item.id ? color.bg : '#6B7280',
-                        }}
-                      />
-                      <span
-                        className={`font-medium ${
-                          currentPage === item.id
-                            ? 'text-stone-800'
-                            : 'text-stone-600'
-                        }`}
-                      >
-                        {item.label}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-
-            {/* Floating Button */}
-            <button
-              onClick={() => setShowFloatingMenu(!showFloatingMenu)}
-              className="w-14 h-14 bg-white rounded-full shadow-lg border border-stone-200 flex items-center justify-center text-stone-600 hover:text-stone-800 hover:shadow-xl transition-all duration-300"
-            >
-              {showFloatingMenu ? (
-                <Aperture className="w-6 h-6 rotate-90 scale-125 transition-transform duration-300" />
-              ) : (
-                <Aperture className="w-6 h-6 transition-transform duration-300" />
-              )}
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
