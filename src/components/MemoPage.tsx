@@ -10,19 +10,34 @@ interface MemoPageProps {
   canEdit?: boolean;
 }
 
-export default function MemoPage({ trip, onTripUpdate, canEdit = true }: MemoPageProps) {
+export default function MemoPage({
+  trip,
+  onTripUpdate,
+  canEdit = true,
+}: MemoPageProps) {
   const handleMemoChange = (newMemo: string) => {
     onTripUpdate(trip.id, (currentTrip) => ({
       ...currentTrip,
-      memo: newMemo
+      memo: newMemo,
     }));
   };
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-stone-200 p-6">
       <h2 className="text-xl font-semibold text-stone-800 mb-4">メモ</h2>
-      
+
       <div className="space-y-4">
+        {trip.memo && (
+          <div className="border-b pb-4">
+            <h3 className="text-lg font-medium text-stone-800 mb-3">
+              プレビュー
+            </h3>
+            <div className="bg-stone-50 rounded-lg p-4 whitespace-pre-wrap break-words">
+              {linkifyText(trip.memo)}
+            </div>
+          </div>
+        )}
+
         {canEdit ? (
           <textarea
             value={trip.memo}
@@ -33,15 +48,6 @@ export default function MemoPage({ trip, onTripUpdate, canEdit = true }: MemoPag
         ) : (
           <div className="w-full h-96 px-4 py-3 bg-stone-50 border border-stone-200 rounded-lg whitespace-pre-wrap break-words overflow-y-auto">
             {trip.memo || 'メモがありません'}
-          </div>
-        )}
-        
-        {trip.memo && (
-          <div className="border-t pt-4">
-            <h3 className="text-lg font-medium text-stone-800 mb-3">プレビュー</h3>
-            <div className="bg-stone-50 rounded-lg p-4 whitespace-pre-wrap break-words">
-              {linkifyText(trip.memo)}
-            </div>
           </div>
         )}
       </div>

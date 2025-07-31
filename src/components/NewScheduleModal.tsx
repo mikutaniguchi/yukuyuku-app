@@ -5,6 +5,7 @@ import { Plus } from 'lucide-react';
 import { colorPalette } from '@/lib/constants';
 import Modal from './Modal';
 import ScheduleForm from './ScheduleForm';
+import Button from './Button';
 import { ScheduleFormData } from '@/types';
 
 interface NewScheduleModalProps {
@@ -33,8 +34,22 @@ export default function NewScheduleModal({
   tripDates,
   iconOptions,
 }: NewScheduleModalProps) {
-  const isValid = newSchedule.title.trim() !== '' && newSchedule.startTime !== '';
-  
+  const isValid =
+    newSchedule.title.trim() !== '' && newSchedule.startTime !== '';
+
+  const footerButton = (
+    <Button
+      onClick={onSubmit}
+      disabled={!isValid}
+      color="abyssGreen"
+      size="md"
+      className="w-full"
+    >
+      <Plus className="w-4 h-4" />
+      追加
+    </Button>
+  );
+
   return (
     <Modal
       isOpen={isOpen}
@@ -43,6 +58,8 @@ export default function NewScheduleModal({
       icon={Plus}
       iconColor={colorPalette.abyssGreen.bg}
       maxWidth="md"
+      scrollable
+      fixedFooter={footerButton}
     >
       <ScheduleForm
         schedule={newSchedule}
@@ -51,20 +68,6 @@ export default function NewScheduleModal({
         tripDates={tripDates}
         iconOptions={iconOptions}
       />
-      
-      <div className="mt-6">
-        <button
-          onClick={onSubmit}
-          disabled={!isValid}
-          className="w-full py-2 text-white rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-          style={{ 
-            backgroundColor: colorPalette.abyssGreen.bg,
-            color: colorPalette.abyssGreen.text 
-          }}
-        >
-          追加
-        </button>
-      </div>
     </Modal>
   );
 }

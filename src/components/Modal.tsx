@@ -13,6 +13,8 @@ interface ModalProps {
   iconColor?: string;
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '4xl';
   showCloseButton?: boolean;
+  scrollable?: boolean;
+  fixedFooter?: React.ReactNode;
   children: React.ReactNode;
 }
 
@@ -24,6 +26,8 @@ export default function Modal({
   iconColor,
   maxWidth = 'md',
   showCloseButton = true,
+  scrollable = false,
+  fixedFooter,
   children,
 }: ModalProps) {
   useBodyScrollLock(isOpen);
@@ -59,11 +63,13 @@ export default function Modal({
       onClick={onClose}
     >
       <div
-        className={`bg-white rounded-xl shadow-xl border border-stone-200 w-full ${maxWidthClasses[maxWidth]}`}
+        className={`bg-white rounded-xl shadow-xl border border-stone-200 w-full ${maxWidthClasses[maxWidth]} ${
+          scrollable ? 'max-h-[90vh] flex flex-col' : ''
+        }`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-stone-200">
+        <div className="flex items-center justify-between p-6 border-b border-stone-200 flex-shrink-0">
           <div className="flex items-center gap-3">
             {Icon && (
               <Icon
@@ -84,7 +90,16 @@ export default function Modal({
         </div>
 
         {/* Content */}
-        <div className="p-6">{children}</div>
+        <div className={`p-6 ${scrollable ? 'overflow-y-auto flex-1' : ''}`}>
+          {children}
+        </div>
+
+        {/* Fixed Footer */}
+        {fixedFooter && (
+          <div className="border-t border-stone-200 p-6 flex-shrink-0 bg-white rounded-b-xl">
+            {fixedFooter}
+          </div>
+        )}
       </div>
     </div>
   );

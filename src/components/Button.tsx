@@ -1,6 +1,6 @@
 'use client';
 
-import React, { CSSProperties } from 'react';
+import React from 'react';
 import { colorPalette } from '@/lib/constants';
 
 type ColorKey = keyof typeof colorPalette;
@@ -55,7 +55,8 @@ export default function Button({
       }}
       onMouseEnter={(e) => {
         if (!disabled) {
-          e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
+          e.currentTarget.style.boxShadow =
+            '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
         }
       }}
       onMouseLeave={(e) => {
