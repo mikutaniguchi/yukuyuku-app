@@ -7,7 +7,7 @@ interface ErrorMessageProps {
   className?: string;
 }
 
-export default function ErrorMessage({
+export default React.memo(function ErrorMessage({
   message,
   className = '',
 }: ErrorMessageProps) {
@@ -18,4 +18,4 @@ export default function ErrorMessage({
   const combinedClasses = `${baseClasses} ${className}`.trim();
 
   return <div className={combinedClasses}>{message}</div>;
-}
+});

@@ -12,7 +12,7 @@ interface SummaryCardProps {
   className?: string;
 }
 
-export default function SummaryCard({
+export default React.memo(function SummaryCard({
   icon: Icon,
   title,
   value,
@@ -37,4 +37,4 @@ export default function SummaryCard({
       </p>
     </div>
   );
-}
+});
