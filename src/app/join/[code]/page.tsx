@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { getUserTrips, joinTripByCode } from '@/lib/firestore';
+import { joinTripByCode } from '@/lib/firestore';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function JoinPage() {

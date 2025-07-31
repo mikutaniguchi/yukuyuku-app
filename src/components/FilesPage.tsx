@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import Image from 'next/image';
 import { FileText, ImageIcon, Download, Calendar, Clock } from 'lucide-react';
 import { Trip, UploadedFile } from '@/types';
 import { formatDate } from '@/lib/constants';
@@ -28,22 +27,24 @@ export default function FilesPage({ trip }: FilesPageProps) {
     }> = [];
 
     Object.entries(trip.schedules).forEach(([date, schedules]) => {
-      schedules.forEach(schedule => {
+      schedules.forEach((schedule) => {
         if (schedule.files && schedule.files.length > 0) {
-          schedule.files.forEach(file => {
+          schedule.files.forEach((file) => {
             allFiles.push({
               file,
               scheduleTitle: schedule.title,
               scheduleTime: schedule.startTime,
               date,
-              scheduleId: schedule.id
+              scheduleId: schedule.id,
             });
           });
         }
       });
     });
 
-    return allFiles.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    return allFiles.sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
   };
 
   const allFiles = getAllFiles();
@@ -51,11 +52,17 @@ export default function FilesPage({ trip }: FilesPageProps) {
   const getFilesByCategory = () => {
     switch (selectedCategory) {
       case 'images':
-        return allFiles.filter(item => item.file.type && item.file.type.startsWith('image/'));
+        return allFiles.filter(
+          (item) => item.file.type && item.file.type.startsWith('image/')
+        );
       case 'pdfs':
-        return allFiles.filter(item => item.file.type === 'application/pdf');
+        return allFiles.filter((item) => item.file.type === 'application/pdf');
       case 'others':
-        return allFiles.filter(item => !item.file.type?.startsWith('image/') && item.file.type !== 'application/pdf');
+        return allFiles.filter(
+          (item) =>
+            !item.file.type?.startsWith('image/') &&
+            item.file.type !== 'application/pdf'
+        );
       default:
         return allFiles;
     }
@@ -81,7 +88,6 @@ export default function FilesPage({ trip }: FilesPageProps) {
     }
   };
 
-
   const downloadFile = (file: UploadedFile) => {
     const link = document.createElement('a');
     link.href = file.url;
@@ -103,10 +109,24 @@ export default function FilesPage({ trip }: FilesPageProps) {
         <div className="flex flex-wrap gap-2">
           {[
             { id: 'all', label: 'すべて', count: allFiles.length },
-            { id: 'images', label: '画像', count: allFiles.filter(item => isImageFile(item.file)).length },
-            { id: 'pdfs', label: 'PDF', count: allFiles.filter(item => isPDFFile(item.file)).length },
-            { id: 'others', label: 'その他', count: allFiles.filter(item => !isImageFile(item.file) && !isPDFFile(item.file)).length }
-          ].map(category => (
+            {
+              id: 'images',
+              label: '画像',
+              count: allFiles.filter((item) => isImageFile(item.file)).length,
+            },
+            {
+              id: 'pdfs',
+              label: 'PDF',
+              count: allFiles.filter((item) => isPDFFile(item.file)).length,
+            },
+            {
+              id: 'others',
+              label: 'その他',
+              count: allFiles.filter(
+                (item) => !isImageFile(item.file) && !isPDFFile(item.file)
+              ).length,
+            },
+          ].map((category) => (
             <button
               key={category.id}
               onClick={() => setSelectedCategory(category.id)}
@@ -125,8 +145,8 @@ export default function FilesPage({ trip }: FilesPageProps) {
         {filteredFiles.length > 0 ? (
           <div className="space-y-3">
             {filteredFiles.map((item, index) => (
-              <div 
-                key={`${item.scheduleId}-${item.file.id}-${index}`} 
+              <div
+                key={`${item.scheduleId}-${item.file.id}-${index}`}
                 className="bg-white rounded-lg border border-stone-200 p-4 hover:shadow-md transition-shadow cursor-pointer"
                 onClick={() => {
                   if (isImageFile(item.file)) {
@@ -140,16 +160,17 @@ export default function FilesPage({ trip }: FilesPageProps) {
               >
                 <div className="flex items-center gap-4">
                   {/* ファイルアイコン */}
-                  <div className="flex-shrink-0">
-                    {getFileIcon(item.file)}
-                  </div>
+                  <div className="flex-shrink-0">{getFileIcon(item.file)}</div>
 
                   {/* ファイル情報 */}
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-medium text-stone-800 truncate mb-1" title={item.file.name}>
+                    <h3
+                      className="font-medium text-stone-800 truncate mb-1"
+                      title={item.file.name}
+                    >
                       {item.file.name}
                     </h3>
-                    
+
                     <div className="flex items-center gap-4 text-sm text-stone-600">
                       <div className="flex items-center gap-1">
                         <Calendar className="w-3 h-3" />
@@ -160,7 +181,7 @@ export default function FilesPage({ trip }: FilesPageProps) {
                         <span>{item.scheduleTime}</span>
                       </div>
                     </div>
-                    
+
                     <div className="text-sm text-stone-500 truncate mt-1">
                       📍 {item.scheduleTitle}
                     </div>
@@ -185,9 +206,13 @@ export default function FilesPage({ trip }: FilesPageProps) {
           <div className="text-center py-12 text-stone-500">
             <FileText className="w-12 h-12 mx-auto mb-4 text-stone-300" />
             <p className="text-lg font-medium mb-2">
-              {selectedCategory === 'all' ? 'ファイルがまだありません' : `${selectedCategory === 'images' ? '画像' : selectedCategory === 'pdfs' ? 'PDF' : 'その他'}ファイルがありません`}
+              {selectedCategory === 'all'
+                ? 'ファイルがまだありません'
+                : `${selectedCategory === 'images' ? '画像' : selectedCategory === 'pdfs' ? 'PDF' : 'その他'}ファイルがありません`}
             </p>
-            <p className="text-sm">スケジュールにファイルを追加してみましょう</p>
+            <p className="text-sm">
+              スケジュールにファイルを追加してみましょう
+            </p>
           </div>
         )}
       </div>

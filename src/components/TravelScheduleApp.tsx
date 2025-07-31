@@ -363,7 +363,7 @@ export default function TravelApp() {
   }
 
   if (showLoginModal) {
-    return <LoginModal onLogin={handleLogin} trips={trips} />;
+    return <LoginModal onLogin={handleLogin} />;
   }
 
   // 旅行がない場合は作成フォームを表示

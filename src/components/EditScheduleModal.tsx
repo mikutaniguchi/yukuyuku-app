@@ -7,7 +7,7 @@ import Modal from './Modal';
 import ScheduleForm from './ScheduleForm';
 import ScheduleFiles from './ScheduleFiles';
 import Button from './Button';
-import { Schedule, ScheduleFormData, UploadedFile } from '@/types';
+import { Schedule, ScheduleFormData } from '@/types';
 
 interface EditScheduleModalProps {
   isOpen: boolean;

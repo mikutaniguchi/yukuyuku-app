@@ -6,17 +6,13 @@ import {
   Plus,
   MapPin,
   Edit2,
-  Trash2,
-  Save,
-  X,
   Car,
   Minus,
   Plane,
   Train,
-  Navigation,
   Footprints,
 } from 'lucide-react';
-import { Trip, Schedule, UploadedFile, ScheduleFormData } from '@/types';
+import { Trip, Schedule, ScheduleFormData } from '@/types';
 import {
   colorPalette,
   getDatesInRange,
@@ -25,7 +21,6 @@ import {
   getGoogleMapsLink,
   getIcon,
 } from '@/lib/constants';
-import ScheduleForm from './ScheduleForm';
 import ScheduleFiles from './ScheduleFiles';
 import Button from './Button';
 import { processAndUploadFile, deleteFileFromStorage } from '@/lib/fileStorage';
@@ -249,14 +244,6 @@ export default function SchedulePage({
 
       return { ...currentTrip, schedules: updatedSchedules };
     });
-  };
-
-  const isImageFile = (file: UploadedFile) => {
-    return file.type && file.type.startsWith('image/');
-  };
-
-  const isPDFFile = (file: UploadedFile) => {
-    return file.type === 'application/pdf';
   };
 
   const iconOptions = [

@@ -1,4 +1,4 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   images: {
@@ -11,6 +11,10 @@ const nextConfig: NextConfig = {
         pathname: '/v0/b/**',
       },
     ],
+  },
+  eslint: {
+    // 未使用変数をエラーレベルに設定
+    dirs: ['src'],
   },
 };
 

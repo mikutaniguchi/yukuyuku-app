@@ -119,7 +119,7 @@ export default function Home() {
   }
 
   if (showLoginModal) {
-    return <LoginModal onLogin={handleLogin} trips={trips} />;
+    return <LoginModal onLogin={handleLogin} />;
   }
 
   return (

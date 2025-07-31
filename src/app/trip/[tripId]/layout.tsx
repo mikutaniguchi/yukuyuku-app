@@ -26,7 +26,7 @@ import {
   X,
 } from 'lucide-react';
 import { Trip, User } from '@/types';
-import { colorPalette, getDatesInRange, formatDate } from '@/lib/constants';
+import { colorPalette, formatDate } from '@/lib/constants';
 import { logout } from '@/lib/auth';
 import Button from '@/components/Button';
 import MembersModal from '@/components/MembersModal';
