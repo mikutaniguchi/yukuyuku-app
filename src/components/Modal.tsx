@@ -92,7 +92,7 @@ export default function Modal({
 
         {/* Fixed Footer */}
         {fixedFooter && (
-          <div className="border-t border-stone-200 p-6 flex-shrink-0 bg-white rounded-b-xl shadow-[0_-1px_2px_rgba(0,0,0,0.05)]">
+          <div className="border-t border-stone-200 py-4 px-6 flex-shrink-0 bg-white rounded-b-xl shadow-[0_-1px_2px_rgba(0,0,0,0.05)]">
             {fixedFooter}
           </div>
         )}

@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { X } from 'lucide-react';
 import { getIcon, formatDate } from '@/lib/constants';
 import { ScheduleFormData } from '@/types';
@@ -31,6 +31,91 @@ export default function ScheduleForm({
     const hours = now.getHours().toString().padStart(2, '0');
     return `${hours}:00`;
   };
+
+  // アイコンと交通手段の対応関係
+  const iconTransportMap: Record<string, string> = {
+    car: '車/タクシー',
+    train: '電車',
+    plane: '飛行機',
+    bus: 'バス',
+  };
+
+  const transportIconMap: Record<string, string> = {
+    '車/タクシー': 'car',
+    電車: 'train',
+    飛行機: 'plane',
+    バス: 'bus',
+  };
+
+  // アイコン変更時の交通手段自動設定
+  useEffect(() => {
+    if (schedule.icon && iconTransportMap[schedule.icon]) {
+      const correspondingTransport = iconTransportMap[schedule.icon];
+      if (schedule.transport.method !== correspondingTransport) {
+        onScheduleChange({
+          ...schedule,
+          transport: { ...schedule.transport, method: correspondingTransport },
+        });
+      }
+    }
+  }, [schedule.icon]);
+
+  // 交通手段変更時のアイコン自動設定
+  useEffect(() => {
+    if (
+      schedule.transport.method &&
+      transportIconMap[schedule.transport.method]
+    ) {
+      const correspondingIcon = transportIconMap[schedule.transport.method];
+      if (schedule.icon !== correspondingIcon) {
+        onScheduleChange({
+          ...schedule,
+          icon: correspondingIcon,
+        });
+      }
+    }
+  }, [schedule.transport.method]);
+
+  // 移動時間の自動計算
+  useEffect(() => {
+    const isTransportIcon = ['car', 'train', 'plane', 'bus'].includes(
+      schedule.icon
+    );
+    const isTransportMethod = [
+      '車/タクシー',
+      '電車',
+      '飛行機',
+      'バス',
+    ].includes(schedule.transport.method);
+
+    if (
+      (isTransportIcon || isTransportMethod) &&
+      schedule.startTime &&
+      schedule.endTime
+    ) {
+      const startTime = new Date(`2000-01-01T${schedule.startTime}`);
+      const endTime = new Date(`2000-01-01T${schedule.endTime}`);
+
+      if (endTime > startTime) {
+        const diffMinutes = Math.round(
+          (endTime.getTime() - startTime.getTime()) / (1000 * 60)
+        );
+        const durationText = `${diffMinutes}分`;
+
+        if (schedule.transport.duration !== durationText) {
+          onScheduleChange({
+            ...schedule,
+            transport: { ...schedule.transport, duration: durationText },
+          });
+        }
+      }
+    }
+  }, [
+    schedule.icon,
+    schedule.transport.method,
+    schedule.startTime,
+    schedule.endTime,
+  ]);
 
   return (
     <div className="space-y-4">
@@ -98,45 +183,6 @@ export default function ScheduleForm({
         </div>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-stone-700 mb-2">
-          アイコン
-        </label>
-        <div className="flex gap-1">
-          {iconOptions.map((option) => (
-            <button
-              key={option.id}
-              type="button"
-              onClick={() => onScheduleChange({ ...schedule, icon: option.id })}
-              className={`p-2 rounded-full transition-colors duration-200 ${
-                schedule.icon === option.id
-                  ? 'border-2'
-                  : 'hover:bg-stone-100 border-2 border-transparent'
-              }`}
-              style={{
-                backgroundColor:
-                  schedule.icon === option.id ? option.bgColor : 'transparent',
-                color:
-                  schedule.icon === option.id ? option.iconColor : '#6B7280',
-                borderColor:
-                  schedule.icon === option.id
-                    ? option.iconColor
-                    : 'transparent',
-              }}
-              title={option.name}
-            >
-              {option.id ? (
-                <div className="w-4 h-4 flex items-center justify-center">
-                  {getIcon(option.id)}
-                </div>
-              ) : (
-                <X className="w-4 h-4" />
-              )}
-            </button>
-          ))}
-        </div>
-      </div>
-
       <input
         type="text"
         placeholder="タイトル"
@@ -149,7 +195,7 @@ export default function ScheduleForm({
 
       <input
         type="text"
-        placeholder="場所"
+        placeholder="場所（Googleマップで開けます）"
         value={schedule.location}
         onChange={(e) =>
           onScheduleChange({ ...schedule, location: e.target.value })
@@ -168,7 +214,7 @@ export default function ScheduleForm({
       />
 
       <div className="space-y-3">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-3">
           <div className="relative">
             <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-stone-500">
               ¥
@@ -225,7 +271,7 @@ export default function ScheduleForm({
 
       <div className="border-t pt-3">
         <h4 className="text-sm font-medium text-stone-700 mb-2">交通情報</h4>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-3">
           <select
             value={schedule.transport.method}
             onChange={(e) =>
@@ -236,10 +282,11 @@ export default function ScheduleForm({
             }
             className="px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-base"
           >
-            <option value="">交通手段を選択</option>
+            <option value="">交通手段</option>
             <option value="徒歩">徒歩</option>
             <option value="電車">電車</option>
-            <option value="タクシー">タクシー</option>
+            <option value="車/タクシー">車/タクシー</option>
+            <option value="バス">バス</option>
             <option value="飛行機">飛行機</option>
           </select>
           <input
@@ -254,6 +301,45 @@ export default function ScheduleForm({
             }
             className="px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-base"
           />
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-stone-700 mb-2">
+          アイコン
+        </label>
+        <div className="flex gap-1">
+          {iconOptions.map((option) => (
+            <button
+              key={option.id}
+              type="button"
+              onClick={() => onScheduleChange({ ...schedule, icon: option.id })}
+              className={`p-2 rounded-full transition-colors duration-200 ${
+                schedule.icon === option.id
+                  ? 'border-2'
+                  : 'hover:bg-stone-100 border-2 border-transparent'
+              }`}
+              style={{
+                backgroundColor:
+                  schedule.icon === option.id ? option.bgColor : 'transparent',
+                color:
+                  schedule.icon === option.id ? option.iconColor : '#6B7280',
+                borderColor:
+                  schedule.icon === option.id
+                    ? option.iconColor
+                    : 'transparent',
+              }}
+              title={option.name}
+            >
+              {option.id ? (
+                <div className="w-4 h-4 flex items-center justify-center">
+                  {getIcon(option.id)}
+                </div>
+              ) : (
+                <X className="w-4 h-4" />
+              )}
+            </button>
+          ))}
         </div>
       </div>
     </div>

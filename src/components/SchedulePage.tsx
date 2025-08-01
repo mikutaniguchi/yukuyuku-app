@@ -11,6 +11,8 @@ import {
   Plane,
   Train,
   Footprints,
+  Package,
+  PackageOpen,
 } from 'lucide-react';
 import { Trip, Schedule, ScheduleFormData } from '@/types';
 import {
@@ -57,6 +59,7 @@ export default function SchedulePage({
   const [expandedDetails, setExpandedDetails] = useState<Set<string>>(
     new Set()
   );
+  const [allExpanded, setAllExpanded] = useState(false);
 
   // ユニークIDを生成する関数
   const generateUniqueId = () => {
@@ -169,6 +172,30 @@ export default function SchedulePage({
     setExpandedDetails(newExpanded);
   };
 
+  const toggleAllDetails = () => {
+    if (allExpanded) {
+      // 全て閉じる
+      setExpandedDetails(new Set());
+      setAllExpanded(false);
+    } else {
+      // 全て開く
+      const allScheduleIds = new Set<string>();
+      tripDates.forEach((date) => {
+        (trip.schedules[date] || []).forEach((schedule) => {
+          if (
+            schedule.description ||
+            (schedule.budget && schedule.budget > 0) ||
+            (schedule.files && schedule.files.length > 0)
+          ) {
+            allScheduleIds.add(schedule.id);
+          }
+        });
+      });
+      setExpandedDetails(allScheduleIds);
+      setAllExpanded(true);
+    }
+  };
+
   const handleEditScheduleChange = (
     scheduleId: string,
     scheduleData: ScheduleFormData
@@ -259,14 +286,20 @@ export default function SchedulePage({
       iconColor: colorPalette.sandRed.lightText,
     },
     {
-      id: 'car',
-      name: '車',
-      bgColor: colorPalette.aquaBlue.light,
-      iconColor: colorPalette.aquaBlue.lightText,
+      id: 'camera',
+      name: '観光',
+      bgColor: colorPalette.strawBeige.light,
+      iconColor: colorPalette.strawBeige.lightText,
     },
     {
-      id: 'plane',
-      name: '飛行機',
+      id: 'bed',
+      name: '宿泊',
+      bgColor: colorPalette.roseQuartz.light,
+      iconColor: colorPalette.roseQuartz.lightText,
+    },
+    {
+      id: 'car',
+      name: '車',
       bgColor: colorPalette.aquaBlue.light,
       iconColor: colorPalette.aquaBlue.lightText,
     },
@@ -283,16 +316,10 @@ export default function SchedulePage({
       iconColor: colorPalette.aquaBlue.lightText,
     },
     {
-      id: 'camera',
-      name: '観光',
-      bgColor: colorPalette.strawBeige.light,
-      iconColor: colorPalette.strawBeige.lightText,
-    },
-    {
-      id: 'bed',
-      name: '宿泊',
-      bgColor: colorPalette.roseQuartz.light,
-      iconColor: colorPalette.roseQuartz.lightText,
+      id: 'plane',
+      name: '飛行機',
+      bgColor: colorPalette.aquaBlue.light,
+      iconColor: colorPalette.aquaBlue.lightText,
     },
   ];
 
@@ -516,6 +543,22 @@ export default function SchedulePage({
                 {formatDate(date)}
               </a>
             ))}
+          </div>
+
+          <div className="border-t border-stone-200 mt-4 pt-4">
+            <h2 className="text-lg font-semibold text-stone-800 mb-2">表示</h2>
+            <div className="flex justify-start">
+              <button
+                onClick={toggleAllDetails}
+                className="w-12 h-12 flex items-center justify-center rounded-full transition-colors hover:bg-stone-100 text-stone-600 hover:text-stone-800"
+              >
+                {allExpanded ? (
+                  <PackageOpen className="w-8 h-8" />
+                ) : (
+                  <Package className="w-8 h-8" />
+                )}
+              </button>
+            </div>
           </div>
         </div>
 
