@@ -88,6 +88,33 @@ export default function TripLayout({ children }: TripLayoutProps) {
     },
   ];
 
+  // ページ全体でのドラッグ&ドロップデフォルト動作を防ぐ（ドロップゾーン以外）
+  useEffect(() => {
+    const handleDragOver = (e: DragEvent) => {
+      // ドロップゾーン内でない場合のみ防ぐ
+      const target = e.target as HTMLElement;
+      if (!target.closest('[data-dropzone="true"]')) {
+        e.preventDefault();
+      }
+    };
+
+    const handleDrop = (e: DragEvent) => {
+      // ドロップゾーン内でない場合のみ防ぐ
+      const target = e.target as HTMLElement;
+      if (!target.closest('[data-dropzone="true"]')) {
+        e.preventDefault();
+      }
+    };
+
+    document.addEventListener('dragover', handleDragOver);
+    document.addEventListener('drop', handleDrop);
+
+    return () => {
+      document.removeEventListener('dragover', handleDragOver);
+      document.removeEventListener('drop', handleDrop);
+    };
+  }, []);
+
   useEffect(() => {
     const loadTrip = async () => {
       if (!firebaseUser || !tripId) {

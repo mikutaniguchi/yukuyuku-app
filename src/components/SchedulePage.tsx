@@ -28,7 +28,6 @@ import NewScheduleModal from './NewScheduleModal';
 import EditScheduleModal from './EditScheduleModal';
 import ImageModal from './ImageModal';
 import PDFModal from './PDFModal';
-
 interface SchedulePageProps {
   trip: Trip;
   selectedDate: string;
@@ -324,54 +323,58 @@ export default function SchedulePage({
       const files = (e.target as HTMLInputElement).files;
       if (!files) return;
 
-      // アップロード開始
-      setUploadingFiles((prev) => new Set([...prev, scheduleId]));
-
-      try {
-        const uploadPromises = Array.from(files).map(async (file) => {
-          return await processAndUploadFile(file, trip.id, scheduleId);
-        });
-
-        const uploadedFiles = await Promise.all(uploadPromises);
-
-        onTripUpdate(trip.id, (currentTrip) => {
-          const updatedSchedules = { ...currentTrip.schedules };
-
-          // 全ての日付からスケジュールを探して更新
-          for (const [date, schedules] of Object.entries(updatedSchedules)) {
-            const scheduleIndex = schedules.findIndex(
-              (s) => s.id === scheduleId
-            );
-            if (scheduleIndex !== -1) {
-              updatedSchedules[date] = schedules.map((schedule) =>
-                schedule.id === scheduleId
-                  ? {
-                      ...schedule,
-                      files: [...schedule.files, ...uploadedFiles],
-                    }
-                  : schedule
-              );
-              break;
-            }
-          }
-
-          return { ...currentTrip, schedules: updatedSchedules };
-        });
-      } catch (error) {
-        console.error('ファイルアップロードエラー:', error);
-        alert(
-          `ファイルのアップロードに失敗しました: ${error instanceof Error ? error.message : 'Unknown error'}`
-        );
-      } finally {
-        // アップロード完了
-        setUploadingFiles((prev) => {
-          const newSet = new Set(prev);
-          newSet.delete(scheduleId);
-          return newSet;
-        });
-      }
+      await handleFilesUpload(scheduleId, Array.from(files));
     };
     input.click();
+  };
+
+  const handleFilesUpload = async (scheduleId: string, files: File[]) => {
+    if (files.length === 0) return;
+
+    // アップロード開始
+    setUploadingFiles((prev) => new Set([...prev, scheduleId]));
+
+    try {
+      const uploadPromises = files.map(async (file) => {
+        return await processAndUploadFile(file, trip.id, scheduleId);
+      });
+
+      const uploadedFiles = await Promise.all(uploadPromises);
+
+      onTripUpdate(trip.id, (currentTrip) => {
+        const updatedSchedules = { ...currentTrip.schedules };
+
+        // 全ての日付からスケジュールを探して更新
+        for (const [date, schedules] of Object.entries(updatedSchedules)) {
+          const scheduleIndex = schedules.findIndex((s) => s.id === scheduleId);
+          if (scheduleIndex !== -1) {
+            updatedSchedules[date] = schedules.map((schedule) =>
+              schedule.id === scheduleId
+                ? {
+                    ...schedule,
+                    files: [...schedule.files, ...uploadedFiles],
+                  }
+                : schedule
+            );
+            break;
+          }
+        }
+
+        return { ...currentTrip, schedules: updatedSchedules };
+      });
+    } catch (error) {
+      console.error('ファイルアップロードエラー:', error);
+      alert(
+        `ファイルのアップロードに失敗しました: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    } finally {
+      // アップロード完了
+      setUploadingFiles((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(scheduleId);
+        return newSet;
+      });
+    }
   };
 
   const handleFileDelete = async (
@@ -707,6 +710,7 @@ export default function SchedulePage({
                                   onToggleExpand={toggleScheduleExpansion}
                                   onImageClick={(url) => setShowImageModal(url)}
                                   onPDFClick={(url) => setShowPDFModal(url)}
+                                  onFilesUpload={handleFilesUpload}
                                 />
                               </div>
                             </div>
@@ -849,6 +853,7 @@ export default function SchedulePage({
           onToggleExpand={toggleScheduleExpansion}
           onImageClick={(url) => setShowImageModal(url)}
           onPDFClick={(url) => setShowPDFModal(url)}
+          onFilesUpload={handleFilesUpload}
         />
       )}
     </>

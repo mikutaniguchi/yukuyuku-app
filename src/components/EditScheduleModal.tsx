@@ -33,6 +33,7 @@ interface EditScheduleModalProps {
   onToggleExpand: (scheduleId: string) => void;
   onImageClick: (url: string) => void;
   onPDFClick: (url: string) => void;
+  onFilesUpload?: (scheduleId: string, files: File[]) => void;
 }
 
 export default function EditScheduleModal({
@@ -53,19 +54,15 @@ export default function EditScheduleModal({
   onToggleExpand,
   onImageClick,
   onPDFClick,
+  onFilesUpload,
 }: EditScheduleModalProps) {
   const isValid =
     editingScheduleData.title.trim() !== '' &&
     editingScheduleData.startTime !== '';
 
   const footerButtons = (
-    <div className="flex flex-col sm:flex-row gap-3">
-      <Button
-        onClick={onDelete}
-        color="strawBeige"
-        size="md"
-        className="sm:w-auto"
-      >
+    <div className="flex flex-col gap-3">
+      <Button onClick={onDelete} color="strawBeige" size="md">
         <Trash2 className="w-4 h-4" />
         削除
       </Button>
@@ -115,6 +112,7 @@ export default function EditScheduleModal({
             onToggleExpand={onToggleExpand}
             onImageClick={onImageClick}
             onPDFClick={onPDFClick}
+            onFilesUpload={onFilesUpload}
           />
         </div>
       </div>
