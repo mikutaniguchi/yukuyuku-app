@@ -482,7 +482,7 @@ export default function SchedulePage({
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] lg:grid-cols-[auto_1fr] gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] lg:grid-cols-[auto_1fr] gap-3 md:gap-6">
         <div className="bg-white rounded-xl shadow-sm border border-stone-200 p-4 md:w-fit md:h-fit md:sticky md:top-6">
           <h2 className="text-lg font-semibold text-stone-800 mb-4">日程</h2>
           <div className="space-y-2">
@@ -519,7 +519,7 @@ export default function SchedulePage({
           </div>
         </div>
 
-        <div className="space-y-8">
+        <div className="space-y-4 md:space-y-8">
           {tripDates.map((date) => {
             const daySchedules = (trip.schedules[date] || [])
               .filter(
@@ -533,7 +533,7 @@ export default function SchedulePage({
               <div
                 key={date}
                 id={`schedule-${date}`}
-                className="bg-white rounded-xl shadow-sm border border-stone-200 p-6 scroll-mt-6"
+                className="bg-white rounded-xl shadow-sm border border-stone-200 p-3 md:p-6 scroll-mt-6"
               >
                 <div className="mb-6">
                   <h2 className="text-xl font-semibold text-stone-800">
@@ -544,7 +544,7 @@ export default function SchedulePage({
                 <div className="space-y-4">
                   {daySchedules.map((schedule) => (
                     <div key={schedule.id} className="relative">
-                      <div className="border border-stone-200 rounded-lg p-4 transition-shadow hover:shadow-md">
+                      <div className="border border-stone-200 rounded-lg p-3 md:p-4 transition-shadow hover:shadow-md">
                         <div className="flex items-start justify-between mb-3">
                           <div className="flex items-center gap-3">
                             <span
@@ -607,10 +607,12 @@ export default function SchedulePage({
                               href={getGoogleMapsLink(schedule.location) || '#'}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-stone-600 hover:text-stone-800 underline inline-flex items-center gap-1"
+                              className="text-stone-600 hover:text-stone-800 underline inline-flex items-center gap-1 break-all"
                             >
                               <MapPin className="w-4 h-4 flex-shrink-0" />
-                              {schedule.location}
+                              <span className="break-words">
+                                {schedule.location}
+                              </span>
                             </a>
                           </div>
                         )}
@@ -644,13 +646,7 @@ export default function SchedulePage({
                                 onClick={() =>
                                   toggleDetailExpansion(schedule.id)
                                 }
-                                className="absolute inset-x-0 bottom-0 flex items-center justify-end py-3 pr-4 text-stone-500 hover:text-stone-700 hover:bg-stone-50 transition-colors rounded-b-lg"
-                                style={{
-                                  marginLeft: '-1rem',
-                                  marginRight: '-1rem',
-                                  marginBottom: '-1rem',
-                                  width: 'calc(100% + 2rem)',
-                                }}
+                                className="absolute inset-x-0 bottom-0 flex items-center justify-end py-3 pr-4 text-stone-500 hover:text-stone-700 hover:bg-stone-50 transition-colors rounded-b-lg -ml-3 -mr-3 -mb-3 w-[calc(100%+1.5rem)] md:-ml-4 md:-mr-4 md:-mb-4 md:w-[calc(100%+2rem)]"
                               >
                                 <div className="flex items-center gap-1">
                                   <span className="text-sm">詳細</span>
@@ -693,7 +689,7 @@ export default function SchedulePage({
                               )}
 
                               {schedule.description && (
-                                <div className="text-stone-700 whitespace-pre-wrap break-words">
+                                <div className="text-stone-700 whitespace-pre-wrap break-words overflow-wrap-anywhere">
                                   {linkifyText(schedule.description)}
                                 </div>
                               )}
@@ -721,13 +717,7 @@ export default function SchedulePage({
                                 onClick={() =>
                                   toggleDetailExpansion(schedule.id)
                                 }
-                                className="absolute inset-x-0 bottom-0 flex items-center justify-end py-3 pr-4 text-stone-500 hover:text-stone-700 hover:bg-stone-50 transition-colors rounded-b-lg"
-                                style={{
-                                  marginLeft: '-1rem',
-                                  marginRight: '-1rem',
-                                  marginBottom: '-1rem',
-                                  width: 'calc(100% + 2rem)',
-                                }}
+                                className="absolute inset-x-0 bottom-0 flex items-center justify-end py-3 pr-4 text-stone-500 hover:text-stone-700 hover:bg-stone-50 transition-colors rounded-b-lg -ml-3 -mr-3 -mb-3 w-[calc(100%+1.5rem)] md:-ml-4 md:-mr-4 md:-mb-4 md:w-[calc(100%+2rem)]"
                               >
                                 <div className="flex items-center gap-1">
                                   <span className="text-sm">詳細</span>

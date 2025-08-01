@@ -53,7 +53,7 @@ export default function ScheduleForm({
         </select>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-sm font-medium text-stone-700 mb-2">
             開始時間
@@ -70,7 +70,7 @@ export default function ScheduleForm({
                 onScheduleChange({ ...schedule, startTime: getCurrentHour() });
               }
             }}
-            className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-base"
+            className="w-full max-w-[140px] px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-base"
           />
         </div>
         <div>
@@ -93,7 +93,7 @@ export default function ScheduleForm({
                 onScheduleChange({ ...schedule, endTime: currentHour });
               }
             }}
-            className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-base"
+            className="w-full max-w-[140px] px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-base"
           />
         </div>
       </div>
@@ -163,7 +163,7 @@ export default function ScheduleForm({
         onChange={(e) =>
           onScheduleChange({ ...schedule, description: e.target.value })
         }
-        className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-base"
+        className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-base resize-none min-h-[76px]"
         rows={3}
       />
 

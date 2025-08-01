@@ -61,7 +61,7 @@ export default function FloatingNavMenu({
   if (!isScrolled) return null;
 
   return (
-    <div className="floating-menu fixed bottom-6 right-6 z-50">
+    <div className="floating-menu fixed bottom-6 right-6 z-40">
       <div className="relative">
         {/* Menu Items */}
         {showFloatingMenu && (

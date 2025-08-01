@@ -61,11 +61,17 @@ export default function EditScheduleModal({
     editingScheduleData.startTime !== '';
 
   const footerButtons = (
-    <div className="flex flex-col gap-3">
-      <Button onClick={onDelete} color="strawBeige" size="md">
-        <Trash2 className="w-4 h-4" />
-        削除
-      </Button>
+    <div className="flex gap-3">
+      <button
+        onClick={() => {
+          if (confirm('本当に削除しますか？')) {
+            onDelete();
+          }
+        }}
+        className="w-12 h-12 flex items-center justify-center rounded-lg bg-stone-200 hover:bg-stone-300 text-stone-600 hover:text-stone-700 transition-colors"
+      >
+        <Trash2 className="w-5 h-5" />
+      </button>
       <Button
         onClick={onSave}
         disabled={!isValid}
@@ -86,7 +92,7 @@ export default function EditScheduleModal({
       title="スケジュールを編集"
       icon={Edit2}
       iconColor={colorPalette.aquaBlue.bg}
-      maxWidth="lg"
+      maxWidth="2xl"
       scrollable
       fixedFooter={footerButtons}
     >
