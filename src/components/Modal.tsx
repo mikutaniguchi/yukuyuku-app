@@ -13,7 +13,6 @@ interface ModalProps {
   iconColor?: string;
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '4xl';
   showCloseButton?: boolean;
-  scrollable?: boolean;
   fixedFooter?: React.ReactNode;
   children: React.ReactNode;
 }
@@ -26,7 +25,6 @@ export default function Modal({
   iconColor,
   maxWidth = 'md',
   showCloseButton = true,
-  scrollable = false,
   fixedFooter,
   children,
 }: ModalProps) {
