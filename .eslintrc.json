@@ -7,6 +7,7 @@
         "argsIgnorePattern": "^_",
         "varsIgnorePattern": "^_"
       }
-    ]
+    ],
+    "@typescript-eslint/no-require-imports": "off"
   }
 }
