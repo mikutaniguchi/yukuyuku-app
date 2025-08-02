@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Aperture } from 'lucide-react';
 import { colorPalette } from '@/lib/constants';
 import { PageType } from '@/types';

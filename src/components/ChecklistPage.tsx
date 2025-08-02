@@ -30,7 +30,6 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import SortableChecklistItem from './SortableChecklistItem';
-import SwipeableItem from './SwipeableItem';
 import LoadingSpinner from './LoadingSpinner';
 
 interface ChecklistPageProps {

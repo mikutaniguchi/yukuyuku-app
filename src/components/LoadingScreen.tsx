@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { Plane, MapPin } from 'lucide-react';
 import { colorPalette } from '@/lib/constants';
 
 interface LoadingScreenProps {
@@ -40,6 +39,9 @@ export default function LoadingScreen({
             ))}
           </div>
         </div>
+
+        {/* メッセージ表示 */}
+        <p className="text-lg text-stone-600 mt-6">{message}</p>
 
         {/* カスタムキーフレームアニメーション */}
         <style jsx>{`

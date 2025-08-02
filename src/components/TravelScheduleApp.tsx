@@ -26,7 +26,6 @@ import {
   Trash2,
   Save,
   X,
-  Aperture,
 } from 'lucide-react';
 import { User, Trip, PageType } from '@/types';
 import { colorPalette, getDatesInRange, formatDate } from '@/lib/constants';
