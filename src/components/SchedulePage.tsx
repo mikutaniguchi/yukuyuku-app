@@ -11,6 +11,8 @@ import {
   Plane,
   Train,
   Footprints,
+  Package,
+  PackageOpen,
 } from 'lucide-react';
 import { Trip, Schedule, ScheduleFormData } from '@/types';
 import {
@@ -28,7 +30,6 @@ import NewScheduleModal from './NewScheduleModal';
 import EditScheduleModal from './EditScheduleModal';
 import ImageModal from './ImageModal';
 import PDFModal from './PDFModal';
-
 interface SchedulePageProps {
   trip: Trip;
   selectedDate: string;
@@ -58,6 +59,7 @@ export default function SchedulePage({
   const [expandedDetails, setExpandedDetails] = useState<Set<string>>(
     new Set()
   );
+  const [allExpanded, setAllExpanded] = useState(false);
 
   // ユニークIDを生成する関数
   const generateUniqueId = () => {
@@ -170,6 +172,30 @@ export default function SchedulePage({
     setExpandedDetails(newExpanded);
   };
 
+  const toggleAllDetails = () => {
+    if (allExpanded) {
+      // 全て閉じる
+      setExpandedDetails(new Set());
+      setAllExpanded(false);
+    } else {
+      // 全て開く
+      const allScheduleIds = new Set<string>();
+      tripDates.forEach((date) => {
+        (trip.schedules[date] || []).forEach((schedule) => {
+          if (
+            schedule.description ||
+            (schedule.budget && schedule.budget > 0) ||
+            (schedule.files && schedule.files.length > 0)
+          ) {
+            allScheduleIds.add(schedule.id);
+          }
+        });
+      });
+      setExpandedDetails(allScheduleIds);
+      setAllExpanded(true);
+    }
+  };
+
   const handleEditScheduleChange = (
     scheduleId: string,
     scheduleData: ScheduleFormData
@@ -260,14 +286,20 @@ export default function SchedulePage({
       iconColor: colorPalette.sandRed.lightText,
     },
     {
-      id: 'car',
-      name: '車',
-      bgColor: colorPalette.aquaBlue.light,
-      iconColor: colorPalette.aquaBlue.lightText,
+      id: 'camera',
+      name: '観光',
+      bgColor: colorPalette.strawBeige.light,
+      iconColor: colorPalette.strawBeige.lightText,
     },
     {
-      id: 'plane',
-      name: '飛行機',
+      id: 'bed',
+      name: '宿泊',
+      bgColor: colorPalette.roseQuartz.light,
+      iconColor: colorPalette.roseQuartz.lightText,
+    },
+    {
+      id: 'car',
+      name: '車',
       bgColor: colorPalette.aquaBlue.light,
       iconColor: colorPalette.aquaBlue.lightText,
     },
@@ -284,16 +316,10 @@ export default function SchedulePage({
       iconColor: colorPalette.aquaBlue.lightText,
     },
     {
-      id: 'camera',
-      name: '観光',
-      bgColor: colorPalette.strawBeige.light,
-      iconColor: colorPalette.strawBeige.lightText,
-    },
-    {
-      id: 'bed',
-      name: '宿泊',
-      bgColor: colorPalette.roseQuartz.light,
-      iconColor: colorPalette.roseQuartz.lightText,
+      id: 'plane',
+      name: '飛行機',
+      bgColor: colorPalette.aquaBlue.light,
+      iconColor: colorPalette.aquaBlue.lightText,
     },
   ];
 
@@ -324,54 +350,58 @@ export default function SchedulePage({
       const files = (e.target as HTMLInputElement).files;
       if (!files) return;
 
-      // アップロード開始
-      setUploadingFiles((prev) => new Set([...prev, scheduleId]));
-
-      try {
-        const uploadPromises = Array.from(files).map(async (file) => {
-          return await processAndUploadFile(file, trip.id, scheduleId);
-        });
-
-        const uploadedFiles = await Promise.all(uploadPromises);
-
-        onTripUpdate(trip.id, (currentTrip) => {
-          const updatedSchedules = { ...currentTrip.schedules };
-
-          // 全ての日付からスケジュールを探して更新
-          for (const [date, schedules] of Object.entries(updatedSchedules)) {
-            const scheduleIndex = schedules.findIndex(
-              (s) => s.id === scheduleId
-            );
-            if (scheduleIndex !== -1) {
-              updatedSchedules[date] = schedules.map((schedule) =>
-                schedule.id === scheduleId
-                  ? {
-                      ...schedule,
-                      files: [...schedule.files, ...uploadedFiles],
-                    }
-                  : schedule
-              );
-              break;
-            }
-          }
-
-          return { ...currentTrip, schedules: updatedSchedules };
-        });
-      } catch (error) {
-        console.error('ファイルアップロードエラー:', error);
-        alert(
-          `ファイルのアップロードに失敗しました: ${error instanceof Error ? error.message : 'Unknown error'}`
-        );
-      } finally {
-        // アップロード完了
-        setUploadingFiles((prev) => {
-          const newSet = new Set(prev);
-          newSet.delete(scheduleId);
-          return newSet;
-        });
-      }
+      await handleFilesUpload(scheduleId, Array.from(files));
     };
     input.click();
+  };
+
+  const handleFilesUpload = async (scheduleId: string, files: File[]) => {
+    if (files.length === 0) return;
+
+    // アップロード開始
+    setUploadingFiles((prev) => new Set([...prev, scheduleId]));
+
+    try {
+      const uploadPromises = files.map(async (file) => {
+        return await processAndUploadFile(file, trip.id, scheduleId);
+      });
+
+      const uploadedFiles = await Promise.all(uploadPromises);
+
+      onTripUpdate(trip.id, (currentTrip) => {
+        const updatedSchedules = { ...currentTrip.schedules };
+
+        // 全ての日付からスケジュールを探して更新
+        for (const [date, schedules] of Object.entries(updatedSchedules)) {
+          const scheduleIndex = schedules.findIndex((s) => s.id === scheduleId);
+          if (scheduleIndex !== -1) {
+            updatedSchedules[date] = schedules.map((schedule) =>
+              schedule.id === scheduleId
+                ? {
+                    ...schedule,
+                    files: [...schedule.files, ...uploadedFiles],
+                  }
+                : schedule
+            );
+            break;
+          }
+        }
+
+        return { ...currentTrip, schedules: updatedSchedules };
+      });
+    } catch (error) {
+      console.error('ファイルアップロードエラー:', error);
+      alert(
+        `ファイルのアップロードに失敗しました: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    } finally {
+      // アップロード完了
+      setUploadingFiles((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(scheduleId);
+        return newSet;
+      });
+    }
   };
 
   const handleFileDelete = async (
@@ -479,7 +509,7 @@ export default function SchedulePage({
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] lg:grid-cols-[auto_1fr] gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] lg:grid-cols-[auto_1fr] gap-3 md:gap-6">
         <div className="bg-white rounded-xl shadow-sm border border-stone-200 p-4 md:w-fit md:h-fit md:sticky md:top-6">
           <h2 className="text-lg font-semibold text-stone-800 mb-4">日程</h2>
           <div className="space-y-2">
@@ -514,9 +544,25 @@ export default function SchedulePage({
               </a>
             ))}
           </div>
+
+          <div className="border-t border-stone-200 mt-4 pt-4">
+            <h2 className="text-lg font-semibold text-stone-800 mb-2">表示</h2>
+            <div className="flex justify-start">
+              <button
+                onClick={toggleAllDetails}
+                className="w-12 h-12 flex items-center justify-center rounded-full transition-colors hover:bg-stone-100 text-stone-600 hover:text-stone-800"
+              >
+                {allExpanded ? (
+                  <PackageOpen className="w-8 h-8" />
+                ) : (
+                  <Package className="w-8 h-8" />
+                )}
+              </button>
+            </div>
+          </div>
         </div>
 
-        <div className="space-y-8">
+        <div className="space-y-4 md:space-y-8">
           {tripDates.map((date) => {
             const daySchedules = (trip.schedules[date] || [])
               .filter(
@@ -530,7 +576,7 @@ export default function SchedulePage({
               <div
                 key={date}
                 id={`schedule-${date}`}
-                className="bg-white rounded-xl shadow-sm border border-stone-200 p-6 scroll-mt-6"
+                className="bg-white rounded-xl shadow-sm border border-stone-200 p-3 md:p-6 scroll-mt-6"
               >
                 <div className="mb-6">
                   <h2 className="text-xl font-semibold text-stone-800">
@@ -541,7 +587,7 @@ export default function SchedulePage({
                 <div className="space-y-4">
                   {daySchedules.map((schedule) => (
                     <div key={schedule.id} className="relative">
-                      <div className="border border-stone-200 rounded-lg p-4 transition-shadow hover:shadow-md">
+                      <div className="border border-stone-200 rounded-lg p-3 md:p-4 transition-shadow hover:shadow-md">
                         <div className="flex items-start justify-between mb-3">
                           <div className="flex items-center gap-3">
                             <span
@@ -604,10 +650,12 @@ export default function SchedulePage({
                               href={getGoogleMapsLink(schedule.location) || '#'}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-stone-600 hover:text-stone-800 underline inline-flex items-center gap-1"
+                              className="text-stone-600 hover:text-stone-800 underline inline-flex items-center gap-1 break-all"
                             >
                               <MapPin className="w-4 h-4 flex-shrink-0" />
-                              {schedule.location}
+                              <span className="break-words">
+                                {schedule.location}
+                              </span>
                             </a>
                           </div>
                         )}
@@ -641,13 +689,7 @@ export default function SchedulePage({
                                 onClick={() =>
                                   toggleDetailExpansion(schedule.id)
                                 }
-                                className="absolute inset-x-0 bottom-0 flex items-center justify-end py-3 pr-4 text-stone-500 hover:text-stone-700 hover:bg-stone-50 transition-colors rounded-b-lg"
-                                style={{
-                                  marginLeft: '-1rem',
-                                  marginRight: '-1rem',
-                                  marginBottom: '-1rem',
-                                  width: 'calc(100% + 2rem)',
-                                }}
+                                className="absolute inset-x-0 bottom-0 flex items-center justify-end py-3 pr-4 text-stone-500 hover:text-stone-700 hover:bg-stone-50 transition-colors rounded-b-lg -ml-3 -mr-3 -mb-3 w-[calc(100%+1.5rem)] md:-ml-4 md:-mr-4 md:-mb-4 md:w-[calc(100%+2rem)]"
                               >
                                 <div className="flex items-center gap-1">
                                   <span className="text-sm">詳細</span>
@@ -690,7 +732,7 @@ export default function SchedulePage({
                               )}
 
                               {schedule.description && (
-                                <div className="text-stone-700 whitespace-pre-wrap break-words">
+                                <div className="text-stone-700 whitespace-pre-wrap break-words overflow-wrap-anywhere">
                                   {linkifyText(schedule.description)}
                                 </div>
                               )}
@@ -707,6 +749,7 @@ export default function SchedulePage({
                                   onToggleExpand={toggleScheduleExpansion}
                                   onImageClick={(url) => setShowImageModal(url)}
                                   onPDFClick={(url) => setShowPDFModal(url)}
+                                  onFilesUpload={handleFilesUpload}
                                 />
                               </div>
                             </div>
@@ -717,13 +760,7 @@ export default function SchedulePage({
                                 onClick={() =>
                                   toggleDetailExpansion(schedule.id)
                                 }
-                                className="absolute inset-x-0 bottom-0 flex items-center justify-end py-3 pr-4 text-stone-500 hover:text-stone-700 hover:bg-stone-50 transition-colors rounded-b-lg"
-                                style={{
-                                  marginLeft: '-1rem',
-                                  marginRight: '-1rem',
-                                  marginBottom: '-1rem',
-                                  width: 'calc(100% + 2rem)',
-                                }}
+                                className="absolute inset-x-0 bottom-0 flex items-center justify-end py-3 pr-4 text-stone-500 hover:text-stone-700 hover:bg-stone-50 transition-colors rounded-b-lg -ml-3 -mr-3 -mb-3 w-[calc(100%+1.5rem)] md:-ml-4 md:-mr-4 md:-mb-4 md:w-[calc(100%+2rem)]"
                               >
                                 <div className="flex items-center gap-1">
                                   <span className="text-sm">詳細</span>
@@ -849,6 +886,7 @@ export default function SchedulePage({
           onToggleExpand={toggleScheduleExpansion}
           onImageClick={(url) => setShowImageModal(url)}
           onPDFClick={(url) => setShowPDFModal(url)}
+          onFilesUpload={handleFilesUpload}
         />
       )}
     </>

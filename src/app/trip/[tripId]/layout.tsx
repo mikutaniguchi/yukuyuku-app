@@ -33,6 +33,7 @@ import MembersModal from '@/components/MembersModal';
 import InviteModal from '@/components/InviteModal';
 import DeleteTripModal from '@/components/DeleteTripModal';
 import FloatingNavMenu from '@/components/FloatingNavMenu';
+import LoadingScreen from '@/components/LoadingScreen';
 
 interface TripLayoutProps {
   children: React.ReactNode;
@@ -51,6 +52,9 @@ export default function TripLayout({ children }: TripLayoutProps) {
   const [showMembersModal, setShowMembersModal] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [selectedPage, setSelectedPage] = useState<
+    'schedule' | 'checklist' | 'files' | 'memo' | 'budget'
+  >('schedule');
   const [deleteConfirmTitle, setDeleteConfirmTitle] = useState('');
 
   const tripId = params.tripId as string;
@@ -88,6 +92,33 @@ export default function TripLayout({ children }: TripLayoutProps) {
     },
   ];
 
+  // ページ全体でのドラッグ&ドロップデフォルト動作を防ぐ（ドロップゾーン以外）
+  useEffect(() => {
+    const handleDragOver = (e: DragEvent) => {
+      // ドロップゾーン内でない場合のみ防ぐ
+      const target = e.target as HTMLElement;
+      if (!target.closest('[data-dropzone="true"]')) {
+        e.preventDefault();
+      }
+    };
+
+    const handleDrop = (e: DragEvent) => {
+      // ドロップゾーン内でない場合のみ防ぐ
+      const target = e.target as HTMLElement;
+      if (!target.closest('[data-dropzone="true"]')) {
+        e.preventDefault();
+      }
+    };
+
+    document.addEventListener('dragover', handleDragOver);
+    document.addEventListener('drop', handleDrop);
+
+    return () => {
+      document.removeEventListener('dragover', handleDragOver);
+      document.removeEventListener('drop', handleDrop);
+    };
+  }, []);
+
   useEffect(() => {
     const loadTrip = async () => {
       if (!firebaseUser || !tripId) {
@@ -112,6 +143,15 @@ export default function TripLayout({ children }: TripLayoutProps) {
 
     loadTrip();
   }, [firebaseUser, tripId]);
+
+  // pathnameが変更された時にselectedPageを同期
+  useEffect(() => {
+    if (pathname === `/trip/${tripId}/checklist`) setSelectedPage('checklist');
+    else if (pathname === `/trip/${tripId}/files`) setSelectedPage('files');
+    else if (pathname === `/trip/${tripId}/memo`) setSelectedPage('memo');
+    else if (pathname === `/trip/${tripId}/budget`) setSelectedPage('budget');
+    else setSelectedPage('schedule');
+  }, [pathname, tripId]);
 
   const updateTrip = async (updateFunction: (trip: Trip) => Trip) => {
     if (!trip) return;
@@ -176,11 +216,7 @@ export default function TripLayout({ children }: TripLayoutProps) {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-stone-50 to-neutral-100 flex items-center justify-center">
-        <div className="text-stone-600">読み込み中...</div>
-      </div>
-    );
+    return <LoadingScreen message="旅行データを読み込み中..." />;
   }
 
   if (!trip || !firebaseUser) {
@@ -204,16 +240,15 @@ export default function TripLayout({ children }: TripLayoutProps) {
     | 'files'
     | 'memo'
     | 'budget' => {
-    if (pathname === `/trip/${tripId}/checklist`) return 'checklist';
-    if (pathname === `/trip/${tripId}/files`) return 'files';
-    if (pathname === `/trip/${tripId}/memo`) return 'memo';
-    if (pathname === `/trip/${tripId}/budget`) return 'budget';
-    return 'schedule'; // default
+    return selectedPage;
   };
 
   const handlePageChange = (
     pageId: 'schedule' | 'checklist' | 'files' | 'memo' | 'budget'
   ) => {
+    // 即座にselectedPageを更新（タブの色を即座に変更）
+    setSelectedPage(pageId);
+
     const targetItem = navItems.find((item) => item.id === pageId);
     if (targetItem) {
       router.push(targetItem.path);

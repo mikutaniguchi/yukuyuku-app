@@ -57,7 +57,7 @@ export default function NewScheduleModal({
       title="スケジュールを追加"
       icon={Plus}
       iconColor={colorPalette.abyssGreen.bg}
-      maxWidth="md"
+      maxWidth="xl"
       scrollable
       fixedFooter={footerButton}
     >

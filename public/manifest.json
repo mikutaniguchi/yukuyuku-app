@@ -1,0 +1,28 @@
+{
+  "name": "ゆくゆく - 旅行計画アプリ",
+  "short_name": "ゆくゆく",
+  "description": "みんなで作る旅行計画アプリ",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#C7A2A2",
+  "orientation": "portrait",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["travel", "productivity"],
+  "lang": "ja",
+  "dir": "ltr"
+}

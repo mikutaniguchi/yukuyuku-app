@@ -13,6 +13,25 @@ import {
 import { Trip, Checklist, ChecklistItem } from '@/types';
 import { colorPalette } from '@/lib/constants';
 import { useKeyboardEvent } from '@/hooks/useKeyboardEvent';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import SortableChecklistItem from './SortableChecklistItem';
+import SwipeableItem from './SwipeableItem';
+import LoadingSpinner from './LoadingSpinner';
 
 interface ChecklistPageProps {
   trip: Trip;
@@ -38,8 +57,62 @@ export default function ChecklistPage({
   const settingsRef = useRef<HTMLDivElement>(null);
   const editingInputRef = useRef<HTMLInputElement>(null);
   const [isAddingItem, setIsAddingItem] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const { handleEnterKey, handleEscapeKey } = useKeyboardEvent();
+
+  // ページ読み込み完了の模擬
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // ドラッグ&ドロップのセンサー設定
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 250,
+        tolerance: 5,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  // ドラッグ終了時の処理
+  const handleDragEnd = (event: DragEndEvent, checklistId: string) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      onTripUpdate(trip.id, (currentTrip) => ({
+        ...currentTrip,
+        checklists: currentTrip.checklists.map((checklist) => {
+          if (checklist.id === checklistId) {
+            const oldIndex = checklist.items.findIndex(
+              (item) => item.id === active.id
+            );
+            const newIndex = checklist.items.findIndex(
+              (item) => item.id === over.id
+            );
+
+            return {
+              ...checklist,
+              items: arrayMove(checklist.items, oldIndex, newIndex),
+            };
+          }
+          return checklist;
+        }),
+      }));
+    }
+  };
 
   const toggleChecklistItem = (checklistId: string, itemId: string) => {
     onTripUpdate(trip.id, (currentTrip) => ({
@@ -299,303 +372,355 @@ export default function ChecklistPage({
           )}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {trip.checklists.map((checklist) => {
-            const completionRate = getCompletionRate(checklist);
-            return (
-              <div
-                key={checklist.id}
-                className="bg-white rounded-xl shadow-sm border border-stone-200 p-6"
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1">
-                    {editingChecklistName === checklist.id ? (
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="text"
-                          value={tempChecklistName}
-                          onChange={(e) => setTempChecklistName(e.target.value)}
-                          onKeyDown={(e) => {
-                            handleEnterKey(e, () =>
-                              saveChecklistName(checklist.id)
-                            );
-                            handleEscapeKey(e, () => cancelEditChecklistName());
-                          }}
-                          className="text-lg font-semibold text-stone-800 bg-transparent border-b-2 border-stone-300 focus:outline-none focus:border-stone-500"
-                          autoFocus
-                        />
-                        <button
-                          onClick={() => saveChecklistName(checklist.id)}
-                          className="p-1 text-green-600 hover:text-green-700 transition-colors"
-                        >
-                          <Save className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={cancelEditChecklistName}
-                          className="p-1 text-stone-400 hover:text-stone-600 transition-colors"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
+        {isLoading ? (
+          <div className="flex justify-center items-center min-h-[200px]">
+            <LoadingSpinner size="small" />
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {trip.checklists.map((checklist) => {
+                const completionRate = getCompletionRate(checklist);
+                return (
+                  <div
+                    key={checklist.id}
+                    className="bg-white rounded-xl shadow-sm border border-stone-200 p-6"
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex-1">
+                        {editingChecklistName === checklist.id ? (
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="text"
+                              value={tempChecklistName}
+                              onChange={(e) =>
+                                setTempChecklistName(e.target.value)
+                              }
+                              onKeyDown={(e) => {
+                                handleEnterKey(e, () =>
+                                  saveChecklistName(checklist.id)
+                                );
+                                handleEscapeKey(e, () =>
+                                  cancelEditChecklistName()
+                                );
+                              }}
+                              className="text-lg font-semibold text-stone-800 bg-transparent border-b-2 border-stone-300 focus:outline-none focus:border-stone-500"
+                              autoFocus
+                            />
+                            <button
+                              onClick={() => saveChecklistName(checklist.id)}
+                              className="p-1 text-green-600 hover:text-green-700 transition-colors"
+                            >
+                              <Save className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={cancelEditChecklistName}
+                              className="p-1 text-stone-400 hover:text-stone-600 transition-colors"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ) : (
+                          <h3 className="text-lg font-semibold text-stone-800">
+                            {checklist.name}
+                          </h3>
+                        )}
+                        <div className="flex items-center gap-2 mt-1">
+                          <div className="w-full bg-stone-200 rounded-full h-2 flex-1">
+                            <div
+                              className="h-2 rounded-full transition-all duration-300"
+                              style={{
+                                width: `${completionRate}%`,
+                                backgroundColor: colorPalette.abyssGreen.bg,
+                              }}
+                            />
+                          </div>
+                          <span className="text-sm text-stone-600 font-medium">
+                            {completionRate}%
+                          </span>
+                        </div>
                       </div>
-                    ) : (
-                      <h3 className="text-lg font-semibold text-stone-800">
-                        {checklist.name}
-                      </h3>
-                    )}
-                    <div className="flex items-center gap-2 mt-1">
-                      <div className="w-full bg-stone-200 rounded-full h-2 flex-1">
-                        <div
-                          className="h-2 rounded-full transition-all duration-300"
-                          style={{
-                            width: `${completionRate}%`,
-                            backgroundColor: colorPalette.abyssGreen.bg,
-                          }}
-                        />
-                      </div>
-                      <span className="text-sm text-stone-600 font-medium">
-                        {completionRate}%
-                      </span>
-                    </div>
-                  </div>
-                  {canEdit && (
-                    <div className="relative" ref={settingsRef}>
-                      <button
-                        onClick={() =>
-                          setShowSettings(
-                            showSettings === checklist.id ? null : checklist.id
-                          )
-                        }
-                        className="p-1 text-stone-400 hover:text-stone-600 transition-colors opacity-60 hover:opacity-100"
-                      >
-                        <Settings className="w-4 h-4" />
-                      </button>
-
-                      {showSettings === checklist.id && (
-                        <div className="absolute top-8 right-0 bg-white border border-stone-200 rounded-lg shadow-lg py-2 w-40 z-10">
+                      {canEdit && (
+                        <div className="relative" ref={settingsRef}>
                           <button
                             onClick={() =>
-                              handleEditChecklistName(
-                                checklist.id,
-                                checklist.name
+                              setShowSettings(
+                                showSettings === checklist.id
+                                  ? null
+                                  : checklist.id
                               )
                             }
-                            className="w-full px-4 py-2 text-left text-stone-700 hover:bg-stone-50 flex items-center gap-2"
+                            className="p-1 text-stone-400 hover:text-stone-600 transition-colors opacity-60 hover:opacity-100"
                           >
-                            <Edit2 className="w-4 h-4" />
-                            名前を変更
+                            <Settings className="w-4 h-4" />
                           </button>
-                          <button
-                            onClick={() => deleteChecklist(checklist.id)}
-                            className="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 flex items-center gap-2"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                            リストを削除
-                          </button>
+
+                          {showSettings === checklist.id && (
+                            <div className="absolute top-8 right-0 bg-white border border-stone-200 rounded-lg shadow-lg py-2 w-40 z-10">
+                              <button
+                                onClick={() =>
+                                  handleEditChecklistName(
+                                    checklist.id,
+                                    checklist.name
+                                  )
+                                }
+                                className="w-full px-4 py-2 text-left text-stone-700 hover:bg-stone-50 flex items-center gap-2"
+                              >
+                                <Edit2 className="w-4 h-4" />
+                                名前を変更
+                              </button>
+                              <button
+                                onClick={() => deleteChecklist(checklist.id)}
+                                className="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 flex items-center gap-2"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                                リストを削除
+                              </button>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
-                  )}
-                </div>
 
-                <div className="space-y-2 mb-4">
-                  {checklist.items.map((item) => (
-                    <SwipeableItem
-                      key={item.id}
-                      itemId={item.id}
-                      onSwipe={handleSwipe}
+                    <DndContext
+                      sensors={sensors}
+                      collisionDetection={closestCenter}
+                      onDragEnd={(event) => handleDragEnd(event, checklist.id)}
                     >
-                      <div className="relative overflow-hidden">
-                        <div
-                          className={`flex items-center gap-3 group transition-transform duration-200 ${
-                            swipedItem === item.id
-                              ? '-translate-x-16'
-                              : 'translate-x-0'
-                          }`}
-                        >
-                          <button
-                            onClick={() =>
-                              toggleChecklistItem(checklist.id, item.id)
-                            }
-                            className={`flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
-                              item.checked
-                                ? 'text-white shadow-sm'
-                                : 'border-stone-300 hover:border-stone-400'
-                            }`}
-                            style={
-                              item.checked
-                                ? {
-                                    backgroundColor: colorPalette.abyssGreen.bg,
-                                    borderColor: colorPalette.abyssGreen.bg,
-                                    color: colorPalette.abyssGreen.text,
-                                  }
-                                : {}
-                            }
-                          >
-                            {item.checked && (
-                              <svg
-                                className="w-3 h-3"
-                                fill="currentColor"
-                                viewBox="0 0 20 20"
+                      <SortableContext
+                        items={checklist.items.map((item) => item.id)}
+                        strategy={verticalListSortingStrategy}
+                      >
+                        <div className="space-y-2 mb-4 relative pl-6">
+                          {checklist.items.map((item) => (
+                            <SortableChecklistItem
+                              key={item.id}
+                              id={item.id}
+                              isEditing={canEdit}
+                            >
+                              <SwipeableItem
+                                itemId={item.id}
+                                onSwipe={handleSwipe}
                               >
-                                <path
-                                  fillRule="evenodd"
-                                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                  clipRule="evenodd"
-                                />
-                              </svg>
-                            )}
-                          </button>
-                          {editingItem === item.id ? (
-                            <div className="flex-1 flex items-center gap-2">
-                              <input
-                                ref={editingInputRef}
-                                type="text"
-                                defaultValue={editingText}
-                                onKeyDown={(e) => {
-                                  handleEnterKey(e, () =>
-                                    saveEditingItem(checklist.id, item.id)
-                                  );
-                                  handleEscapeKey(e, () => cancelEditingItem());
-                                }}
-                                className="flex-1 px-2 py-1 border border-stone-300 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                                autoFocus
-                              />
-                              <button
-                                onClick={() =>
-                                  saveEditingItem(checklist.id, item.id)
-                                }
-                                className="p-1 text-green-600 hover:text-green-700 transition-colors"
-                              >
-                                <svg
-                                  className="w-4 h-4"
-                                  fill="currentColor"
-                                  viewBox="0 0 20 20"
-                                >
-                                  <path
-                                    fillRule="evenodd"
-                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                    clipRule="evenodd"
-                                  />
-                                </svg>
-                              </button>
-                              <button
-                                onClick={cancelEditingItem}
-                                className="p-1 text-stone-400 hover:text-stone-600 transition-colors"
-                              >
-                                <X className="w-4 h-4" />
-                              </button>
-                            </div>
-                          ) : (
-                            <>
-                              <span
-                                className={`flex-1 ${item.checked ? 'line-through text-stone-500' : 'text-stone-700'} ${canEdit ? 'cursor-pointer' : ''} text-sm md:text-base`}
-                                onClick={
-                                  canEdit
-                                    ? () => startEditingItem(item)
-                                    : undefined
-                                }
-                              >
-                                {item.text}
-                              </span>
-                              {/* デスクトップ用ボタン（hover表示） */}
-                              {canEdit && (
-                                <div className="hidden md:flex gap-1">
-                                  <button
-                                    onClick={() => startEditingItem(item)}
-                                    className="opacity-0 group-hover:opacity-100 p-1 text-stone-400 hover:text-blue-600 transition-all"
+                                <div className="relative overflow-hidden">
+                                  <div
+                                    className={`flex items-center gap-3 group transition-transform duration-200 ${
+                                      swipedItem === item.id
+                                        ? '-translate-x-16'
+                                        : 'translate-x-0'
+                                    }`}
                                   >
-                                    <svg
-                                      className="w-4 h-4"
-                                      fill="currentColor"
-                                      viewBox="0 0 20 20"
+                                    <button
+                                      onClick={() =>
+                                        toggleChecklistItem(
+                                          checklist.id,
+                                          item.id
+                                        )
+                                      }
+                                      className={`flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+                                        item.checked
+                                          ? 'text-white shadow-sm'
+                                          : 'border-stone-300 hover:border-stone-400'
+                                      }`}
+                                      style={
+                                        item.checked
+                                          ? {
+                                              backgroundColor:
+                                                colorPalette.abyssGreen.bg,
+                                              borderColor:
+                                                colorPalette.abyssGreen.bg,
+                                              color:
+                                                colorPalette.abyssGreen.text,
+                                            }
+                                          : {}
+                                      }
                                     >
-                                      <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                                    </svg>
-                                  </button>
-                                  <button
-                                    onClick={() =>
-                                      deleteChecklistItem(checklist.id, item.id)
-                                    }
-                                    className="opacity-0 group-hover:opacity-100 p-1 text-stone-400 hover:text-red-600 transition-all"
+                                      {item.checked && (
+                                        <svg
+                                          className="w-3 h-3"
+                                          fill="currentColor"
+                                          viewBox="0 0 20 20"
+                                        >
+                                          <path
+                                            fillRule="evenodd"
+                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                            clipRule="evenodd"
+                                          />
+                                        </svg>
+                                      )}
+                                    </button>
+                                    {editingItem === item.id ? (
+                                      <div className="flex-1 flex items-center gap-2">
+                                        <input
+                                          ref={editingInputRef}
+                                          type="text"
+                                          defaultValue={editingText}
+                                          onKeyDown={(e) => {
+                                            handleEnterKey(e, () =>
+                                              saveEditingItem(
+                                                checklist.id,
+                                                item.id
+                                              )
+                                            );
+                                            handleEscapeKey(e, () =>
+                                              cancelEditingItem()
+                                            );
+                                          }}
+                                          className="flex-1 px-2 py-1 border border-stone-300 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                          autoFocus
+                                        />
+                                        <button
+                                          onClick={() =>
+                                            saveEditingItem(
+                                              checklist.id,
+                                              item.id
+                                            )
+                                          }
+                                          className="p-1 text-green-600 hover:text-green-700 transition-colors"
+                                        >
+                                          <svg
+                                            className="w-4 h-4"
+                                            fill="currentColor"
+                                            viewBox="0 0 20 20"
+                                          >
+                                            <path
+                                              fillRule="evenodd"
+                                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                              clipRule="evenodd"
+                                            />
+                                          </svg>
+                                        </button>
+                                        <button
+                                          onClick={cancelEditingItem}
+                                          className="p-1 text-stone-400 hover:text-stone-600 transition-colors"
+                                        >
+                                          <X className="w-4 h-4" />
+                                        </button>
+                                      </div>
+                                    ) : (
+                                      <>
+                                        <span
+                                          className={`flex-1 ${item.checked ? 'line-through text-stone-500' : 'text-stone-700'} ${canEdit ? 'cursor-pointer' : ''} text-sm md:text-base`}
+                                          onClick={
+                                            canEdit
+                                              ? () => startEditingItem(item)
+                                              : undefined
+                                          }
+                                        >
+                                          {item.text}
+                                        </span>
+                                        {/* デスクトップ用ボタン（hover表示） */}
+                                        {canEdit && (
+                                          <div className="hidden md:flex gap-1">
+                                            <button
+                                              onClick={() =>
+                                                startEditingItem(item)
+                                              }
+                                              className="opacity-0 group-hover:opacity-100 p-1 text-stone-400 hover:text-blue-600 transition-all"
+                                            >
+                                              <svg
+                                                className="w-4 h-4"
+                                                fill="currentColor"
+                                                viewBox="0 0 20 20"
+                                              >
+                                                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                                              </svg>
+                                            </button>
+                                            <button
+                                              onClick={() =>
+                                                deleteChecklistItem(
+                                                  checklist.id,
+                                                  item.id
+                                                )
+                                              }
+                                              className="opacity-0 group-hover:opacity-100 p-1 text-stone-400 hover:text-red-600 transition-all"
+                                            >
+                                              <Trash2 className="w-4 h-4" />
+                                            </button>
+                                          </div>
+                                        )}
+                                      </>
+                                    )}
+                                  </div>
+
+                                  {/* スマホ用：スワイプで表示される削除ボタン */}
+                                  <div
+                                    className={`md:hidden absolute right-0 top-0 h-full flex items-center transition-transform duration-200 ${
+                                      swipedItem === item.id
+                                        ? 'translate-x-0'
+                                        : 'translate-x-full'
+                                    }`}
                                   >
-                                    <Trash2 className="w-4 h-4" />
-                                  </button>
+                                    <button
+                                      onClick={() => {
+                                        deleteChecklistItem(
+                                          checklist.id,
+                                          item.id
+                                        );
+                                        setSwipedItem(null);
+                                      }}
+                                      className="h-full px-4 bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition-colors"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </button>
+                                  </div>
                                 </div>
-                              )}
-                            </>
-                          )}
+                              </SwipeableItem>
+                            </SortableChecklistItem>
+                          ))}
                         </div>
+                      </SortableContext>
+                    </DndContext>
 
-                        {/* スマホ用：スワイプで表示される削除ボタン */}
-                        <div
-                          className={`md:hidden absolute right-0 top-0 h-full flex items-center transition-transform duration-200 ${
-                            swipedItem === item.id
-                              ? 'translate-x-0'
-                              : 'translate-x-full'
-                          }`}
-                        >
-                          <button
-                            onClick={() => {
-                              deleteChecklistItem(checklist.id, item.id);
-                              setSwipedItem(null);
-                            }}
-                            className="h-full px-4 bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition-colors"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                    </SwipeableItem>
-                  ))}
-                </div>
-
-                {canEdit && (
-                  <div>
-                    <input
-                      type="text"
-                      placeholder="新しい項目を追加..."
-                      onKeyDown={(e) => {
-                        handleEnterKey(
-                          e,
-                          () => {
-                            addChecklistItem(
-                              checklist.id,
-                              e.currentTarget.value
+                    {canEdit && (
+                      <div>
+                        <input
+                          type="text"
+                          placeholder="新しい項目を追加..."
+                          onKeyDown={(e) => {
+                            handleEnterKey(
+                              e,
+                              () => {
+                                addChecklistItem(
+                                  checklist.id,
+                                  e.currentTarget.value
+                                );
+                                e.currentTarget.value = '';
+                              },
+                              {
+                                requireValue: true,
+                                target: e.currentTarget,
+                              }
                             );
-                            e.currentTarget.value = '';
-                          },
-                          {
-                            requireValue: true,
-                            target: e.currentTarget,
-                          }
-                        );
-                      }}
-                      className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-sm"
-                    />
+                          }}
+                          className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-sm"
+                        />
+                      </div>
+                    )}
                   </div>
+                );
+              })}
+            </div>
+
+            {!isLoading && trip.checklists.length === 0 && (
+              <div className="text-center py-12 text-stone-500">
+                <CheckSquare className="w-12 h-12 mx-auto mb-4 text-stone-300" />
+                <p>チェックリストがまだありません</p>
+                {canEdit && (
+                  <button
+                    onClick={() => setShowNewChecklistModal(true)}
+                    className="mt-4 px-4 py-2 text-white rounded-lg transition-colors font-medium"
+                    style={{
+                      backgroundColor: colorPalette.roseQuartz.bg,
+                      color: colorPalette.roseQuartz.text,
+                    }}
+                  >
+                    最初のリストを作成
+                  </button>
                 )}
               </div>
-            );
-          })}
-        </div>
-
-        {trip.checklists.length === 0 && (
-          <div className="text-center py-12 text-stone-500">
-            <CheckSquare className="w-12 h-12 mx-auto mb-4 text-stone-300" />
-            <p>チェックリストがまだありません</p>
-            {canEdit && (
-              <button
-                onClick={() => setShowNewChecklistModal(true)}
-                className="mt-4 px-4 py-2 text-white rounded-lg transition-colors font-medium"
-                style={{
-                  backgroundColor: colorPalette.roseQuartz.bg,
-                  color: colorPalette.roseQuartz.text,
-                }}
-              >
-                最初のリストを作成
-              </button>
             )}
-          </div>
+          </>
         )}
       </div>
 

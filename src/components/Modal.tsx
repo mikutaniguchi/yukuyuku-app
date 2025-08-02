@@ -63,13 +63,11 @@ export default function Modal({
       onClick={onClose}
     >
       <div
-        className={`bg-white rounded-xl shadow-xl border border-stone-200 w-full ${maxWidthClasses[maxWidth]} ${
-          scrollable ? 'max-h-[90vh] flex flex-col' : ''
-        }`}
+        className={`bg-white rounded-xl shadow-xl border border-stone-200 w-full ${maxWidthClasses[maxWidth]} h-full flex flex-col`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-stone-200 flex-shrink-0">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-stone-200 flex-shrink-0 shadow-sm bg-white rounded-t-xl">
           <div className="flex items-center gap-3">
             {Icon && (
               <Icon
@@ -90,13 +88,11 @@ export default function Modal({
         </div>
 
         {/* Content */}
-        <div className={`p-6 ${scrollable ? 'overflow-y-auto flex-1' : ''}`}>
-          {children}
-        </div>
+        <div className="p-6 overflow-y-auto flex-1">{children}</div>
 
         {/* Fixed Footer */}
         {fixedFooter && (
-          <div className="border-t border-stone-200 p-6 flex-shrink-0 bg-white rounded-b-xl">
+          <div className="border-t border-stone-200 py-4 px-6 flex-shrink-0 bg-white rounded-b-xl shadow-[0_-1px_2px_rgba(0,0,0,0.05)]">
             {fixedFooter}
           </div>
         )}
