@@ -93,7 +93,6 @@ export default function EditScheduleModal({
       icon={Edit2}
       iconColor={colorPalette.aquaBlue.bg}
       maxWidth="2xl"
-      scrollable
       fixedFooter={footerButtons}
     >
       <div className="space-y-6">
