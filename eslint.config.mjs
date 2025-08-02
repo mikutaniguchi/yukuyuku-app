@@ -17,10 +17,14 @@ const eslintConfig = [
         "error",
         {
           "argsIgnorePattern": "^_",
-          "varsIgnorePattern": "^_"
+          "varsIgnorePattern": "^_",
+          "vars": "all",
+          "args": "after-used",
+          "ignoreRestSiblings": false
         }
       ],
-      "@typescript-eslint/no-require-imports": "off"
+      "@typescript-eslint/no-require-imports": "off",
+      "no-unused-vars": "off" // TypeScript版を使用
     }
   }
 ];
