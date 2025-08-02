@@ -58,7 +58,6 @@ export default function NewScheduleModal({
       icon={Plus}
       iconColor={colorPalette.abyssGreen.bg}
       maxWidth="xl"
-      scrollable
       fixedFooter={footerButton}
     >
       <ScheduleForm
