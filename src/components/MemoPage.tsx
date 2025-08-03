@@ -57,7 +57,7 @@ export default function MemoPage({
               value={trip.memo}
               onChange={(e) => handleMemoChange(e.target.value)}
               placeholder="宿泊先情報、緊急連絡先、全体の注意事項など...&#10;&#10;💡 URLを入力すると自動的にリンクになります&#10;例: https://example.com/hotel"
-              className="w-full h-96 px-4 py-3 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 resize-none"
+              className="w-full h-96 px-4 py-3 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 resize-none text-stone-900 bg-white"
             />
           ) : (
             <div className="w-full h-96 px-4 py-3 bg-stone-50 border border-stone-200 rounded-lg whitespace-pre-wrap break-words overflow-y-auto">

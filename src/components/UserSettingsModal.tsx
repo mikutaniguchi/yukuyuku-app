@@ -109,7 +109,7 @@ export default function UserSettingsModal({
                   type="text"
                   value={editedName}
                   onChange={(e) => setEditedName(e.target.value)}
-                  className="flex-1 bg-transparent border-none outline-none text-stone-800"
+                  className="flex-1 bg-transparent border-none outline-none text-stone-900"
                   placeholder="名前を入力してください"
                   autoFocus
                   onKeyPress={(e) => {
@@ -204,7 +204,7 @@ export default function UserSettingsModal({
               type="text"
               value={deleteConfirmName}
               onChange={(e) => setDeleteConfirmName(e.target.value)}
-              className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-stone-900 bg-white"
               placeholder={user.name}
             />
           </div>

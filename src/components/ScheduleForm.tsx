@@ -128,7 +128,7 @@ export default function ScheduleForm({
           onChange={(e) =>
             onScheduleChange({ ...schedule, date: e.target.value })
           }
-          className="w-full md:w-1/2 px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-base"
+          className="w-full md:w-1/2 px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-base text-stone-900 bg-white"
         >
           {tripDates.map((date) => (
             <option key={date} value={date}>
@@ -155,7 +155,7 @@ export default function ScheduleForm({
                 onScheduleChange({ ...schedule, startTime: getCurrentHour() });
               }
             }}
-            className="w-full max-w-[140px] px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-base"
+            className="w-full max-w-[140px] px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-base text-stone-900 bg-white"
           />
         </div>
         <div>
@@ -178,7 +178,7 @@ export default function ScheduleForm({
                 onScheduleChange({ ...schedule, endTime: currentHour });
               }
             }}
-            className="w-full max-w-[140px] px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-base"
+            className="w-full max-w-[140px] px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-base text-stone-900 bg-white"
           />
         </div>
       </div>
@@ -190,7 +190,7 @@ export default function ScheduleForm({
         onChange={(e) =>
           onScheduleChange({ ...schedule, title: e.target.value })
         }
-        className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-base"
+        className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-base text-stone-900 bg-white"
       />
 
       <input
@@ -200,7 +200,7 @@ export default function ScheduleForm({
         onChange={(e) =>
           onScheduleChange({ ...schedule, location: e.target.value })
         }
-        className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-base"
+        className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-base text-stone-900 bg-white"
       />
 
       <textarea
@@ -209,7 +209,7 @@ export default function ScheduleForm({
         onChange={(e) =>
           onScheduleChange({ ...schedule, description: e.target.value })
         }
-        className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-base resize-none min-h-[76px]"
+        className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-base resize-none min-h-[76px] text-stone-900 bg-white"
         rows={3}
       />
 
@@ -229,7 +229,7 @@ export default function ScheduleForm({
                   budget: parseInt(e.target.value) || 0,
                 })
               }
-              className="w-full pl-7 pr-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-base"
+              className="w-full pl-7 pr-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-base text-stone-900 bg-white"
             />
           </div>
           <div className="relative">
@@ -243,7 +243,7 @@ export default function ScheduleForm({
                   budgetPeople: parseInt(e.target.value) || 1,
                 })
               }
-              className="w-full pr-8 pl-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-base"
+              className="w-full pr-8 pl-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-base text-stone-900 bg-white"
               min="1"
             />
             <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-stone-500">
@@ -257,7 +257,7 @@ export default function ScheduleForm({
             onChange={(e) =>
               onScheduleChange({ ...schedule, paidBy: e.target.value })
             }
-            className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-base"
+            className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-base text-stone-900 bg-white"
           >
             <option value="">立て替えなし</option>
             {tripMembers.map((member) => (
@@ -280,7 +280,7 @@ export default function ScheduleForm({
                 transport: { ...schedule.transport, method: e.target.value },
               })
             }
-            className="px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-base"
+            className="px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-base text-stone-900 bg-white"
           >
             <option value="">交通手段</option>
             <option value="徒歩">徒歩</option>
@@ -299,7 +299,7 @@ export default function ScheduleForm({
                 transport: { ...schedule.transport, duration: e.target.value },
               })
             }
-            className="px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-base"
+            className="px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-base text-stone-900 bg-white"
           />
         </div>
       </div>
