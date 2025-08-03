@@ -41,7 +41,7 @@ export default function CreateTripModal({
     }
 
     if (new Date(startDate) > new Date(endDate)) {
-      setError('終了日は開始日より後の日付を選択してください');
+      setError('最終日は初日より後の日付を選択してください');
       return;
     }
 
@@ -91,7 +91,7 @@ export default function CreateTripModal({
               htmlFor="startDate"
               className="block text-sm font-medium text-stone-700 mb-2"
             >
-              開始日
+              初日
             </label>
             <FormInput
               id="startDate"
@@ -106,7 +106,7 @@ export default function CreateTripModal({
               htmlFor="endDate"
               className="block text-sm font-medium text-stone-700 mb-2"
             >
-              終了日
+              最終日
             </label>
             <FormInput
               id="endDate"

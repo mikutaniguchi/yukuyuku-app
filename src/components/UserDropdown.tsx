@@ -72,7 +72,7 @@ export default function UserDropdown({
 
       {/* ドロップダウンメニュー */}
       {isOpen && (
-        <div className="absolute top-full left-0 mt-1 w-64 bg-white border border-stone-200 rounded-lg shadow-lg z-50">
+        <div className="absolute top-full right-0 mt-1 w-64 bg-white border border-stone-200 rounded-lg shadow-lg z-50">
           {/* ユーザー情報ヘッダー */}
           <div className="px-4 py-3 border-b border-stone-100 bg-stone-50 rounded-t-lg">
             <div className="flex items-center gap-3">
