@@ -6,12 +6,17 @@ import { User } from '@/types';
 import { colorPalette } from '../lib/constants';
 import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
+import { loginAsGuest } from '@/lib/auth';
 
 interface LoginModalProps {
   onLogin: (user: User) => void;
+  allowGuestAccess?: boolean;
 }
 
-export default function LoginModal({ onLogin }: LoginModalProps) {
+export default function LoginModal({
+  onLogin,
+  allowGuestAccess = false,
+}: LoginModalProps) {
   const [error, setError] = useState<string | null>(null);
 
   const handleGoogleLogin = async () => {
@@ -28,6 +33,23 @@ export default function LoginModal({ onLogin }: LoginModalProps) {
     } catch (error) {
       setError(
         error instanceof Error ? error.message : 'ログインに失敗しました'
+      );
+    }
+  };
+
+  const handleGuestLogin = async () => {
+    try {
+      const firebaseUser = await loginAsGuest();
+      const user: User = {
+        id: firebaseUser.uid,
+        name: 'ゲスト',
+        email: '',
+        type: 'guest',
+      };
+      onLogin(user);
+    } catch (error) {
+      setError(
+        error instanceof Error ? error.message : 'ゲストログインに失敗しました'
       );
     }
   };
@@ -61,13 +83,22 @@ export default function LoginModal({ onLogin }: LoginModalProps) {
             Googleアカウントでログイン
           </button>
 
-          <div className="text-center text-sm text-stone-500 mt-6 p-4 bg-stone-50 rounded-lg">
-            <p className="font-medium text-stone-700 mb-2">
-              ゲスト参加について
-            </p>
-            <p>招待URLを受け取った方は、</p>
-            <p>そのリンクから直接アクセスしてください</p>
-          </div>
+          {allowGuestAccess && (
+            <>
+              <div className="flex items-center my-4">
+                <div className="flex-1 border-t border-stone-300"></div>
+                <span className="px-3 text-sm text-stone-500">または</span>
+                <div className="flex-1 border-t border-stone-300"></div>
+              </div>
+
+              <button
+                onClick={handleGuestLogin}
+                className="w-full py-3 px-4 rounded-lg font-medium transition-colors border-2 border-stone-300 text-stone-700 hover:bg-stone-50"
+              >
+                ゲストとして閲覧
+              </button>
+            </>
+          )}
         </div>
 
         {error && (

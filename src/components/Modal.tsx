@@ -61,7 +61,7 @@ export default function Modal({
       onClick={onClose}
     >
       <div
-        className={`bg-white rounded-xl shadow-xl border border-stone-200 w-full ${maxWidthClasses[maxWidth]} h-full flex flex-col`}
+        className={`bg-white rounded-xl shadow-xl border border-stone-200 w-full ${maxWidthClasses[maxWidth]} max-h-[calc(100vh-2rem)] flex flex-col`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

@@ -397,8 +397,7 @@ export default function TravelApp() {
 
   // ゲストユーザーの権限チェック
   const isGuest = appUser?.type === 'guest';
-  const canEdit =
-    !isGuest || (isGuest && selectedTrip?.guestPermission === 'edit');
+  const canEdit = !isGuest;
   const isCreator = selectedTrip?.creator === appUser?.id;
 
   return (
@@ -536,34 +535,6 @@ export default function TravelApp() {
                         {isCreator && (
                           <>
                             <div className="border-t border-stone-200 my-1" />
-                            <div className="px-4 py-2 text-xs text-stone-500">
-                              ゲスト権限
-                            </div>
-                            <button
-                              onClick={() =>
-                                updateTrip(selectedTrip.id, (trip) => ({
-                                  ...trip,
-                                  guestPermission:
-                                    trip.guestPermission === 'edit'
-                                      ? 'view'
-                                      : 'edit',
-                                }))
-                              }
-                              className="w-full px-4 py-2 text-left text-stone-700 hover:bg-stone-50 flex items-center justify-between"
-                            >
-                              <span className="text-sm">
-                                {selectedTrip.guestPermission === 'edit'
-                                  ? '編集可能'
-                                  : '閲覧のみ'}
-                              </span>
-                              <div
-                                className={`w-2 h-2 rounded-full ${
-                                  selectedTrip.guestPermission === 'edit'
-                                    ? 'bg-green-500'
-                                    : 'bg-orange-500'
-                                }`}
-                              />
-                            </button>
                             <button
                               onClick={() =>
                                 updateTrip(selectedTrip.id, (trip) => ({

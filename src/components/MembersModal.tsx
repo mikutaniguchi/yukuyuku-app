@@ -14,9 +14,17 @@ interface MembersModalProps {
   onTripUpdate: (tripId: string, updateFunction: (trip: Trip) => Trip) => void;
 }
 
-export default function MembersModal({ isOpen, trip, user, onClose, onTripUpdate }: MembersModalProps) {
+export default function MembersModal({
+  isOpen,
+  trip,
+  user,
+  onClose,
+  onTripUpdate,
+}: MembersModalProps) {
   const [showDeleteMemberModal, setShowDeleteMemberModal] = useState(false);
-  const [memberToDelete, setMemberToDelete] = useState<Trip['members'][0] | null>(null);
+  const [memberToDelete, setMemberToDelete] = useState<
+    Trip['members'][0] | null
+  >(null);
 
   const handleDeleteMemberClick = (member: Trip['members'][0]) => {
     setMemberToDelete(member);
@@ -27,7 +35,8 @@ export default function MembersModal({ isOpen, trip, user, onClose, onTripUpdate
     if (trip.creator === user?.id) {
       onTripUpdate(trip.id, (currentTrip) => ({
         ...currentTrip,
-        members: currentTrip.members.filter(m => m.id !== memberId)
+        members: currentTrip.members.filter((m) => m.id !== memberId),
+        memberIds: currentTrip.memberIds.filter((id) => id !== memberId),
       }));
       setShowDeleteMemberModal(false);
       setMemberToDelete(null);
@@ -44,40 +53,54 @@ export default function MembersModal({ isOpen, trip, user, onClose, onTripUpdate
         iconColor={colorPalette.rubyGrey.bg}
       >
         <div className="space-y-3 mb-6">
-          {trip.members.map(member => (
-            <div key={member.id} className="flex items-center justify-between p-3 border border-stone-200 rounded-lg">
-              <div className="flex items-center gap-3">
-                <div 
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium" 
-                  style={{ backgroundColor: colorPalette.aquaBlue.light, color: colorPalette.aquaBlue.bg }}
-                >
-                  {member.name.charAt(0)}
-                </div>
-                <div>
-                  <div className="font-medium text-stone-800">{member.name}</div>
-                  <div className="text-sm text-stone-500">
-                    {member.type === 'google' ? 'Googleアカウント' : 'ゲスト'}
-                    {member.id === trip.creator && ' (作成者)'}
+          {trip.members && trip.members.length > 0 ? (
+            trip.members.map((member) => (
+              <div
+                key={member.id}
+                className="flex items-center justify-between p-3 border border-stone-200 rounded-lg"
+              >
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium"
+                    style={{
+                      backgroundColor: colorPalette.aquaBlue.light,
+                      color: colorPalette.aquaBlue.bg,
+                    }}
+                  >
+                    {member.name?.charAt(0) || 'U'}
+                  </div>
+                  <div>
+                    <div className="font-medium text-stone-800">
+                      {member.name || 'ユーザー'}
+                    </div>
+                    {member.id === trip.creator && (
+                      <div className="text-sm text-stone-500">(作成者)</div>
+                    )}
                   </div>
                 </div>
+                {trip.creator === user?.id && member.id !== trip.creator && (
+                  <button
+                    onClick={() => handleDeleteMemberClick(member)}
+                    className="p-1 text-stone-500 hover:text-red-600 transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
               </div>
-              {trip.creator === user?.id && member.id !== trip.creator && (
-                <button
-                  onClick={() => handleDeleteMemberClick(member)}
-                  className="p-1 text-stone-500 hover:text-red-600 transition-colors"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              )}
+            ))
+          ) : (
+            <div className="text-center text-stone-500 py-4">
+              メンバーが見つかりません
             </div>
-          ))}
+          )}
         </div>
+
         <button
           onClick={onClose}
           className="w-full py-2 text-white rounded-lg transition-colors font-medium"
-          style={{ 
+          style={{
             backgroundColor: colorPalette.rubyGrey.bg,
-            color: colorPalette.rubyGrey.text 
+            color: colorPalette.rubyGrey.text,
           }}
         >
           閉じる
@@ -98,15 +121,16 @@ export default function MembersModal({ isOpen, trip, user, onClose, onTripUpdate
         {memberToDelete && (
           <>
             <p className="text-stone-600 mb-6">
-              <span className="font-medium">{memberToDelete.name}</span>さんを旅行から削除しますか？
+              <span className="font-medium">{memberToDelete.name}</span>
+              さんを旅行から削除しますか？
             </p>
             <div className="flex gap-3">
               <button
                 onClick={() => removeMember(memberToDelete.id)}
                 className="flex-1 py-2 text-white rounded-lg transition-colors font-medium"
-                style={{ 
+                style={{
                   backgroundColor: colorPalette.sandRed.bg,
-                  color: colorPalette.sandRed.text 
+                  color: colorPalette.sandRed.text,
                 }}
               >
                 削除する
