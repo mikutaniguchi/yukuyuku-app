@@ -19,7 +19,6 @@ import {
 import {
   Calendar,
   Users,
-  LogOut,
   UserPlus,
   Settings,
   BookOpen,
@@ -33,7 +32,8 @@ import {
 } from 'lucide-react';
 import { Trip, User } from '@/types';
 import { colorPalette, formatDate } from '@/lib/constants';
-import { logout, updateUserDisplayName, deleteCurrentUser } from '@/lib/auth';
+import { updateUserDisplayName, deleteCurrentUser } from '@/lib/auth';
+import UserSettingsModal from '@/components/UserSettingsModal';
 import {
   updateUserNameInAllTrips,
   removeUserFromAllTrips,
@@ -42,8 +42,7 @@ import Button from '@/components/Button';
 import MembersModal from '@/components/MembersModal';
 import InviteModal from '@/components/InviteModal';
 import DeleteTripModal from '@/components/DeleteTripModal';
-import UserSettingsModal from '@/components/UserSettingsModal';
-import UserDropdown from '@/components/UserDropdown';
+import Header from '@/components/Header';
 import FloatingNavMenu from '@/components/FloatingNavMenu';
 import LoadingScreen from '@/components/LoadingScreen';
 
@@ -248,11 +247,6 @@ export default function TripLayout({ children }: TripLayoutProps) {
     }
   };
 
-  const handleLogout = async () => {
-    await logout();
-    router.push('/');
-  };
-
   const handleUpdateUserName = async (newName: string) => {
     if (!firebaseUser) return;
 
@@ -354,40 +348,13 @@ export default function TripLayout({ children }: TripLayoutProps) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-stone-50 to-neutral-100">
       <div className="container mx-auto px-4 py-6">
-        {/* User info bar */}
-        <div className="flex items-center justify-between mb-4 bg-white rounded-lg shadow-sm border border-stone-200 px-4 py-2">
-          {isGuest || isGuestAccess ? (
-            <div className="flex items-center justify-between w-full">
-              <span className="px-2 py-1 text-xs bg-amber-100 text-amber-700 rounded-full">
-                ゲスト（閲覧のみ）
-              </span>
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-2 px-3 py-1 text-stone-600 hover:text-stone-800 transition-colors"
-              >
-                <LogOut className="w-4 h-4" />
-                ログアウト
-              </button>
-            </div>
-          ) : (
-            <UserDropdown
-              user={appUser}
-              onSettingsClick={() => setShowUserSettings(true)}
-              onLogout={handleLogout}
-            />
-          )}
-        </div>
-
-        {/* Trip selector - simplified for now */}
-        {!(isGuest || isGuestAccess) && (
-          <div className="mb-4">
-            <Link
-              href="/"
-              className="text-sm text-stone-600 hover:text-stone-800"
-            >
-              ← 旅行一覧に戻る
-            </Link>
-          </div>
+        {/* Header */}
+        {appUser && (
+          <Header
+            user={appUser}
+            tripId={tripId}
+            onSettingsClick={() => setShowUserSettings(true)}
+          />
         )}
 
         {/* Header */}

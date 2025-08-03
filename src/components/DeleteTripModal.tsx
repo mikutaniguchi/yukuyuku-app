@@ -15,13 +15,13 @@ interface DeleteTripModalProps {
   onCancel: () => void;
 }
 
-export default function DeleteTripModal({ 
-  isOpen, 
-  trip, 
-  deleteConfirmTitle, 
-  onDeleteConfirmTitleChange, 
-  onConfirmDelete, 
-  onCancel 
+export default function DeleteTripModal({
+  isOpen,
+  trip,
+  deleteConfirmTitle,
+  onDeleteConfirmTitleChange,
+  onConfirmDelete,
+  onCancel,
 }: DeleteTripModalProps) {
   return (
     <Modal
@@ -37,18 +37,20 @@ export default function DeleteTripModal({
           この操作は取り消せません。すべてのスケジュール、メモ、チェックリストが削除されます。
         </p>
         <p className="text-stone-700">
-          削除するには、旅行名「<span className="font-semibold text-stone-900">{trip?.title}</span>」を入力してください：
+          削除するには、旅行名「
+          <span className="font-semibold text-stone-900">{trip?.title}</span>
+          」を入力してください：
         </p>
         <input
           type="text"
           value={deleteConfirmTitle}
           onChange={(e) => onDeleteConfirmTitleChange(e.target.value)}
           placeholder="旅行名を入力"
-          className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+          className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-stone-900 bg-white"
           autoFocus
         />
       </div>
-      
+
       <div className="flex gap-3 mt-6">
         <button
           onClick={onConfirmDelete}
@@ -64,9 +66,9 @@ export default function DeleteTripModal({
         <button
           onClick={onCancel}
           className="flex-1 py-2 text-white rounded-lg transition-colors font-medium"
-          style={{ 
+          style={{
             backgroundColor: colorPalette.strawBeige.bg,
-            color: colorPalette.strawBeige.text 
+            color: colorPalette.strawBeige.text,
           }}
         >
           キャンセル

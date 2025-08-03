@@ -8,12 +8,12 @@ import {
   createTrip as createTripInFirestore,
 } from '@/lib/firestore';
 import { Trip, User } from '@/types';
-import { Calendar, Plus, LogOut } from 'lucide-react';
+import { Calendar, Plus } from 'lucide-react';
 import { colorPalette, formatDate } from '@/lib/constants';
 import LoginModal from '@/components/LoginModal';
 import CreateTripModal from '@/components/CreateTripModal';
 import Button from '@/components/Button';
-import { logout } from '@/lib/auth';
+import Header from '@/components/Header';
 
 export default function Home() {
   const router = useRouter();
@@ -47,9 +47,6 @@ export default function Home() {
     try {
       const userTrips = await getUserTrips(userId);
       setTrips(userTrips);
-      if (userTrips.length === 0) {
-        setShowCreateTripModal(true);
-      }
     } catch (error) {
       console.error('Failed to load trips:', error);
     } finally {
@@ -99,17 +96,6 @@ export default function Home() {
     }
   };
 
-  const handleLogout = async () => {
-    try {
-      await logout();
-      setAppUser(null);
-      setTrips([]);
-      setShowLoginModal(true);
-    } catch (error) {
-      console.error('Logout failed:', error);
-    }
-  };
-
   if (loading || loadingTrips) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-stone-50 to-neutral-100 flex items-center justify-center">
@@ -119,39 +105,18 @@ export default function Home() {
   }
 
   if (showLoginModal) {
-    return <LoginModal onLogin={handleLogin} />;
+    return <LoginModal onLogin={handleLogin} allowGuestAccess={true} />;
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-stone-50 to-neutral-100">
       <div className="container mx-auto px-4 py-6">
-        {/* User info bar */}
-        <div className="flex items-center justify-between mb-6 bg-white rounded-lg shadow-sm border border-stone-200 px-4 py-2">
-          <div className="flex items-center gap-3">
-            <div
-              className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium"
-              style={{
-                backgroundColor: colorPalette.aquaBlue.light,
-                color: colorPalette.aquaBlue.bg,
-              }}
-            >
-              {appUser?.name.charAt(0)}
-            </div>
-            <span className="font-medium text-stone-700">{appUser?.name}</span>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 px-3 py-1 text-stone-600 hover:text-stone-800 transition-colors"
-          >
-            <LogOut className="w-4 h-4" />
-            ログアウト
-          </button>
-        </div>
-
         {/* Header */}
+        {appUser && <Header user={appUser} />}
+
+        {/* Page Title */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-stone-800 mb-2">旅行一覧</h1>
-          <p className="text-stone-600">参加している旅行を選択してください</p>
+          <h1 className="text-3xl font-bold text-stone-800">旅行一覧</h1>
         </div>
 
         {/* Trip List */}

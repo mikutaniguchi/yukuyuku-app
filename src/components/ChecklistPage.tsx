@@ -565,7 +565,7 @@ export default function ChecklistPage({
                                               cancelEditingItem()
                                             );
                                           }}
-                                          className="flex-1 px-2 py-1 border border-stone-300 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                          className="flex-1 px-2 py-1 border border-stone-300 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-stone-900 bg-white"
                                           autoFocus
                                         />
                                         <button
@@ -692,7 +692,7 @@ export default function ChecklistPage({
                               }
                             );
                           }}
-                          className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-sm"
+                          className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-sm text-stone-900 bg-white"
                         />
                       </div>
                     )}
@@ -747,7 +747,7 @@ export default function ChecklistPage({
                 onChange={(e) =>
                   setNewChecklist({ ...newChecklist, name: e.target.value })
                 }
-                className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500"
+                className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-stone-900 bg-white"
               />
               <div className="space-y-2">
                 <label className="text-sm font-medium text-stone-700">
@@ -767,7 +767,7 @@ export default function ChecklistPage({
                           items: updatedItems,
                         });
                       }}
-                      className="flex-1 px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-sm"
+                      className="flex-1 px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-sm text-stone-900 bg-white"
                     />
                     {newChecklist.items.length > 1 && (
                       <button

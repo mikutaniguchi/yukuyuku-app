@@ -40,7 +40,7 @@ const FormInput = React.memo(
       ref
     ) => {
       const baseClasses =
-        'w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 transition-colors';
+        'w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 transition-colors text-stone-900 bg-white';
       const disabledClasses = disabled ? 'bg-stone-100 cursor-not-allowed' : '';
       const combinedClasses =
         `${baseClasses} ${disabledClasses} ${className}`.trim();
