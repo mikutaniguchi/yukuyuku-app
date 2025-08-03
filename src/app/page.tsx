@@ -12,7 +12,6 @@ import { Calendar, Plus } from 'lucide-react';
 import { colorPalette, formatDate } from '@/lib/constants';
 import LoginModal from '@/components/LoginModal';
 import CreateTripModal from '@/components/CreateTripModal';
-import Button from '@/components/Button';
 import Header from '@/components/Header';
 
 export default function Home() {
@@ -120,62 +119,38 @@ export default function Home() {
         </div>
 
         {/* Trip List */}
-        {trips.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {trips.map((trip) => (
-              <button
-                key={trip.id}
-                onClick={() => router.push(`/trip/${trip.id}`)}
-                className="bg-white rounded-xl shadow-sm border border-stone-200 p-6 hover:shadow-md transition-shadow text-left"
-              >
-                <div className="flex items-center gap-3 mb-4">
-                  <Calendar
-                    className="w-8 h-8"
-                    style={{ color: colorPalette.aquaBlue.bg }}
-                  />
-                  <h3 className="text-xl font-semibold text-stone-800">
-                    {trip.title}
-                  </h3>
-                </div>
-                <div className="space-y-2 text-sm text-stone-600">
-                  <p>
-                    {formatDate(trip.startDate)} - {formatDate(trip.endDate)}
-                  </p>
-                  <p>{trip.members.length}人参加</p>
-                </div>
-              </button>
-            ))}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {trips.map((trip) => (
             <button
-              onClick={() => setShowCreateTripModal(true)}
-              className="bg-white border-2 border-dashed border-stone-300 rounded-xl p-6 hover:border-stone-400 transition-colors flex flex-col items-center justify-center gap-4"
+              key={trip.id}
+              onClick={() => router.push(`/trip/${trip.id}`)}
+              className="bg-white rounded-xl shadow-sm border border-stone-200 p-6 hover:shadow-md transition-shadow text-left"
             >
-              <Plus className="w-12 h-12 text-stone-400" />
-              <span className="text-stone-600 font-medium">
-                新しい旅行を作成
-              </span>
+              <div className="flex items-center gap-3 mb-4">
+                <Calendar
+                  className="w-8 h-8"
+                  style={{ color: colorPalette.aquaBlue.bg }}
+                />
+                <h3 className="text-xl font-semibold text-stone-800">
+                  {trip.title}
+                </h3>
+              </div>
+              <div className="space-y-2 text-sm text-stone-600">
+                <p>
+                  {formatDate(trip.startDate)} - {formatDate(trip.endDate)}
+                </p>
+                <p>{trip.members.length}人参加</p>
+              </div>
             </button>
-          </div>
-        ) : (
-          <div className="max-w-md mx-auto text-center">
-            <div className="bg-white rounded-2xl shadow-xl p-8">
-              <h2 className="text-xl font-bold text-stone-800 mb-4">
-                旅行がありません
-              </h2>
-              <p className="text-stone-600 mb-6">
-                新しい旅行を作成して始めましょう
-              </p>
-              <Button
-                onClick={() => setShowCreateTripModal(true)}
-                color="abyssGreen"
-                size="md"
-                className="mx-auto"
-              >
-                <Plus className="w-5 h-5" />
-                新しい旅行を作成
-              </Button>
-            </div>
-          </div>
-        )}
+          ))}
+          <button
+            onClick={() => setShowCreateTripModal(true)}
+            className="bg-white border-2 border-dashed border-stone-300 rounded-xl p-6 hover:border-stone-400 transition-colors flex flex-col items-center justify-center gap-4"
+          >
+            <Plus className="w-12 h-12 text-stone-400" />
+            <span className="text-stone-600 font-medium">新しい旅行を作成</span>
+          </button>
+        </div>
       </div>
 
       <CreateTripModal
