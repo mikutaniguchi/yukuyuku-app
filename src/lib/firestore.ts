@@ -45,8 +45,6 @@ export const getTrip = async (tripId: string) => {
     );
 
     if (missingMemberIds.length > 0) {
-      console.log('Found missing members:', missingMemberIds);
-
       // 不足しているメンバー情報を追加
       const missingMembers = missingMemberIds.map((id, index) => ({
         id: id,
@@ -69,8 +67,6 @@ export const getTrip = async (tripId: string) => {
           members: updatedMembers,
           updatedAt: serverTimestamp(),
         });
-
-        console.log('Updated members array with missing members');
 
         return { ...trip, members: updatedMembers };
       } catch (error) {
@@ -352,9 +348,6 @@ export const updateUserNameInAllTrips = async (
 
     await Promise.all(updatePromises);
 
-    console.log(
-      `Updated user name to "${newName}" in ${userTrips.length} trips`
-    );
     return { success: true, updatedTrips: userTrips.length };
   } catch (error) {
     console.error('Failed to update user name in trips:', error);
@@ -389,7 +382,6 @@ export const removeUserFromAllTrips = async (userId: string) => {
 
     await Promise.all(updatePromises);
 
-    console.log(`Removed user from ${userTrips.length} trips`);
     return { success: true, updatedTrips: userTrips.length };
   } catch (error) {
     console.error('Failed to remove user from trips:', error);
