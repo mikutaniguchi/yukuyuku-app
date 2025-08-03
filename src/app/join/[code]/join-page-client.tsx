@@ -9,6 +9,9 @@ import { loginAsGuest } from '@/lib/auth';
 import { auth } from '@/lib/firebase';
 import { colorPalette } from '@/lib/constants';
 import LoginModal from '@/components/LoginModal';
+import SchedulePage from '@/components/SchedulePage';
+import MemoPage from '@/components/MemoPage';
+import ChecklistPage from '@/components/ChecklistPage';
 import { User, Trip } from '@/types';
 
 interface JoinPageClientProps {
@@ -29,6 +32,7 @@ export default function JoinPageClient({ inviteCode }: JoinPageClientProps) {
   const [tripName, setTripName] = useState('');
   const [tripData, setTripData] = useState<Trip | null>(null);
   const [showLogin, setShowLogin] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<string>('');
 
   // 招待コードから旅行タイトルを取得（認証なしで表示のみ）
   useEffect(() => {
@@ -65,9 +69,6 @@ export default function JoinPageClient({ inviteCode }: JoinPageClientProps) {
         // ゲストユーザーの場合は直接閲覧
         if (isGuest) {
           setStatus('guest-viewing');
-          setTimeout(() => {
-            router.push(`/trip/${trip.id}?guest=true`);
-          }, 2000);
           return;
         }
 
@@ -132,12 +133,10 @@ export default function JoinPageClient({ inviteCode }: JoinPageClientProps) {
 
       setTripData(trip);
       setTripName(trip.title);
+      setSelectedDate(trip.startDate); // 初期日付を設定
 
-      // ゲストとして旅行ページに遷移
+      // ゲストとして招待ページで閲覧開始
       setStatus('guest-viewing');
-      setTimeout(() => {
-        router.push(`/trip/${trip.id}?guest=true`);
-      }, 1000);
     } catch (error) {
       console.error('Failed to access as guest:', error);
       setStatus('error');
@@ -170,6 +169,37 @@ export default function JoinPageClient({ inviteCode }: JoinPageClientProps) {
 
   if (showLogin) {
     return <LoginModal onLogin={handleLogin} allowGuestAccess={true} />;
+  }
+
+  if (status === 'guest-viewing' && tripData && user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-stone-50 to-neutral-100">
+        <div className="bg-stone-100 p-4 text-center border-b border-stone-200">
+          <p className="text-sm text-stone-600">
+            「{tripName}」をゲストとして閲覧中
+          </p>
+          <p className="text-xs text-stone-500 mt-1">閲覧のみ可能です</p>
+        </div>
+
+        <div className="container mx-auto px-4 py-6">
+          <div className="space-y-8">
+            <SchedulePage
+              trip={tripData}
+              onTripUpdate={() => {}}
+              canEdit={false}
+              selectedDate={selectedDate}
+              onDateChange={setSelectedDate}
+            />
+            <MemoPage trip={tripData} onTripUpdate={() => {}} canEdit={false} />
+            <ChecklistPage
+              trip={tripData}
+              onTripUpdate={() => {}}
+              canEdit={false}
+            />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -279,18 +309,6 @@ export default function JoinPageClient({ inviteCode }: JoinPageClientProps) {
               </button>
             </div>
           </div>
-        )}
-
-        {status === 'guest-viewing' && (
-          <>
-            <h1 className="text-2xl font-bold text-green-600 mb-4">
-              ゲストアクセス中...
-            </h1>
-            <p className="text-stone-600 mb-4">
-              「{tripName}」を表示しています
-            </p>
-            <p className="text-sm text-stone-500">旅行ページに移動します...</p>
-          </>
         )}
       </div>
     </div>

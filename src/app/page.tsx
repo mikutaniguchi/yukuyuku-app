@@ -105,7 +105,7 @@ export default function Home() {
   }
 
   if (showLoginModal) {
-    return <LoginModal onLogin={handleLogin} allowGuestAccess={true} />;
+    return <LoginModal onLogin={handleLogin} allowGuestAccess={false} />;
   }
 
   return (

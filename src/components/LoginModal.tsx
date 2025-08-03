@@ -84,20 +84,12 @@ export default function LoginModal({
           </button>
 
           {allowGuestAccess && (
-            <>
-              <div className="flex items-center my-4">
-                <div className="flex-1 border-t border-stone-300"></div>
-                <span className="px-3 text-sm text-stone-500">または</span>
-                <div className="flex-1 border-t border-stone-300"></div>
-              </div>
-
-              <button
-                onClick={handleGuestLogin}
-                className="w-full py-3 px-4 rounded-lg font-medium transition-colors border-2 border-stone-300 text-stone-700 hover:bg-stone-50"
-              >
-                ゲストとして閲覧
-              </button>
-            </>
+            <button
+              onClick={handleGuestLogin}
+              className="w-full py-3 px-4 rounded-lg font-medium transition-colors border-2 border-stone-300 text-stone-700 hover:bg-stone-50"
+            >
+              ゲストとして閲覧
+            </button>
           )}
         </div>
 
