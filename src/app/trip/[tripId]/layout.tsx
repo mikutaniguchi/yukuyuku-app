@@ -167,12 +167,6 @@ export default function TripLayout({ children }: TripLayoutProps) {
 
         const tripData = await getTrip(tripId);
         if (tripData) {
-          console.log('Trip data loaded in layout:', {
-            tripId: tripData.id,
-            membersCount: tripData.members?.length || 0,
-            memberIds: tripData.memberIds,
-            members: tripData.members,
-          });
           setTrip(tripData);
         } else {
           notFound();
