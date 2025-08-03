@@ -1,47 +1,98 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // ユーザーは自分が作成した旅行を読み書きできる
-    match /trips/{tripId} {
-      allow read: if request.auth != null && 
-        (request.auth.uid == resource.data.creator || 
-         request.auth.uid in resource.data.memberIds);
-      allow create: if request.auth != null;
-      allow update: if request.auth != null && 
-        (request.auth.uid == resource.data.creator || 
-         request.auth.uid in resource.data.memberIds);
-      allow delete: if request.auth != null && 
-        request.auth.uid == resource.data.creator;
+    // ヘルパー関数: 匿名ユーザーかチェック
+    function isAnonymous() {
+      return request.auth.token.firebase.sign_in_provider == 'anonymous';
     }
     
+    // ヘルパー関数: ユーザーが旅行にアクセス可能かチェック
+    function canAccessTrip(tripData) {
+      return request.auth.uid == tripData.creator || 
+             request.auth.uid in tripData.memberIds ||
+             (isAnonymous() && (tripData.guestAccessEnabled == true || !('guestAccessEnabled' in tripData)));
+    }
+    
+    // ヘルパー関数: ユーザーが旅行を編集可能かチェック
+    function canEditTrip(tripData) {
+      return !isAnonymous() && (request.auth.uid == tripData.creator || 
+             request.auth.uid in tripData.memberIds);
+    }
+    
+    // 旅行の読み書きルール
+    match /trips/{tripId} {
+      // 読み取り: 認証済みユーザーのみ
+      allow read: if request.auth != null && canAccessTrip(resource.data);
+      
+      // 作成: 認証済み非匿名ユーザーのみ
+      allow create: if request.auth != null && !isAnonymous();
+      
+      // 更新: メンバー、作成者、またはゲスト編集権限がある場合
+      allow update: if request.auth != null && canEditTrip(resource.data);
+         
+      // 削除: 作成者のみ
+      allow delete: if request.auth != null && 
+        request.auth.uid == resource.data.creator && !isAnonymous();
+    }
+    
+    // ヘルパー関数: tripIdから旅行データを取得してアクセス権をチェック
+    function canAccessTripData(tripId) {
+      let trip = get(/databases/$(database)/documents/trips/$(tripId)).data;
+      return canAccessTrip(trip);
+    }
+    
+    function canEditTripData(tripId) {
+      let trip = get(/databases/$(database)/documents/trips/$(tripId)).data;
+      return canEditTrip(trip);
+    }
+
     // スケジュール
     match /schedules/{scheduleId} {
-      allow read, write: if request.auth != null;
+      allow read: if request.auth != null && 
+        (resource.data.tripId != null && canAccessTripData(resource.data.tripId));
+      allow write: if request.auth != null && 
+        (resource.data.tripId != null && canEditTripData(resource.data.tripId));
     }
     
     // チェックリスト
     match /checklists/{checklistId} {
-      allow read, write: if request.auth != null;
+      allow read: if request.auth != null && 
+        (resource.data.tripId != null && canAccessTripData(resource.data.tripId));
+      allow write: if request.auth != null && 
+        (resource.data.tripId != null && canEditTripData(resource.data.tripId));
     }
     
     // メモ
     match /memos/{memoId} {
-      allow read, write: if request.auth != null;
+      allow read: if request.auth != null && 
+        (resource.data.tripId != null && canAccessTripData(resource.data.tripId));
+      allow write: if request.auth != null && 
+        (resource.data.tripId != null && canEditTripData(resource.data.tripId));
     }
     
     // タグ
     match /tags/{tagId} {
-      allow read, write: if request.auth != null;
+      allow read: if request.auth != null && 
+        (resource.data.tripId != null && canAccessTripData(resource.data.tripId));
+      allow write: if request.auth != null && 
+        (resource.data.tripId != null && canEditTripData(resource.data.tripId));
     }
     
     // メンバー
     match /members/{memberId} {
-      allow read, write: if request.auth != null;
+      allow read: if request.auth != null && 
+        (resource.data.tripId != null && canAccessTripData(resource.data.tripId));
+      // メンバー情報の編集は非匿名ユーザーのみ
+      allow write: if request.auth != null && !isAnonymous() &&
+        (resource.data.tripId != null && canEditTripData(resource.data.tripId));
     }
     
     // 予算
     match /budgets/{budgetId} {
-      allow read, write: if request.auth != null;
+      allow read: if request.auth != null && 
+        (resource.data.tripId != null && canAccessTripData(resource.data.tripId));
+      allow write: if request.auth != null && 
+        (resource.data.tripId != null && canEditTripData(resource.data.tripId));
     }
   }
 }

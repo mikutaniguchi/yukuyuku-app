@@ -11,6 +11,7 @@ import {
   orderBy,
   serverTimestamp,
 } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
 import { db } from './firebase';
 import { Trip, Schedule, Checklist, Memo, Tag, Member, Budget } from '@/types';
 
@@ -31,7 +32,54 @@ export const createTrip = async (
 export const getTrip = async (tripId: string) => {
   const tripDoc = await getDoc(doc(db, 'trips', tripId));
   if (tripDoc.exists()) {
-    return { id: tripDoc.id, ...tripDoc.data() } as Trip;
+    const trip = { id: tripDoc.id, ...tripDoc.data() } as Trip;
+
+    // memberIdsとmembersの同期チェック
+    const memberIds = trip.memberIds || [];
+    const members = trip.members || [];
+    const memberIdsInMembers = members.map((m) => m.id);
+
+    // memberIdsにあるがmembersにないメンバーを見つける
+    const missingMemberIds = memberIds.filter(
+      (id) => !memberIdsInMembers.includes(id)
+    );
+
+    if (missingMemberIds.length > 0) {
+      console.log('Found missing members:', missingMemberIds);
+
+      // 不足しているメンバー情報を追加
+      const missingMembers = missingMemberIds.map((id, index) => ({
+        id: id,
+        tripId: trip.id,
+        userId: id,
+        name:
+          id === trip.creator
+            ? '作成者'
+            : `参加者 ${members.length + index + 1}`,
+        email: '',
+        type: 'google' as const,
+        joinedAt: trip.createdAt || new Date().toISOString(),
+      }));
+
+      const updatedMembers = [...members, ...missingMembers];
+
+      // Firestoreを更新
+      try {
+        await updateDoc(doc(db, 'trips', tripId), {
+          members: updatedMembers,
+          updatedAt: serverTimestamp(),
+        });
+
+        console.log('Updated members array with missing members');
+
+        return { ...trip, members: updatedMembers };
+      } catch (error) {
+        console.error('Failed to update members:', error);
+        return trip;
+      }
+    }
+
+    return trip;
   }
   return null;
 };
@@ -44,6 +92,26 @@ export const getUserTrips = async (userId: string) => {
   );
   const snapshot = await getDocs(q);
   return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as Trip);
+};
+
+export const getTripByInviteCode = async (inviteCode: string) => {
+  try {
+    const q = query(
+      collection(db, 'trips'),
+      where('inviteCode', '==', inviteCode)
+    );
+    const snapshot = await getDocs(q);
+
+    if (snapshot.empty) {
+      return null;
+    }
+
+    const tripDoc = snapshot.docs[0];
+    return { id: tripDoc.id, ...tripDoc.data() } as Trip;
+  } catch (error) {
+    console.error('Failed to get trip by invite code:', error);
+    return null;
+  }
 };
 
 export const joinTripByCode = async (userId: string, inviteCode: string) => {
@@ -74,8 +142,59 @@ export const joinTripByCode = async (userId: string, inviteCode: string) => {
 
     // メンバーに追加
     const updatedMemberIds = [...trip.memberIds, userId];
+
+    // メンバー情報を取得（Googleログインユーザーの場合）
+    const auth = getAuth();
+    const currentUser = auth.currentUser;
+    let newMember;
+
+    if (currentUser && !currentUser.isAnonymous) {
+      newMember = {
+        id: userId,
+        tripId: trip.id,
+        userId: userId,
+        name: currentUser.displayName || 'ユーザー',
+        email: currentUser.email || '',
+        type: 'google' as const,
+        joinedAt: new Date().toISOString(),
+      };
+    } else {
+      // 匿名ユーザーまたは不明なユーザーの場合
+      newMember = {
+        id: userId,
+        tripId: trip.id,
+        userId: userId,
+        name: 'ユーザー',
+        email: '',
+        type: 'email' as const,
+        joinedAt: new Date().toISOString(),
+      };
+    }
+
+    // 既存のメンバー配列を取得し、作成者が含まれていない場合は追加
+    let currentMembers = trip.members || [];
+
+    // 作成者がメンバー配列にいるかチェック
+    const creatorInMembers = currentMembers.some((m) => m.id === trip.creator);
+    if (!creatorInMembers) {
+      // 作成者の情報を追加（可能な限り情報を取得）
+      const creatorMember = {
+        id: trip.creator,
+        tripId: trip.id,
+        userId: trip.creator,
+        name: '作成者', // 実際の名前は取得できないので暫定
+        email: '',
+        type: 'google' as const,
+        joinedAt: trip.createdAt || new Date().toISOString(),
+      };
+      currentMembers = [creatorMember, ...currentMembers];
+    }
+
+    const updatedMembers = [...currentMembers, newMember];
+
     await updateDoc(doc(db, 'trips', trip.id), {
       memberIds: updatedMemberIds,
+      members: updatedMembers,
       updatedAt: serverTimestamp(),
     });
 
@@ -208,4 +327,72 @@ export const getTripBudgets = async (tripId: string) => {
   const q = query(collection(db, 'budgets'), where('tripId', '==', tripId));
   const snapshot = await getDocs(q);
   return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as Budget);
+};
+
+// ユーザー名を全ての関連旅行で更新
+export const updateUserNameInAllTrips = async (
+  userId: string,
+  newName: string
+) => {
+  try {
+    // ユーザーが参加している全旅行を取得
+    const userTrips = await getUserTrips(userId);
+
+    // 各旅行のメンバー情報を更新
+    const updatePromises = userTrips.map(async (trip) => {
+      const updatedMembers = trip.members.map((member) =>
+        member.id === userId ? { ...member, name: newName } : member
+      );
+
+      return updateDoc(doc(db, 'trips', trip.id), {
+        members: updatedMembers,
+        updatedAt: serverTimestamp(),
+      });
+    });
+
+    await Promise.all(updatePromises);
+
+    console.log(
+      `Updated user name to "${newName}" in ${userTrips.length} trips`
+    );
+    return { success: true, updatedTrips: userTrips.length };
+  } catch (error) {
+    console.error('Failed to update user name in trips:', error);
+    throw error;
+  }
+};
+
+// ユーザーを全ての関連旅行から削除
+export const removeUserFromAllTrips = async (userId: string) => {
+  try {
+    // ユーザーが参加している全旅行を取得
+    const userTrips = await getUserTrips(userId);
+
+    // 各旅行からユーザーを削除
+    const updatePromises = userTrips.map(async (trip) => {
+      const updatedMemberIds = trip.memberIds.filter((id) => id !== userId);
+      const updatedMembers = trip.members.filter(
+        (member) => member.id !== userId
+      );
+
+      // 作成者の場合は旅行自体を削除
+      if (trip.creator === userId) {
+        return deleteDoc(doc(db, 'trips', trip.id));
+      } else {
+        return updateDoc(doc(db, 'trips', trip.id), {
+          memberIds: updatedMemberIds,
+          members: updatedMembers,
+          updatedAt: serverTimestamp(),
+        });
+      }
+    });
+
+    await Promise.all(updatePromises);
+
+    console.log(`Removed user from ${userTrips.length} trips`);
+    return { success: true, updatedTrips: userTrips.length };
+  } catch (error) {
+    console.error('Failed to remove user from trips:', error);
+    throw error;
+  }
 };

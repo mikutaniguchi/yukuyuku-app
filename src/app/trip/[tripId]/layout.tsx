@@ -1,7 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useParams, useRouter, usePathname, notFound } from 'next/navigation';
+import React, { useState, useEffect, useRef } from 'react';
+import {
+  useParams,
+  useRouter,
+  usePathname,
+  useSearchParams,
+  notFound,
+} from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { TripProvider } from '@/contexts/TripContext';
@@ -27,11 +33,17 @@ import {
 } from 'lucide-react';
 import { Trip, User } from '@/types';
 import { colorPalette, formatDate } from '@/lib/constants';
-import { logout } from '@/lib/auth';
+import { logout, updateUserDisplayName, deleteCurrentUser } from '@/lib/auth';
+import {
+  updateUserNameInAllTrips,
+  removeUserFromAllTrips,
+} from '@/lib/firestore';
 import Button from '@/components/Button';
 import MembersModal from '@/components/MembersModal';
 import InviteModal from '@/components/InviteModal';
 import DeleteTripModal from '@/components/DeleteTripModal';
+import UserSettingsModal from '@/components/UserSettingsModal';
+import UserDropdown from '@/components/UserDropdown';
 import FloatingNavMenu from '@/components/FloatingNavMenu';
 import LoadingScreen from '@/components/LoadingScreen';
 
@@ -43,7 +55,8 @@ export default function TripLayout({ children }: TripLayoutProps) {
   const params = useParams();
   const router = useRouter();
   const pathname = usePathname();
-  const { user: firebaseUser } = useAuth();
+  const searchParams = useSearchParams();
+  const { user: firebaseUser, isGuest } = useAuth();
   const [trip, setTrip] = useState<Trip | null>(null);
   const [loading, setLoading] = useState(true);
   const [editingTripTitle, setEditingTripTitle] = useState(false);
@@ -52,10 +65,12 @@ export default function TripLayout({ children }: TripLayoutProps) {
   const [showMembersModal, setShowMembersModal] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showUserSettings, setShowUserSettings] = useState(false);
   const [selectedPage, setSelectedPage] = useState<
     'schedule' | 'checklist' | 'files' | 'memo' | 'budget'
   >('schedule');
   const [deleteConfirmTitle, setDeleteConfirmTitle] = useState('');
+  const tripSettingsRef = useRef<HTMLDivElement>(null);
 
   const tripId = params.tripId as string;
 
@@ -119,6 +134,23 @@ export default function TripLayout({ children }: TripLayoutProps) {
     };
   }, []);
 
+  // 旅行設定メニューの外部クリックで閉じる
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        tripSettingsRef.current &&
+        !tripSettingsRef.current.contains(event.target as Node)
+      ) {
+        setShowTripSettings(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   useEffect(() => {
     const loadTrip = async () => {
       if (!firebaseUser || !tripId) {
@@ -127,8 +159,20 @@ export default function TripLayout({ children }: TripLayoutProps) {
       }
 
       try {
+        // 参加直後の場合は少し待機してからデータを取得
+        const isFromJoin = document.referrer.includes('/join/');
+        if (isFromJoin) {
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+        }
+
         const tripData = await getTrip(tripId);
         if (tripData) {
+          console.log('Trip data loaded in layout:', {
+            tripId: tripData.id,
+            membersCount: tripData.members?.length || 0,
+            memberIds: tripData.memberIds,
+            members: tripData.members,
+          });
           setTrip(tripData);
         } else {
           notFound();
@@ -215,6 +259,52 @@ export default function TripLayout({ children }: TripLayoutProps) {
     router.push('/');
   };
 
+  const handleUpdateUserName = async (newName: string) => {
+    if (!firebaseUser) return;
+
+    try {
+      // Firebase Authの表示名を更新
+      await updateUserDisplayName(newName);
+
+      // 全ての関連旅行のメンバー情報を更新
+      await updateUserNameInAllTrips(firebaseUser.uid, newName);
+
+      // 現在のトリップデータも更新（即座に反映するため）
+      if (trip) {
+        const updatedTrip = {
+          ...trip,
+          members: trip.members.map((member) =>
+            member.id === firebaseUser.uid
+              ? { ...member, name: newName }
+              : member
+          ),
+        };
+        setTrip(updatedTrip);
+      }
+    } catch (error) {
+      console.error('Failed to update user name:', error);
+      throw error;
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!firebaseUser) return;
+
+    try {
+      // 全ての旅行からユーザーを削除
+      await removeUserFromAllTrips(firebaseUser.uid);
+
+      // Firebaseアカウントを削除
+      await deleteCurrentUser();
+
+      // ホームページにリダイレクト
+      router.push('/');
+    } catch (error) {
+      console.error('Failed to delete account:', error);
+      throw error;
+    }
+  };
+
   if (loading) {
     return <LoadingScreen message="旅行データを読み込み中..." />;
   }
@@ -223,15 +313,27 @@ export default function TripLayout({ children }: TripLayoutProps) {
     return null;
   }
 
+  const isGuestAccess = searchParams.get('guest') === 'true';
+
   const appUser: User = {
     id: firebaseUser.uid,
-    name: firebaseUser.displayName || 'ユーザー',
+    name: firebaseUser.displayName || (isGuest ? 'ゲスト' : 'ユーザー'),
     email: firebaseUser.email || '',
-    type: 'google',
+    type: isGuest ? 'guest' : 'google',
   };
 
   const isCreator = trip.creator === appUser.id;
-  const canEdit = trip.members.some((m) => m.id === appUser.id);
+  const isMember = trip.members.some((m) => m.id === appUser.id);
+
+  // 編集権限の判定
+  const canEdit = (() => {
+    // ゲストアクセスの場合は編集不可
+    if (isGuest || isGuestAccess) {
+      return false;
+    }
+    // 通常ユーザーの場合（作成者またはメンバー）
+    return isCreator || isMember;
+  })();
 
   // 現在のページを判定
   const getCurrentPage = ():
@@ -260,36 +362,39 @@ export default function TripLayout({ children }: TripLayoutProps) {
       <div className="container mx-auto px-4 py-6">
         {/* User info bar */}
         <div className="flex items-center justify-between mb-4 bg-white rounded-lg shadow-sm border border-stone-200 px-4 py-2">
-          <div className="flex items-center gap-3">
-            <div
-              className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium"
-              style={{
-                backgroundColor: colorPalette.aquaBlue.light,
-                color: colorPalette.aquaBlue.bg,
-              }}
-            >
-              {appUser.name.charAt(0)}
+          {isGuest || isGuestAccess ? (
+            <div className="flex items-center justify-between w-full">
+              <span className="px-2 py-1 text-xs bg-amber-100 text-amber-700 rounded-full">
+                ゲスト（閲覧のみ）
+              </span>
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-2 px-3 py-1 text-stone-600 hover:text-stone-800 transition-colors"
+              >
+                <LogOut className="w-4 h-4" />
+                ログアウト
+              </button>
             </div>
-            <span className="font-medium text-stone-700">{appUser.name}</span>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 px-3 py-1 text-stone-600 hover:text-stone-800 transition-colors"
-          >
-            <LogOut className="w-4 h-4" />
-            ログアウト
-          </button>
+          ) : (
+            <UserDropdown
+              user={appUser}
+              onSettingsClick={() => setShowUserSettings(true)}
+              onLogout={handleLogout}
+            />
+          )}
         </div>
 
         {/* Trip selector - simplified for now */}
-        <div className="mb-4">
-          <Link
-            href="/"
-            className="text-sm text-stone-600 hover:text-stone-800"
-          >
-            ← 旅行一覧に戻る
-          </Link>
-        </div>
+        {!(isGuest || isGuestAccess) && (
+          <div className="mb-4">
+            <Link
+              href="/"
+              className="text-sm text-stone-600 hover:text-stone-800"
+            >
+              ← 旅行一覧に戻る
+            </Link>
+          </div>
+        )}
 
         {/* Header */}
         <div className="bg-white rounded-xl shadow-sm border border-stone-200 p-6 mb-6">
@@ -330,8 +435,8 @@ export default function TripLayout({ children }: TripLayoutProps) {
                   <h1 className="text-xl md:text-3xl font-bold text-stone-800">
                     {trip.title}
                   </h1>
-                  {canEdit && (
-                    <div className="relative">
+                  {canEdit && !isGuest && !isGuestAccess && (
+                    <div className="relative" ref={tripSettingsRef}>
                       <button
                         onClick={() => setShowTripSettings(!showTripSettings)}
                         className="p-1 text-stone-400 hover:text-stone-600 transition-colors opacity-60 hover:opacity-100"
@@ -367,24 +472,26 @@ export default function TripLayout({ children }: TripLayoutProps) {
                 </div>
               )}
             </div>
-            <div className="flex gap-2">
-              <Button
-                onClick={() => setShowMembersModal(true)}
-                color="rubyGrey"
-                size="md"
-              >
-                <Users className="w-4 h-4" />
-                メンバー
-              </Button>
-              <Button
-                onClick={() => setShowInviteModal(true)}
-                color="roseQuartz"
-                size="md"
-              >
-                <UserPlus className="w-4 h-4" />
-                招待
-              </Button>
-            </div>
+            {!isGuest && !isGuestAccess && (
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => setShowMembersModal(true)}
+                  color="rubyGrey"
+                  size="md"
+                >
+                  <Users className="w-4 h-4" />
+                  メンバー
+                </Button>
+                <Button
+                  onClick={() => setShowInviteModal(true)}
+                  color="roseQuartz"
+                  size="md"
+                >
+                  <UserPlus className="w-4 h-4" />
+                  招待
+                </Button>
+              </div>
+            )}
           </div>
 
           <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-stone-600">
@@ -468,6 +575,14 @@ export default function TripLayout({ children }: TripLayoutProps) {
           setShowDeleteConfirm(false);
           setDeleteConfirmTitle('');
         }}
+      />
+
+      <UserSettingsModal
+        isOpen={showUserSettings}
+        user={appUser}
+        onClose={() => setShowUserSettings(false)}
+        onUpdateUser={handleUpdateUserName}
+        onDeleteAccount={handleDeleteAccount}
       />
 
       {/* Floating Navigation Menu */}
