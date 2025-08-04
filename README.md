@@ -22,6 +22,10 @@
 - **ストレージ**: Firebase Storage
 - **ホスティング**: Vercel
 
+## ドキュメント
+
+- [アーキテクチャドキュメント](https://yukuyuku-app.vercel.app/docs/architecture)
+
 ## 環境構築
 
 ### 必要な環境
