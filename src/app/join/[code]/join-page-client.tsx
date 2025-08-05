@@ -3,7 +3,11 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Calendar } from 'lucide-react';
-import { joinTripByCode, getTripByInviteCode } from '@/lib/firestore';
+import {
+  joinTripByCode,
+  getTripByInviteCode,
+  getInviteInfo,
+} from '@/lib/firestore';
 import { useAuth } from '@/contexts/AuthContext';
 import { loginAsGuest } from '@/lib/auth';
 import { auth } from '@/lib/firebase';
@@ -36,9 +40,16 @@ export default function JoinPageClient({ inviteCode }: JoinPageClientProps) {
 
   // 招待コードから旅行タイトルを取得（認証なしで表示のみ）
   useEffect(() => {
-    // シンプルにタイトル取得はスキップして、選択画面を表示
-    // タイトルは後で取得するか、デフォルトの「旅行への招待」を使用
-  }, []);
+    const fetchInviteInfo = async () => {
+      if (inviteCode) {
+        const inviteInfo = await getInviteInfo(inviteCode);
+        if (inviteInfo) {
+          setTripName(inviteInfo.tripTitle);
+        }
+      }
+    };
+    fetchInviteInfo();
+  }, [inviteCode]);
 
   useEffect(() => {
     const handleInitialLoad = async () => {

@@ -1,16 +1,18 @@
 import { Metadata } from 'next';
-import { getTripByInviteCode } from './firestore';
+import { getInviteInfo } from './firestore';
 
 // 招待ページ用のOGPメタデータ生成
 export async function generateInviteMetadata(
   inviteCode: string
 ): Promise<Metadata> {
   try {
-    const trip = await getTripByInviteCode(inviteCode);
+    // invitesコレクションから情報を取得（認証不要）
+    const inviteInfo = await getInviteInfo(inviteCode);
 
-    if (trip) {
-      const title = `${trip.title}への招待`;
-      const description = '友達があなたを旅行に招待しています';
+    if (inviteInfo) {
+      const title = `${inviteInfo.tripTitle}への招待`;
+      const description =
+        '友達があなたを旅行計画に招待しています。リンクをクリックして参加しましょう！';
 
       return {
         title,
@@ -27,7 +29,7 @@ export async function generateInviteMetadata(
             },
           ],
           type: 'website',
-          siteName: 'Yukuyuku',
+          siteName: 'ゆくゆく',
         },
         twitter: {
           card: 'summary',

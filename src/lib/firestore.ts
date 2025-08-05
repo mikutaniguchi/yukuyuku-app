@@ -26,6 +26,16 @@ export const createTrip = async (
     updatedAt: serverTimestamp(),
   };
   await setDoc(tripRef, tripData);
+
+  // invitesコレクションにもタイトルを保存（OGP用）
+  if (trip.inviteCode) {
+    const inviteRef = doc(db, 'invites', trip.inviteCode);
+    await setDoc(inviteRef, {
+      tripTitle: trip.title,
+      createdAt: serverTimestamp(),
+    });
+  }
+
   return tripRef.id;
 };
 
@@ -106,6 +116,23 @@ export const getTripByInviteCode = async (inviteCode: string) => {
     return { id: tripDoc.id, ...tripDoc.data() } as Trip;
   } catch (error) {
     console.error('Failed to get trip by invite code:', error);
+    return null;
+  }
+};
+
+// invitesコレクションから招待情報を取得（認証不要）
+export const getInviteInfo = async (inviteCode: string) => {
+  try {
+    const inviteDoc = await getDoc(doc(db, 'invites', inviteCode));
+    if (inviteDoc.exists()) {
+      return inviteDoc.data() as {
+        tripTitle: string;
+        createdAt: ReturnType<typeof serverTimestamp>;
+      };
+    }
+    return null;
+  } catch (error) {
+    console.error('Failed to get invite info:', error);
     return null;
   }
 };
