@@ -8,6 +8,5 @@
     "autoAlias": false,
     "enabled": true,
     "silent": true
-  },
-  "ignoreCommand": "git branch --show-current | grep -qE '^main$' || exit 0"
+  }
 }
