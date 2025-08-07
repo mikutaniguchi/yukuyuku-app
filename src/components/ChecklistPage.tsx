@@ -9,9 +9,11 @@ import {
   Settings,
   Edit2,
   Save,
+  Check,
 } from 'lucide-react';
 import { Trip, Checklist, ChecklistItem } from '@/types';
 import { colorPalette } from '@/lib/constants';
+import Button from './Button';
 import { useKeyboardEvent } from '@/hooks/useKeyboardEvent';
 import {
   DndContext,
@@ -357,17 +359,14 @@ export default function ChecklistPage({
             チェックリスト
           </h2>
           {canEdit && (
-            <button
+            <Button
               onClick={() => setShowNewChecklistModal(true)}
-              className="flex items-center gap-2 px-4 py-2 text-white rounded-lg shadow-sm transition-colors font-medium"
-              style={{
-                backgroundColor: colorPalette.roseQuartz.bg,
-                color: colorPalette.roseQuartz.text,
-              }}
+              variant="filled"
+              color="roseQuartz"
             >
               <Plus className="w-4 h-4" />
               新しいリスト
-            </button>
+            </Button>
           )}
         </div>
 
@@ -406,18 +405,19 @@ export default function ChecklistPage({
                               className="text-lg font-semibold text-stone-800 bg-transparent border-b-2 border-stone-300 focus:outline-none focus:border-stone-500"
                               autoFocus
                             />
-                            <button
+                            <Button
                               onClick={() => saveChecklistName(checklist.id)}
-                              className="p-1 text-green-600 hover:text-green-700 transition-colors"
+                              variant="icon"
+                              color="abyssGreen"
                             >
                               <Save className="w-4 h-4" />
-                            </button>
-                            <button
+                            </Button>
+                            <Button
                               onClick={cancelEditChecklistName}
-                              className="p-1 text-stone-400 hover:text-stone-600 transition-colors"
+                              variant="icon"
                             >
                               <X className="w-4 h-4" />
-                            </button>
+                            </Button>
                           </div>
                         ) : (
                           <h3 className="text-lg font-semibold text-stone-800">
@@ -441,7 +441,7 @@ export default function ChecklistPage({
                       </div>
                       {canEdit && (
                         <div className="relative" ref={settingsRef}>
-                          <button
+                          <Button
                             onClick={() =>
                               setShowSettings(
                                 showSettings === checklist.id
@@ -449,32 +449,38 @@ export default function ChecklistPage({
                                   : checklist.id
                               )
                             }
-                            className="p-1 text-stone-400 hover:text-stone-600 transition-colors opacity-60 hover:opacity-100"
+                            variant="icon"
+                            className="opacity-60 hover:opacity-100"
                           >
                             <Settings className="w-4 h-4" />
-                          </button>
+                          </Button>
 
                           {showSettings === checklist.id && (
                             <div className="absolute top-8 right-0 bg-white border border-stone-200 rounded-lg shadow-lg py-2 w-40 z-10">
-                              <button
+                              <Button
                                 onClick={() =>
                                   handleEditChecklistName(
                                     checklist.id,
                                     checklist.name
                                   )
                                 }
-                                className="w-full px-4 py-2 text-left text-stone-700 hover:bg-stone-50 flex items-center gap-2"
+                                variant="ghost"
+                                fullWidth
+                                className="justify-start px-4 py-2 text-left text-stone-700 hover:bg-stone-50"
                               >
                                 <Edit2 className="w-4 h-4" />
                                 名前を変更
-                              </button>
-                              <button
+                              </Button>
+                              <Button
                                 onClick={() => deleteChecklist(checklist.id)}
-                                className="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 flex items-center gap-2"
+                                variant="ghost"
+                                color="sandRed"
+                                fullWidth
+                                className="justify-start px-4 py-2 text-left hover:bg-red-50"
                               >
                                 <Trash2 className="w-4 h-4" />
                                 リストを削除
-                              </button>
+                              </Button>
                             </div>
                           )}
                         </div>
@@ -568,33 +574,24 @@ export default function ChecklistPage({
                                           className="flex-1 px-2 py-1 border border-stone-300 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-stone-900 bg-white"
                                           autoFocus
                                         />
-                                        <button
+                                        <Button
                                           onClick={() =>
                                             saveEditingItem(
                                               checklist.id,
                                               item.id
                                             )
                                           }
-                                          className="p-1 text-green-600 hover:text-green-700 transition-colors"
+                                          variant="icon"
+                                          color="abyssGreen"
                                         >
-                                          <svg
-                                            className="w-4 h-4"
-                                            fill="currentColor"
-                                            viewBox="0 0 20 20"
-                                          >
-                                            <path
-                                              fillRule="evenodd"
-                                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                              clipRule="evenodd"
-                                            />
-                                          </svg>
-                                        </button>
-                                        <button
+                                          <Check className="w-4 h-4" />
+                                        </Button>
+                                        <Button
                                           onClick={cancelEditingItem}
-                                          className="p-1 text-stone-400 hover:text-stone-600 transition-colors"
+                                          variant="icon"
                                         >
                                           <X className="w-4 h-4" />
-                                        </button>
+                                        </Button>
                                       </div>
                                     ) : (
                                       <>
@@ -611,31 +608,28 @@ export default function ChecklistPage({
                                         {/* デスクトップ用ボタン（hover表示） */}
                                         {canEdit && (
                                           <div className="hidden md:flex gap-1">
-                                            <button
+                                            <Button
                                               onClick={() =>
                                                 startEditingItem(item)
                                               }
-                                              className="opacity-0 group-hover:opacity-100 p-1 text-stone-400 hover:text-blue-600 transition-all"
+                                              variant="icon"
+                                              className="opacity-0 group-hover:opacity-100 transition-all hover:text-blue-600"
                                             >
-                                              <svg
-                                                className="w-4 h-4"
-                                                fill="currentColor"
-                                                viewBox="0 0 20 20"
-                                              >
-                                                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                                              </svg>
-                                            </button>
-                                            <button
+                                              <Edit2 className="w-4 h-4" />
+                                            </Button>
+                                            <Button
                                               onClick={() =>
                                                 deleteChecklistItem(
                                                   checklist.id,
                                                   item.id
                                                 )
                                               }
-                                              className="opacity-0 group-hover:opacity-100 p-1 text-stone-400 hover:text-red-600 transition-all"
+                                              variant="icon"
+                                              color="sandRed"
+                                              className="opacity-0 group-hover:opacity-100 transition-all"
                                             >
                                               <Trash2 className="w-4 h-4" />
-                                            </button>
+                                            </Button>
                                           </div>
                                         )}
                                       </>
@@ -650,7 +644,7 @@ export default function ChecklistPage({
                                         : 'translate-x-full'
                                     }`}
                                   >
-                                    <button
+                                    <Button
                                       onClick={() => {
                                         deleteChecklistItem(
                                           checklist.id,
@@ -658,10 +652,12 @@ export default function ChecklistPage({
                                         );
                                         setSwipedItem(null);
                                       }}
-                                      className="h-full px-4 bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition-colors"
+                                      variant="filled"
+                                      color="sandRed"
+                                      className="h-full px-4 rounded-none"
                                     >
                                       <Trash2 className="w-4 h-4" />
-                                    </button>
+                                    </Button>
                                   </div>
                                 </div>
                               </SwipeableItem>
@@ -706,16 +702,14 @@ export default function ChecklistPage({
                 <CheckSquare className="w-12 h-12 mx-auto mb-4 text-stone-300" />
                 <p>チェックリストがまだありません</p>
                 {canEdit && (
-                  <button
+                  <Button
                     onClick={() => setShowNewChecklistModal(true)}
-                    className="mt-4 px-4 py-2 text-white rounded-lg transition-colors font-medium"
-                    style={{
-                      backgroundColor: colorPalette.roseQuartz.bg,
-                      color: colorPalette.roseQuartz.text,
-                    }}
+                    variant="filled"
+                    color="roseQuartz"
+                    className="mt-4"
                   >
                     リストを作成
-                  </button>
+                  </Button>
                 )}
               </div>
             )}
@@ -770,7 +764,7 @@ export default function ChecklistPage({
                       className="flex-1 px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-sm text-stone-900 bg-white"
                     />
                     {newChecklist.items.length > 1 && (
-                      <button
+                      <Button
                         onClick={() => {
                           const updatedItems = newChecklist.items.filter(
                             (_, i) => i !== index
@@ -780,52 +774,52 @@ export default function ChecklistPage({
                             items: updatedItems,
                           });
                         }}
-                        className="p-2 text-stone-500 hover:text-red-600 transition-colors"
+                        variant="icon"
+                        color="sandRed"
+                        size="sm"
                       >
                         <X className="w-4 h-4" />
-                      </button>
+                      </Button>
                     )}
                   </div>
                 ))}
-                <button
+                <Button
                   onClick={() =>
                     setNewChecklist({
                       ...newChecklist,
                       items: [...newChecklist.items, ''],
                     })
                   }
-                  className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                  variant="ghost"
+                  size="sm"
+                  className="text-blue-600 hover:text-blue-800"
                 >
                   <Plus className="w-4 h-4" />
                   項目を追加
-                </button>
+                </Button>
               </div>
             </div>
             <div className="flex gap-3 mt-6">
-              <button
+              <Button
                 onClick={addNewChecklistCategory}
                 disabled={!newChecklist.name.trim()}
-                className="flex-1 py-2 text-white rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{
-                  backgroundColor: colorPalette.roseQuartz.bg,
-                  color: colorPalette.roseQuartz.text,
-                }}
+                variant="filled"
+                color="roseQuartz"
+                fullWidth
               >
                 作成
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={() => {
                   setShowNewChecklistModal(false);
                   setNewChecklist({ name: '', items: [''] });
                 }}
-                className="flex-1 py-2 text-white rounded-lg transition-colors font-medium"
-                style={{
-                  backgroundColor: colorPalette.sandRed.bg,
-                  color: colorPalette.sandRed.text,
-                }}
+                variant="filled"
+                color="sandRed"
+                fullWidth
               >
                 キャンセル
-              </button>
+              </Button>
             </div>
           </div>
         </div>

@@ -6,6 +6,7 @@ import { colorPalette } from '@/lib/constants';
 import Modal from './Modal';
 import FormInput from './FormInput';
 import ErrorMessage from './ErrorMessage';
+import Button from './Button';
 
 interface CreateTripModalProps {
   onCreateTrip: (tripData: {
@@ -120,22 +121,23 @@ export default function CreateTripModal({
 
         <div className="flex gap-3 pt-4">
           {onClose && (
-            <button
-              type="button"
+            <Button
               onClick={onClose}
-              className="flex-1 py-2 px-4 border border-stone-300 rounded-lg font-medium text-stone-700 hover:bg-stone-50 transition-colors"
+              variant="outlined"
+              color="rubyGrey"
+              className="flex-1"
             >
               キャンセル
-            </button>
+            </Button>
           )}
-          <button
+          <Button
             type="submit"
             disabled={!title.trim() || !startDate || !endDate}
-            className="flex-1 py-2 px-4 rounded-lg font-medium text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{ backgroundColor: colorPalette.abyssGreen.bg }}
+            color="abyssGreen"
+            className="flex-1"
           >
             作成する
-          </button>
+          </Button>
         </div>
       </form>
     </Modal>

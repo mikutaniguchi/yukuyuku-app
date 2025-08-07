@@ -7,6 +7,7 @@ import { colorPalette } from '../lib/constants';
 import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { loginAsGuest } from '@/lib/auth';
+import Button from './Button';
 
 interface LoginModalProps {
   onLogin: (user: User) => void;
@@ -69,27 +70,28 @@ export default function LoginModal({
         </div>
 
         <div className="space-y-4">
-          <button
+          <Button
             onClick={handleGoogleLogin}
-            className="w-full py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center gap-3"
-            style={{
-              backgroundColor: colorPalette.aquaBlue.bg,
-              color: colorPalette.aquaBlue.text,
-            }}
+            color="aquaBlue"
+            size="lg"
+            fullWidth
           >
             <div className="w-5 h-5 bg-white rounded flex items-center justify-center">
               <span className="text-xs font-bold text-blue-600">G</span>
             </div>
             Googleアカウントでログイン
-          </button>
+          </Button>
 
           {allowGuestAccess && (
-            <button
+            <Button
               onClick={handleGuestLogin}
-              className="w-full py-3 px-4 rounded-lg font-medium transition-colors border-2 border-stone-300 text-stone-700 hover:bg-stone-50"
+              variant="outlined"
+              color="rubyGrey"
+              size="lg"
+              fullWidth
             >
               ゲストとして閲覧
-            </button>
+            </Button>
           )}
         </div>
 

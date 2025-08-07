@@ -5,6 +5,7 @@ import { UserPlus, Copy, Check } from 'lucide-react';
 import { Trip } from '@/types';
 import { colorPalette, generateInviteLink } from '@/lib/constants';
 import Modal from './Modal';
+import Button from './Button';
 
 interface InviteModalProps {
   isOpen: boolean;
@@ -44,16 +45,17 @@ export default function InviteModal({
             <div className="flex-1 px-3 py-2 bg-stone-100 rounded-lg text-sm break-all">
               {inviteLink}
             </div>
-            <button
+            <Button
               onClick={() => copyInviteLink(inviteLink)}
-              className="p-2 text-stone-600 hover:text-stone-800 transition-colors"
+              variant="icon"
+              className="text-stone-600 hover:text-stone-800"
             >
               {copiedInvite ? (
                 <Check className="w-5 h-5 text-green-600" />
               ) : (
                 <Copy className="w-5 h-5" />
               )}
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -67,16 +69,9 @@ export default function InviteModal({
         </div>
       </div>
 
-      <button
-        onClick={onClose}
-        className="w-full py-2 text-white rounded-lg transition-colors font-medium"
-        style={{
-          backgroundColor: colorPalette.roseQuartz.bg,
-          color: colorPalette.roseQuartz.text,
-        }}
-      >
+      <Button onClick={onClose} color="roseQuartz" fullWidth>
         閉じる
-      </button>
+      </Button>
     </Modal>
   );
 }
