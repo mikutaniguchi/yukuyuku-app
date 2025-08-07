@@ -543,6 +543,35 @@ export default function SchedulePage({
                 {formatDate(date)}
               </a>
             ))}
+            {/* 日付未定 */}
+            <a
+              href="#schedule-unscheduled"
+              onClick={(e) => {
+                e.preventDefault();
+                const element = document.getElementById('schedule-unscheduled');
+                element?.scrollIntoView({
+                  behavior: 'smooth',
+                  block: 'start',
+                });
+                onDateChange('unscheduled');
+              }}
+              className={`flex items-center w-full text-left px-3 py-2 rounded-lg transition-colors font-medium whitespace-nowrap cursor-pointer mt-2 ${
+                selectedDate === 'unscheduled'
+                  ? 'text-white shadow-sm'
+                  : 'hover:bg-stone-100 text-stone-700'
+              }`}
+              style={
+                selectedDate === 'unscheduled'
+                  ? {
+                      backgroundColor: colorPalette.rubyGrey.bg,
+                      color: colorPalette.rubyGrey.text,
+                    }
+                  : {}
+              }
+            >
+              <Calendar className="w-4 h-4 mr-2" />
+              未定
+            </a>
           </div>
 
           <div className="border-t border-stone-200 mt-4 pt-4">
@@ -816,6 +845,135 @@ export default function SchedulePage({
               </div>
             );
           })}
+
+          {/* 日付未定セクション */}
+          <div
+            id="schedule-unscheduled"
+            className="bg-white rounded-xl shadow-sm border border-stone-200 p-3 md:p-6 scroll-mt-6"
+          >
+            <div className="mb-6">
+              <h2 className="text-xl font-semibold text-stone-800 flex items-center gap-2">
+                <Calendar className="w-5 h-5" />
+                日付未定
+              </h2>
+            </div>
+
+            <div className="space-y-4">
+              {(trip.schedules['unscheduled'] || []).map((schedule) => (
+                <div key={schedule.id} className="relative">
+                  <div className="border border-stone-200 rounded-lg p-3 md:p-4 transition-shadow hover:shadow-md">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        {schedule.icon && (
+                          <span
+                            className="px-3 py-2 rounded-full text-xs font-medium flex items-center gap-1"
+                            style={{
+                              backgroundColor: getIconOption(schedule.icon)
+                                .bgColor,
+                              color: getIconOption(schedule.icon).iconColor,
+                            }}
+                          >
+                            {getIcon(schedule.icon)}
+                          </span>
+                        )}
+                      </div>
+                      {canEdit && (
+                        <button
+                          onClick={() => {
+                            setEditingSchedule(schedule);
+                            setEditingScheduleData({
+                              date: 'unscheduled',
+                              startTime: schedule.startTime || '',
+                              endTime: schedule.endTime,
+                              title: schedule.title,
+                              location: schedule.location,
+                              description: schedule.description,
+                              icon: schedule.icon || '',
+                              budget: schedule.budget || 0,
+                              budgetPeople: schedule.budgetPeople || 1,
+                              paidBy: schedule.paidBy || '',
+                              transport: schedule.transport || {
+                                method: '',
+                                duration: '',
+                                cost: 0,
+                              },
+                            });
+                            setShowEditScheduleModal(true);
+                          }}
+                          className="p-1 text-stone-500 hover:text-blue-600 transition-colors cursor-pointer"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+
+                    <h3 className="text-lg font-semibold text-stone-800 mb-1">
+                      {schedule.title}
+                    </h3>
+                    {schedule.location && (
+                      <div className="mb-2">
+                        <a
+                          href={getGoogleMapsLink(schedule.location) || '#'}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-stone-600 hover:text-stone-800 underline inline-flex items-center gap-1 break-all"
+                        >
+                          <MapPin className="w-4 h-4 flex-shrink-0" />
+                          <span className="break-words">
+                            {schedule.location}
+                          </span>
+                        </a>
+                      </div>
+                    )}
+
+                    {schedule.description && (
+                      <div className="text-stone-700 whitespace-pre-wrap break-words overflow-wrap-anywhere mt-2">
+                        {linkifyText(schedule.description)}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+
+              {/* スケジュールがある場合の追加ボタン */}
+              {(trip.schedules['unscheduled'] || []).length > 0 && canEdit && (
+                <div className="mt-4 pt-4 border-t border-stone-100 flex justify-center">
+                  <Button
+                    onClick={() => {
+                      onDateChange('unscheduled');
+                      handleNewScheduleClick('unscheduled');
+                    }}
+                    color="abyssGreen"
+                    size="md"
+                  >
+                    <Plus className="w-4 h-4" />
+                    スケジュールを追加
+                  </Button>
+                </div>
+              )}
+
+              {/* スケジュールがない場合の中央ボタン */}
+              {(trip.schedules['unscheduled'] || []).length === 0 && (
+                <div className="text-center py-12 text-stone-500">
+                  <Calendar className="w-12 h-12 mx-auto mb-4 text-stone-300" />
+                  <p>日付未定のスケジュールはまだありません</p>
+                  {canEdit && (
+                    <Button
+                      onClick={() => {
+                        onDateChange('unscheduled');
+                        handleNewScheduleClick('unscheduled');
+                      }}
+                      color="abyssGreen"
+                      size="md"
+                      className="mt-4 mx-auto"
+                    >
+                      最初のスケジュールを追加
+                    </Button>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 

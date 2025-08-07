@@ -35,7 +35,8 @@ export default function NewScheduleModal({
   iconOptions,
 }: NewScheduleModalProps) {
   const isValid =
-    newSchedule.title.trim() !== '' && newSchedule.startTime !== '';
+    newSchedule.title.trim() !== '' &&
+    (newSchedule.date === 'unscheduled' || newSchedule.startTime !== '');
 
   const footerButton = (
     <Button

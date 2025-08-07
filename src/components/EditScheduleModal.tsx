@@ -58,7 +58,8 @@ export default function EditScheduleModal({
 }: EditScheduleModalProps) {
   const isValid =
     editingScheduleData.title.trim() !== '' &&
-    editingScheduleData.startTime !== '';
+    (editingScheduleData.date === 'unscheduled' ||
+      editingScheduleData.startTime !== '');
 
   const footerButtons = (
     <div className="flex gap-3">

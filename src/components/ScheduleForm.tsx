@@ -112,84 +112,89 @@ export default function ScheduleForm({
               {formatDate(date)}
             </option>
           ))}
+          <option value="unscheduled">日付未定</option>
         </select>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className="block text-sm font-medium text-stone-700 mb-2">
-            開始時間
-          </label>
-          <div className="flex items-center gap-2">
-            <input
-              type="time"
-              value={schedule.startTime}
-              onChange={(e) =>
-                onScheduleChange({ ...schedule, startTime: e.target.value })
-              }
-              onFocus={(e) => {
-                if (!schedule.startTime) {
-                  e.target.value = getCurrentHour();
+      {schedule.date !== 'unscheduled' && (
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-sm font-medium text-stone-700 mb-2">
+              開始時間
+            </label>
+            <div className="flex items-center gap-2">
+              <input
+                type="time"
+                value={schedule.startTime}
+                onChange={(e) =>
+                  onScheduleChange({ ...schedule, startTime: e.target.value })
+                }
+                onFocus={(e) => {
+                  if (!schedule.startTime) {
+                    e.target.value = getCurrentHour();
+                    onScheduleChange({
+                      ...schedule,
+                      startTime: getCurrentHour(),
+                    });
+                  }
+                }}
+                step="900"
+                className="flex-1 max-w-[140px] px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-base text-stone-900 bg-white"
+              />
+              {schedule.startTime && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    onScheduleChange({ ...schedule, startTime: '' })
+                  }
+                  className="p-2 text-stone-500 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors"
+                  title="リセット"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-stone-700 mb-2">
+              終了時間（任意）
+            </label>
+            <div className="flex items-center gap-2">
+              <input
+                type="time"
+                value={schedule.endTime || ''}
+                onChange={(e) =>
                   onScheduleChange({
                     ...schedule,
-                    startTime: getCurrentHour(),
-                  });
+                    endTime: e.target.value || undefined,
+                  })
                 }
-              }}
-              step="900"
-              className="flex-1 max-w-[140px] px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-base text-stone-900 bg-white"
-            />
-            {schedule.startTime && (
-              <button
-                type="button"
-                onClick={() => onScheduleChange({ ...schedule, startTime: '' })}
-                className="p-2 text-stone-500 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors"
-                title="リセット"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            )}
+                onFocus={(e) => {
+                  if (!schedule.endTime) {
+                    const currentHour = getCurrentHour();
+                    e.target.value = currentHour;
+                    onScheduleChange({ ...schedule, endTime: currentHour });
+                  }
+                }}
+                step="900"
+                className="flex-1 max-w-[140px] px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-base text-stone-900 bg-white"
+              />
+              {schedule.endTime && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    onScheduleChange({ ...schedule, endTime: undefined })
+                  }
+                  className="p-2 text-stone-500 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors"
+                  title="リセット"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
           </div>
         </div>
-        <div>
-          <label className="block text-sm font-medium text-stone-700 mb-2">
-            終了時間（任意）
-          </label>
-          <div className="flex items-center gap-2">
-            <input
-              type="time"
-              value={schedule.endTime || ''}
-              onChange={(e) =>
-                onScheduleChange({
-                  ...schedule,
-                  endTime: e.target.value || undefined,
-                })
-              }
-              onFocus={(e) => {
-                if (!schedule.endTime) {
-                  const currentHour = getCurrentHour();
-                  e.target.value = currentHour;
-                  onScheduleChange({ ...schedule, endTime: currentHour });
-                }
-              }}
-              step="900"
-              className="flex-1 max-w-[140px] px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-base text-stone-900 bg-white"
-            />
-            {schedule.endTime && (
-              <button
-                type="button"
-                onClick={() =>
-                  onScheduleChange({ ...schedule, endTime: undefined })
-                }
-                className="p-2 text-stone-500 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors"
-                title="リセット"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
+      )}
 
       <input
         type="text"
