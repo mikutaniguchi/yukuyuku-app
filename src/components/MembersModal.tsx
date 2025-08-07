@@ -5,6 +5,7 @@ import { Users, X } from 'lucide-react';
 import { Trip, User } from '@/types';
 import { colorPalette } from '@/lib/constants';
 import Modal from './Modal';
+import Button from './Button';
 
 interface MembersModalProps {
   isOpen: boolean;
@@ -68,12 +69,13 @@ export default function MembersModal({
                   )}
                 </div>
                 {trip.creator === user?.id && member.id !== trip.creator && (
-                  <button
+                  <Button
                     onClick={() => handleDeleteMemberClick(member)}
-                    className="p-1 text-stone-500 hover:text-red-600 transition-colors"
+                    variant="icon"
+                    className="text-stone-500 hover:text-red-600"
                   >
                     <X className="w-4 h-4" />
-                  </button>
+                  </Button>
                 )}
               </div>
             ))
@@ -84,16 +86,9 @@ export default function MembersModal({
           )}
         </div>
 
-        <button
-          onClick={onClose}
-          className="w-full py-2 text-white rounded-lg transition-colors font-medium"
-          style={{
-            backgroundColor: colorPalette.rubyGrey.bg,
-            color: colorPalette.rubyGrey.text,
-          }}
-        >
+        <Button onClick={onClose} color="rubyGrey" fullWidth>
           閉じる
-        </button>
+        </Button>
       </Modal>
 
       <Modal
@@ -114,25 +109,24 @@ export default function MembersModal({
               さんを旅行から削除しますか？
             </p>
             <div className="flex gap-3">
-              <button
+              <Button
                 onClick={() => removeMember(memberToDelete.id)}
-                className="flex-1 py-2 text-white rounded-lg transition-colors font-medium"
-                style={{
-                  backgroundColor: colorPalette.sandRed.bg,
-                  color: colorPalette.sandRed.text,
-                }}
+                color="sandRed"
+                className="flex-1"
               >
                 削除する
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={() => {
                   setShowDeleteMemberModal(false);
                   setMemberToDelete(null);
                 }}
-                className="flex-1 py-2 bg-stone-200 text-stone-700 rounded-lg hover:bg-stone-300 transition-colors font-medium"
+                variant="outlined"
+                color="rubyGrey"
+                className="flex-1"
               >
                 キャンセル
-              </button>
+              </Button>
             </div>
           </>
         )}

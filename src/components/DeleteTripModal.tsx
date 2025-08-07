@@ -2,9 +2,9 @@
 
 import React from 'react';
 import { Trash2 } from 'lucide-react';
-import { colorPalette } from '@/lib/constants';
 import Modal from './Modal';
 import { Trip } from '@/types';
+import Button from './Button';
 
 interface DeleteTripModalProps {
   isOpen: boolean;
@@ -52,27 +52,17 @@ export default function DeleteTripModal({
       </div>
 
       <div className="flex gap-3 mt-6">
-        <button
+        <Button
           onClick={onConfirmDelete}
           disabled={deleteConfirmTitle !== trip?.title}
-          className={`flex-1 py-2 text-white rounded-lg transition-colors font-medium ${
-            deleteConfirmTitle === trip?.title
-              ? 'bg-red-600 hover:bg-red-700'
-              : 'bg-gray-300 cursor-not-allowed'
-          }`}
+          variant="danger"
+          className="flex-1"
         >
           削除
-        </button>
-        <button
-          onClick={onCancel}
-          className="flex-1 py-2 text-white rounded-lg transition-colors font-medium"
-          style={{
-            backgroundColor: colorPalette.strawBeige.bg,
-            color: colorPalette.strawBeige.text,
-          }}
-        >
+        </Button>
+        <Button onClick={onCancel} color="strawBeige" className="flex-1">
           キャンセル
-        </button>
+        </Button>
       </div>
     </Modal>
   );

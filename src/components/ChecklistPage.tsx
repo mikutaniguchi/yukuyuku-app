@@ -714,7 +714,7 @@ export default function ChecklistPage({
                       color: colorPalette.roseQuartz.text,
                     }}
                   >
-                    最初のリストを作成
+                    リストを作成
                   </button>
                 )}
               </div>

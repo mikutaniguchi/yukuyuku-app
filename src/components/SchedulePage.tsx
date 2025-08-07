@@ -24,7 +24,7 @@ import {
   getIcon,
 } from '@/lib/constants';
 import ScheduleFiles from './ScheduleFiles';
-import Button from './Button';
+import AddScheduleButton from './AddScheduleButton';
 import { processAndUploadFile, deleteFileFromStorage } from '@/lib/fileStorage';
 import NewScheduleModal from './NewScheduleModal';
 import EditScheduleModal from './EditScheduleModal';
@@ -807,17 +807,12 @@ export default function SchedulePage({
                   {/* スケジュールがある場合の追加ボタン */}
                   {daySchedules.length > 0 && canEdit && (
                     <div className="mt-4 pt-4 border-t border-stone-100 flex justify-center">
-                      <Button
+                      <AddScheduleButton
                         onClick={() => {
                           onDateChange(date);
                           handleNewScheduleClick(date);
                         }}
-                        color="abyssGreen"
-                        size="md"
-                      >
-                        <Plus className="w-4 h-4" />
-                        スケジュールを追加
-                      </Button>
+                      />
                     </div>
                   )}
 
@@ -827,17 +822,13 @@ export default function SchedulePage({
                       <Calendar className="w-12 h-12 mx-auto mb-4 text-stone-300" />
                       <p>この日のスケジュールはまだありません</p>
                       {canEdit && (
-                        <Button
+                        <AddScheduleButton
                           onClick={() => {
                             onDateChange(date);
                             handleNewScheduleClick(date);
                           }}
-                          color="abyssGreen"
-                          size="md"
                           className="mt-4 mx-auto"
-                        >
-                          最初のスケジュールを追加
-                        </Button>
+                        />
                       )}
                     </div>
                   )}
@@ -938,17 +929,12 @@ export default function SchedulePage({
               {/* スケジュールがある場合の追加ボタン */}
               {(trip.schedules['unscheduled'] || []).length > 0 && canEdit && (
                 <div className="mt-4 pt-4 border-t border-stone-100 flex justify-center">
-                  <Button
+                  <AddScheduleButton
                     onClick={() => {
                       onDateChange('unscheduled');
                       handleNewScheduleClick('unscheduled');
                     }}
-                    color="abyssGreen"
-                    size="md"
-                  >
-                    <Plus className="w-4 h-4" />
-                    スケジュールを追加
-                  </Button>
+                  />
                 </div>
               )}
 
@@ -958,17 +944,13 @@ export default function SchedulePage({
                   <Calendar className="w-12 h-12 mx-auto mb-4 text-stone-300" />
                   <p>日付未定のスケジュールはまだありません</p>
                   {canEdit && (
-                    <Button
+                    <AddScheduleButton
                       onClick={() => {
                         onDateChange('unscheduled');
                         handleNewScheduleClick('unscheduled');
                       }}
-                      color="abyssGreen"
-                      size="md"
                       className="mt-4 mx-auto"
-                    >
-                      最初のスケジュールを追加
-                    </Button>
+                    />
                   )}
                 </div>
               )}
