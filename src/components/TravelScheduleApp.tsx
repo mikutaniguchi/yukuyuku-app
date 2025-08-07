@@ -157,7 +157,6 @@ export default function TravelApp() {
         inviteCode: Math.random().toString(36).substring(2, 8).toUpperCase(),
         memo: '',
         schedules: {},
-        customTags: [],
         checklists: [],
       };
 

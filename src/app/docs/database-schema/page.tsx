@@ -179,19 +179,6 @@ export default function DatabaseSchemaPage() {
                       </div>
                     </div>
                   </div>
-                  <div className="bg-white p-4 rounded-xl border border-slate-300 shadow-sm">
-                    <div className="text-center">
-                      <div className="font-semibold text-slate-800">
-                        customTags
-                      </div>
-                      <div className="text-xs text-slate-600 mt-2">
-                        カスタムタグ
-                      </div>
-                      <div className="text-xs text-slate-500 mt-1">
-                        色付きラベル
-                      </div>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
@@ -227,8 +214,6 @@ export default function DatabaseSchemaPage() {
       │         icon?: string
       │       }
       │   ]
-      ├── customTags: CustomTag[] (カスタムタグ)
-      │   └── { id: string, name: string, color: string }
       ├── checklists: Checklist[] (チェックリスト)
       │   └── { id: string, name: string, items: ChecklistItem[] }
       ├── guestAccessEnabled?: boolean (ゲストアクセス許可)
@@ -251,7 +236,6 @@ export default function DatabaseSchemaPage() {
   inviteCode: string;
   memo: string;
   schedules: Record<string, Schedule[]>; // 日付別
-  customTags: CustomTag[];
   checklists: Checklist[];
 }`}
             </pre>

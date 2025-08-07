@@ -65,12 +65,6 @@ export interface UploadedFile {
   compressedSize?: number;
 }
 
-export interface CustomTag {
-  id: string;
-  name: string;
-  color: string;
-}
-
 export interface ChecklistItem {
   id: string;
   text: string;
@@ -96,7 +90,6 @@ export interface Trip {
   inviteCode: string;
   memo: string;
   schedules: Record<string, Schedule[]>;
-  customTags: CustomTag[];
   checklists: Checklist[];
   guestAccessEnabled?: boolean; // ゲストアクセスの有効/無効（デフォルト: true）
   createdAt?: Date | string;
