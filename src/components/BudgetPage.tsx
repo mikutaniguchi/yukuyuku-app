@@ -5,6 +5,7 @@ import { DollarSign, Users, Calendar, TrendingUp } from 'lucide-react';
 import { Trip } from '@/types';
 import { getDatesInRange, formatDate, colorPalette } from '@/lib/constants';
 import SummaryCard from './SummaryCard';
+import Card from './Card';
 
 interface BudgetPageProps {
   trip: Trip;
@@ -124,7 +125,7 @@ export default function BudgetPage({ trip }: BudgetPageProps) {
       </div>
 
       {/* 日別予算詳細 */}
-      <div className="bg-white rounded-xl shadow-sm border border-stone-200 p-6">
+      <Card>
         <h3 className="text-lg font-semibold text-stone-800 mb-4">
           日別予算詳細（1人あたり）
         </h3>
@@ -207,11 +208,11 @@ export default function BudgetPage({ trip }: BudgetPageProps) {
             );
           })}
         </div>
-      </div>
+      </Card>
 
       {/* 立て替え集計 */}
       {advancePayments.length > 0 && (
-        <div className="bg-white rounded-xl shadow-sm border border-stone-200 p-6">
+        <Card>
           <h3 className="text-lg font-semibold text-stone-800 mb-4">
             立て替え集計
           </h3>
@@ -245,7 +246,7 @@ export default function BudgetPage({ trip }: BudgetPageProps) {
               </div>
             ))}
           </div>
-        </div>
+        </Card>
       )}
 
       {/* 予算がない場合のメッセージ */}

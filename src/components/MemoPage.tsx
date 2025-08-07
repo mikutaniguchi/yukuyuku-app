@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Trip } from '@/types';
 import { linkifyText } from '@/lib/constants';
 import LoadingSpinner from './LoadingSpinner';
+import Card from './Card';
 
 interface MemoPageProps {
   trip: Trip;
@@ -32,7 +33,7 @@ export default function MemoPage({
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-stone-200 p-6">
+    <Card>
       <h2 className="text-xl font-semibold text-stone-800 mb-4">メモ</h2>
 
       {isLoading ? (
@@ -66,6 +67,6 @@ export default function MemoPage({
           )}
         </div>
       )}
-    </div>
+    </Card>
   );
 }
