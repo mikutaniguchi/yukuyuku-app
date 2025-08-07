@@ -3,7 +3,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Settings, LogOut, ChevronDown } from 'lucide-react';
 import { User } from '@/types';
-import { colorPalette } from '@/lib/constants';
 
 interface UserDropdownProps {
   user: User;
@@ -51,17 +50,8 @@ export default function UserDropdown({
       {/* ユーザー情報ボタン */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-stone-50 transition-colors"
+        className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-stone-50 transition-colors"
       >
-        <div
-          className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium"
-          style={{
-            backgroundColor: colorPalette.aquaBlue.light,
-            color: colorPalette.aquaBlue.bg,
-          }}
-        >
-          {user.name.charAt(0)}
-        </div>
         <span className="font-medium text-stone-700">{user.name}</span>
         <ChevronDown
           className={`w-4 h-4 text-stone-400 transition-transform ${
@@ -75,21 +65,10 @@ export default function UserDropdown({
         <div className="absolute top-full right-0 mt-1 w-64 bg-white border border-stone-200 rounded-lg shadow-lg z-50">
           {/* ユーザー情報ヘッダー */}
           <div className="px-4 py-3 border-b border-stone-100 bg-stone-50 rounded-t-lg">
-            <div className="flex items-center gap-3">
-              <div
-                className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium"
-                style={{
-                  backgroundColor: colorPalette.aquaBlue.light,
-                  color: colorPalette.aquaBlue.bg,
-                }}
-              >
-                {user.name.charAt(0)}
-              </div>
-              <div>
-                <div className="font-medium text-stone-800">{user.name}</div>
-                <div className="text-sm text-stone-500">
-                  {user.email || '未設定'}
-                </div>
+            <div>
+              <div className="font-medium text-stone-800">{user.name}</div>
+              <div className="text-sm text-stone-500">
+                {user.email || '未設定'}
               </div>
             </div>
           </div>

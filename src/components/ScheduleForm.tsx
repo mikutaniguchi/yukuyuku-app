@@ -40,13 +40,6 @@ export default function ScheduleForm({
     bus: 'バス',
   };
 
-  const transportIconMap: Record<string, string> = {
-    '車/タクシー': 'car',
-    電車: 'train',
-    飛行機: 'plane',
-    バス: 'bus',
-  };
-
   // アイコン変更時の交通手段自動設定
   useEffect(() => {
     if (schedule.icon && iconTransportMap[schedule.icon]) {
@@ -59,22 +52,6 @@ export default function ScheduleForm({
       }
     }
   }, [schedule.icon]);
-
-  // 交通手段変更時のアイコン自動設定
-  useEffect(() => {
-    if (
-      schedule.transport.method &&
-      transportIconMap[schedule.transport.method]
-    ) {
-      const correspondingIcon = transportIconMap[schedule.transport.method];
-      if (schedule.icon !== correspondingIcon) {
-        onScheduleChange({
-          ...schedule,
-          icon: correspondingIcon,
-        });
-      }
-    }
-  }, [schedule.transport.method]);
 
   // 移動時間の自動計算
   useEffect(() => {
@@ -143,43 +120,74 @@ export default function ScheduleForm({
           <label className="block text-sm font-medium text-stone-700 mb-2">
             開始時間
           </label>
-          <input
-            type="time"
-            value={schedule.startTime}
-            onChange={(e) =>
-              onScheduleChange({ ...schedule, startTime: e.target.value })
-            }
-            onFocus={(e) => {
-              if (!schedule.startTime) {
-                e.target.value = getCurrentHour();
-                onScheduleChange({ ...schedule, startTime: getCurrentHour() });
+          <div className="flex items-center gap-2">
+            <input
+              type="time"
+              value={schedule.startTime}
+              onChange={(e) =>
+                onScheduleChange({ ...schedule, startTime: e.target.value })
               }
-            }}
-            className="w-full max-w-[140px] px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-base text-stone-900 bg-white"
-          />
+              onFocus={(e) => {
+                if (!schedule.startTime) {
+                  e.target.value = getCurrentHour();
+                  onScheduleChange({
+                    ...schedule,
+                    startTime: getCurrentHour(),
+                  });
+                }
+              }}
+              step="900"
+              className="flex-1 max-w-[140px] px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-base text-stone-900 bg-white"
+            />
+            {schedule.startTime && (
+              <button
+                type="button"
+                onClick={() => onScheduleChange({ ...schedule, startTime: '' })}
+                className="p-2 text-stone-500 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors"
+                title="リセット"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
         </div>
         <div>
           <label className="block text-sm font-medium text-stone-700 mb-2">
             終了時間（任意）
           </label>
-          <input
-            type="time"
-            value={schedule.endTime || ''}
-            onChange={(e) =>
-              onScheduleChange({
-                ...schedule,
-                endTime: e.target.value || undefined,
-              })
-            }
-            onFocus={(e) => {
-              if (!schedule.endTime) {
-                const currentHour = getCurrentHour();
-                e.target.value = currentHour;
-                onScheduleChange({ ...schedule, endTime: currentHour });
+          <div className="flex items-center gap-2">
+            <input
+              type="time"
+              value={schedule.endTime || ''}
+              onChange={(e) =>
+                onScheduleChange({
+                  ...schedule,
+                  endTime: e.target.value || undefined,
+                })
               }
-            }}
-            className="w-full max-w-[140px] px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-base text-stone-900 bg-white"
-          />
+              onFocus={(e) => {
+                if (!schedule.endTime) {
+                  const currentHour = getCurrentHour();
+                  e.target.value = currentHour;
+                  onScheduleChange({ ...schedule, endTime: currentHour });
+                }
+              }}
+              step="900"
+              className="flex-1 max-w-[140px] px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-base text-stone-900 bg-white"
+            />
+            {schedule.endTime && (
+              <button
+                type="button"
+                onClick={() =>
+                  onScheduleChange({ ...schedule, endTime: undefined })
+                }
+                className="p-2 text-stone-500 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors"
+                title="リセット"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -232,26 +240,24 @@ export default function ScheduleForm({
               className="w-full pl-7 pr-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-base text-stone-900 bg-white"
             />
           </div>
-          <div className="relative">
-            <input
-              type="number"
-              placeholder="例: 3"
-              value={schedule.budgetPeople}
-              onChange={(e) =>
-                onScheduleChange({
-                  ...schedule,
-                  budgetPeople: parseInt(e.target.value) || 1,
-                })
-              }
-              className="w-full pr-8 pl-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-base text-stone-900 bg-white"
-              min="1"
-            />
-            <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-stone-500">
-              人
-            </span>
-          </div>
+          <select
+            value={schedule.budgetPeople}
+            onChange={(e) =>
+              onScheduleChange({
+                ...schedule,
+                budgetPeople: parseInt(e.target.value) || 1,
+              })
+            }
+            className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-base text-stone-900 bg-white"
+          >
+            {[...Array(6)].map((_, i) => (
+              <option key={i + 1} value={i + 1}>
+                {i + 1}人
+              </option>
+            ))}
+          </select>
         </div>
-        {schedule.budget > 0 && schedule.budgetPeople >= 2 && (
+        {schedule.budget > 0 && (
           <select
             value={schedule.paidBy}
             onChange={(e) =>

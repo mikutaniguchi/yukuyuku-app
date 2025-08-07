@@ -59,24 +59,13 @@ export default function MembersModal({
                 key={member.id}
                 className="flex items-center justify-between p-3 border border-stone-200 rounded-lg"
               >
-                <div className="flex items-center gap-3">
-                  <div
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium"
-                    style={{
-                      backgroundColor: colorPalette.aquaBlue.light,
-                      color: colorPalette.aquaBlue.bg,
-                    }}
-                  >
-                    {member.name?.charAt(0) || 'U'}
+                <div>
+                  <div className="font-medium text-stone-800">
+                    {member.name || 'ユーザー'}
                   </div>
-                  <div>
-                    <div className="font-medium text-stone-800">
-                      {member.name || 'ユーザー'}
-                    </div>
-                    {member.id === trip.creator && (
-                      <div className="text-sm text-stone-500">(作成者)</div>
-                    )}
-                  </div>
+                  {member.id === trip.creator && (
+                    <div className="text-sm text-stone-500">(作成者)</div>
+                  )}
                 </div>
                 {trip.creator === user?.id && member.id !== trip.creator && (
                   <button
