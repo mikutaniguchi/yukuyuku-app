@@ -19,7 +19,6 @@ import {
 import {
   Calendar,
   Users,
-  UserPlus,
   Settings,
   BookOpen,
   CheckSquare,
@@ -40,7 +39,6 @@ import {
 } from '@/lib/firestore';
 import Button from '@/components/Button';
 import MembersModal from '@/components/MembersModal';
-import InviteModal from '@/components/InviteModal';
 import DeleteTripModal from '@/components/DeleteTripModal';
 import Header from '@/components/Header';
 import FloatingNavMenu from '@/components/FloatingNavMenu';
@@ -62,7 +60,6 @@ export default function TripLayout({ children }: TripLayoutProps) {
   const [tempTripTitle, setTempTripTitle] = useState('');
   const [showTripSettings, setShowTripSettings] = useState(false);
   const [showMembersModal, setShowMembersModal] = useState(false);
-  const [showInviteModal, setShowInviteModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showUserSettings, setShowUserSettings] = useState(false);
   const [selectedPage, setSelectedPage] = useState<
@@ -443,14 +440,6 @@ export default function TripLayout({ children }: TripLayoutProps) {
                   <Users className="w-4 h-4" />
                   メンバー
                 </Button>
-                <Button
-                  onClick={() => setShowInviteModal(true)}
-                  color="roseQuartz"
-                  size="md"
-                >
-                  <UserPlus className="w-4 h-4" />
-                  招待
-                </Button>
               </div>
             )}
           </div>
@@ -518,12 +507,6 @@ export default function TripLayout({ children }: TripLayoutProps) {
         ) => {
           updateTrip(updateFunction);
         }}
-      />
-
-      <InviteModal
-        isOpen={showInviteModal}
-        trip={trip}
-        onClose={() => setShowInviteModal(false)}
       />
 
       <DeleteTripModal

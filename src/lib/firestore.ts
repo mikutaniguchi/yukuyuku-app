@@ -120,16 +120,49 @@ export const getTripByInviteCode = async (inviteCode: string) => {
   }
 };
 
-// invitesコレクションから招待情報を取得（認証不要）
+// 招待コードから旅行タイトルを取得（OGP用、認証不要）
 export const getInviteInfo = async (inviteCode: string) => {
+  if (!inviteCode) {
+    return null;
+  }
+
   try {
+    // まずinvitesコレクションを確認
     const inviteDoc = await getDoc(doc(db, 'invites', inviteCode));
+
     if (inviteDoc.exists()) {
       return inviteDoc.data() as {
         tripTitle: string;
         createdAt: ReturnType<typeof serverTimestamp>;
       };
     }
+
+    // invitesになければtripsコレクションから検索してキャッシュ
+    const q = query(
+      collection(db, 'trips'),
+      where('inviteCode', '==', inviteCode)
+    );
+    const snapshot = await getDocs(q);
+
+    if (!snapshot.empty) {
+      const tripData = snapshot.docs[0].data();
+
+      // invitesコレクションにキャッシュ
+      try {
+        await setDoc(doc(db, 'invites', inviteCode), {
+          tripTitle: tripData.title,
+          createdAt: serverTimestamp(),
+        });
+      } catch (cacheError) {
+        console.warn('Failed to cache invite info:', cacheError);
+      }
+
+      return {
+        tripTitle: tripData.title,
+        createdAt: tripData.createdAt,
+      };
+    }
+
     return null;
   } catch (error) {
     console.error('Failed to get invite info:', error);
@@ -230,6 +263,27 @@ export const joinTripByCode = async (userId: string, inviteCode: string) => {
 
 export const updateTrip = async (tripId: string, tripData: Partial<Trip>) => {
   const tripRef = doc(db, 'trips', tripId);
+
+  // タイトルが変更された場合、invitesコレクションも更新
+  if (tripData.title) {
+    const currentTrip = await getDoc(tripRef);
+    if (currentTrip.exists() && currentTrip.data().inviteCode) {
+      const inviteRef = doc(db, 'invites', currentTrip.data().inviteCode);
+      const inviteDoc = await getDoc(inviteRef);
+      if (inviteDoc.exists()) {
+        await updateDoc(inviteRef, {
+          tripTitle: tripData.title,
+        });
+      } else {
+        // inviteドキュメントが存在しない場合は作成
+        await setDoc(inviteRef, {
+          tripTitle: tripData.title,
+          createdAt: serverTimestamp(),
+        });
+      }
+    }
+  }
+
   await updateDoc(tripRef, {
     ...tripData,
     updatedAt: serverTimestamp(),

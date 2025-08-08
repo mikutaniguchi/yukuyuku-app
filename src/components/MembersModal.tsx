@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Users, X } from 'lucide-react';
+import { Users, X, Copy, Check } from 'lucide-react';
 import { Trip, User } from '@/types';
-import { colorPalette } from '@/lib/constants';
+import { colorPalette, generateInviteLink } from '@/lib/constants';
 import Modal from './Modal';
 import Button from './Button';
 
@@ -26,6 +26,7 @@ export default function MembersModal({
   const [memberToDelete, setMemberToDelete] = useState<
     Trip['members'][0] | null
   >(null);
+  const [copiedInvite, setCopiedInvite] = useState(false);
 
   const handleDeleteMemberClick = (member: Trip['members'][0]) => {
     setMemberToDelete(member);
@@ -44,21 +45,62 @@ export default function MembersModal({
     }
   };
 
+  const copyInviteLink = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedInvite(true);
+    setTimeout(() => setCopiedInvite(false), 2000);
+  };
+
+  const inviteLink = generateInviteLink(trip.id, trip.inviteCode);
+
   return (
     <>
       <Modal
         isOpen={isOpen}
         onClose={onClose}
-        title="旅行メンバー"
+        title="メンバー"
         icon={Users}
         iconColor={colorPalette.rubyGrey.bg}
       >
+        {/* 招待セクション */}
+        <div className="mb-6">
+          <div className="text-sm font-medium text-stone-700 mb-2">
+            招待リンク
+          </div>
+          <div className="flex items-center gap-2 mb-3">
+            <div className="flex-1 px-3 py-2 bg-stone-100 rounded-lg text-sm break-all">
+              {inviteLink}
+            </div>
+            <Button
+              onClick={() => copyInviteLink(inviteLink)}
+              variant="icon"
+              className="text-stone-600 hover:text-stone-800"
+            >
+              {copiedInvite ? (
+                <Check className="w-5 h-5 text-green-600" />
+              ) : (
+                <Copy className="w-5 h-5" />
+              )}
+            </Button>
+          </div>
+          <div className="text-xs text-stone-500 bg-stone-50 p-2 rounded">
+            友達を招待：メンバー（編集可）／ ゲスト（閲覧のみ）
+          </div>
+        </div>
+
+        {/* 区切り線 */}
+        <div className="border-t border-stone-200 my-4" />
+
+        {/* メンバーセクション */}
         <div className="space-y-3 mb-6">
+          <div className="text-sm font-medium text-stone-700">
+            現在のメンバー
+          </div>
           {trip.members && trip.members.length > 0 ? (
             trip.members.map((member) => (
               <div
                 key={member.id}
-                className="flex items-center justify-between p-3 border border-stone-200 rounded-lg"
+                className="flex items-center justify-between p-3 border border-stone-200 rounded-lg bg-stone-50"
               >
                 <div>
                   <div className="font-medium text-stone-800">

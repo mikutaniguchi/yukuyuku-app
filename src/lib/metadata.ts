@@ -1,12 +1,19 @@
 import { Metadata } from 'next';
-import { getInviteInfo } from './firestore';
 
 // 招待ページ用のOGPメタデータ生成
 export async function generateInviteMetadata(
   inviteCode: string
 ): Promise<Metadata> {
+  // TODO: Admin SDKを使用してサーバーサイドでFirestoreアクセスを実装
+  // 現在はクライアントSDKのためサーバーサイドでエラーが発生
+
+  console.log('generateInviteMetadata called for:', inviteCode);
+
+  // 一時的にフォールバックのみ使用
+  return generateDefaultInviteMetadata();
+
+  /* 将来のAdmin SDK実装用コード
   try {
-    // invitesコレクションから情報を取得（認証不要）
     const inviteInfo = await getInviteInfo(inviteCode);
 
     if (inviteInfo) {
@@ -20,14 +27,7 @@ export async function generateInviteMetadata(
         openGraph: {
           title,
           description,
-          images: [
-            {
-              url: '/icon.png',
-              width: 512,
-              height: 512,
-              alt: 'Yukuyuku App',
-            },
-          ],
+          images: ['/icon.png'],
           type: 'website',
           siteName: 'ゆくゆく',
         },
@@ -43,8 +43,8 @@ export async function generateInviteMetadata(
     console.error('Failed to generate invite metadata:', error);
   }
 
-  // フォールバック
   return generateDefaultInviteMetadata();
+  */
 }
 
 // デフォルトの招待メタデータ

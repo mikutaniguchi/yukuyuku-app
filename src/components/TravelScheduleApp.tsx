@@ -16,7 +16,6 @@ import {
   Users,
   Plus,
   LogOut,
-  UserPlus,
   Settings,
   BookOpen,
   CheckSquare,
@@ -31,7 +30,6 @@ import { User, Trip, PageType } from '@/types';
 import { colorPalette, getDatesInRange, formatDate } from '@/lib/constants';
 import LoginModal from './LoginModal';
 import MembersModal from './MembersModal';
-import InviteModal from './InviteModal';
 import CreateTripModal from './CreateTripModal';
 import DeleteTripModal from './DeleteTripModal';
 import SchedulePage from './SchedulePage';
@@ -53,7 +51,6 @@ export default function TravelApp() {
   const [currentPage, setCurrentPage] = useState<PageType>('schedule');
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showMembersModal, setShowMembersModal] = useState(false);
-  const [showInviteModal, setShowInviteModal] = useState(false);
   const [showCreateTripModal, setShowCreateTripModal] = useState(false);
   const [loadingTrips, setLoadingTrips] = useState(true);
   const [editingTripTitle, setEditingTripTitle] = useState(false);
@@ -579,14 +576,6 @@ export default function TravelApp() {
                 <Users className="w-4 h-4" />
                 メンバー
               </Button>
-              <Button
-                onClick={() => setShowInviteModal(true)}
-                color="roseQuartz"
-                size="md"
-              >
-                <UserPlus className="w-4 h-4" />
-                招待
-              </Button>
             </div>
           </div>
 
@@ -669,12 +658,6 @@ export default function TravelApp() {
         user={appUser}
         onClose={() => setShowMembersModal(false)}
         onTripUpdate={updateTrip}
-      />
-
-      <InviteModal
-        isOpen={showInviteModal}
-        trip={selectedTrip}
-        onClose={() => setShowInviteModal(false)}
       />
 
       <DeleteTripModal
