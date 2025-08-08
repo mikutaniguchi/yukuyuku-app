@@ -565,8 +565,8 @@ export default function SchedulePage({
               style={
                 selectedDate === 'unscheduled'
                   ? {
-                      backgroundColor: colorPalette.rubyGrey.bg,
-                      color: colorPalette.rubyGrey.text,
+                      backgroundColor: colorPalette.abyssGreen.bg,
+                      color: colorPalette.abyssGreen.text,
                     }
                   : {}
               }
@@ -944,7 +944,12 @@ export default function SchedulePage({
               {(trip.schedules['unscheduled'] || []).length === 0 && (
                 <div className="text-center py-12 text-stone-500">
                   <Calendar className="w-12 h-12 mx-auto mb-4 text-stone-300" />
-                  <p>日付未定のスケジュールはまだありません</p>
+                  <p className="text-lg mb-2">
+                    日付未定のスケジュールはまだありません
+                  </p>
+                  <p className="text-sm text-stone-400 dark:text-stone-500 mb-6 max-w-sm mx-auto">
+                    行きたい場所、雨の日だった場合の予定など
+                  </p>
                   {canEdit && (
                     <AddScheduleButton
                       onClick={() => {
