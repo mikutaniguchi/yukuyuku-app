@@ -30,6 +30,28 @@ body {
     color 0.3s ease;
 }
 
+/* カーソル設定 */
+button,
+a,
+[role='button'],
+[tabindex='0'],
+.cursor-pointer,
+input[type='checkbox'],
+input[type='radio'],
+select,
+.hover\:bg-stone-50,
+.hover\:bg-stone-100,
+.hover\:bg-stone-200 {
+  cursor: pointer;
+}
+
+/* 無効化された要素 */
+button:disabled,
+input:disabled,
+select:disabled {
+  cursor: not-allowed;
+}
+
 /* 背景グラデーション */
 .bg-gradient-to-br.from-stone-50.to-neutral-100 {
   background-image: linear-gradient(

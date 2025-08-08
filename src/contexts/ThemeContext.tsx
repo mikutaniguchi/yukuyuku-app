@@ -1,6 +1,12 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+} from 'react';
 import { ColorPalette } from '@/types';
 import { colorPalette, darkColorPalette } from '@/lib/constants';
 
@@ -20,20 +26,23 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light');
 
   // システムのテーマを検出
-  const getSystemTheme = (): 'light' | 'dark' => {
+  const getSystemTheme = useCallback((): 'light' | 'dark' => {
     if (typeof window === 'undefined') return 'light';
     return window.matchMedia('(prefers-color-scheme: dark)').matches
       ? 'dark'
       : 'light';
-  };
+  }, []);
 
   // テーマを解決（system の場合はシステムのテーマを使用）
-  const resolveTheme = (currentTheme: Theme): 'light' | 'dark' => {
-    if (currentTheme === 'system') {
-      return getSystemTheme();
-    }
-    return currentTheme as 'light' | 'dark';
-  };
+  const resolveTheme = useCallback(
+    (currentTheme: Theme): 'light' | 'dark' => {
+      if (currentTheme === 'system') {
+        return getSystemTheme();
+      }
+      return currentTheme as 'light' | 'dark';
+    },
+    [getSystemTheme]
+  );
 
   // 初回レンダリング時にローカルストレージから設定を読み込み
   useEffect(() => {
@@ -47,7 +56,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       setTheme(systemTheme);
       setResolvedTheme(systemTheme);
     }
-  }, [resolveTheme]);
+  }, [resolveTheme, getSystemTheme]);
 
   // テーマが変更されたときの処理
   useEffect(() => {
@@ -93,7 +102,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         mediaQuery.removeListener(handleChange);
       }
     };
-  }, [theme, resolveTheme]);
+  }, [theme]);
 
   const colors = resolvedTheme === 'dark' ? darkColorPalette : colorPalette;
 

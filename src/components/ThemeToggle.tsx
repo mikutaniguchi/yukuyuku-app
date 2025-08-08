@@ -18,14 +18,8 @@ export default function ThemeToggle() {
       return resolvedTheme === 'dark' ? '#9ca3af' : '#57534e';
     };
 
-    if (theme === 'system') {
-      return (
-        <Monitor
-          className="h-5 w-5 transition-colors"
-          style={{ color: getColor() }}
-        />
-      );
-    } else if (theme === 'dark') {
+    // resolvedTheme（実際に適用されているテーマ）に応じてアイコンを表示
+    if (resolvedTheme === 'dark') {
       return (
         <Moon
           className="h-5 w-5 transition-colors"
