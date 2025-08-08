@@ -30,6 +30,7 @@ import NewScheduleModal from './NewScheduleModal';
 import EditScheduleModal from './EditScheduleModal';
 import ImageModal from './ImageModal';
 import PDFModal from './PDFModal';
+import { useTheme } from '@/contexts/ThemeContext';
 interface SchedulePageProps {
   trip: Trip;
   selectedDate: string;
@@ -45,6 +46,7 @@ export default function SchedulePage({
   onTripUpdate,
   canEdit = true,
 }: SchedulePageProps) {
+  const { colors } = useTheme();
   const [showNewScheduleModal, setShowNewScheduleModal] = useState(false);
   const [showEditScheduleModal, setShowEditScheduleModal] = useState(false);
   const [editingSchedule, setEditingSchedule] = useState<Schedule | null>(null);
@@ -616,12 +618,12 @@ export default function SchedulePage({
                 <div className="space-y-4">
                   {daySchedules.map((schedule) => (
                     <div key={schedule.id} className="relative">
-                      <div className="border border-stone-200 rounded-lg p-3 md:p-4 transition-shadow hover:shadow-md">
+                      <div className="border border-stone-200 rounded-lg p-3 md:p-4 transition-shadow hover:shadow-md schedule-card">
                         <div className="flex items-start justify-between mb-3">
                           <div className="flex items-center gap-3">
                             <span
                               className="text-lg font-semibold"
-                              style={{ color: colorPalette.abyssGreen.bg }}
+                              style={{ color: colors.abyssGreen.lightText }}
                             >
                               {schedule.startTime}
                             </span>
@@ -852,7 +854,7 @@ export default function SchedulePage({
             <div className="space-y-4">
               {(trip.schedules['unscheduled'] || []).map((schedule) => (
                 <div key={schedule.id} className="relative">
-                  <div className="border border-stone-200 rounded-lg p-3 md:p-4 transition-shadow hover:shadow-md">
+                  <div className="border border-stone-200 rounded-lg p-3 md:p-4 transition-shadow hover:shadow-md schedule-card">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-3">
                         {schedule.icon && (

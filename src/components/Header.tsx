@@ -6,6 +6,7 @@ import { ArrowLeft } from 'lucide-react';
 import { User } from '@/types';
 import UserDropdown from './UserDropdown';
 import UserSettingsModal from './UserSettingsModal';
+import ThemeToggle from './ThemeToggle';
 import { logout } from '@/lib/auth';
 
 interface HeaderProps {
@@ -59,11 +60,14 @@ export default function Header({
         ) : (
           <div />
         )}
-        <UserDropdown
-          user={user}
-          onSettingsClick={handleSettingsClick}
-          onLogout={handleLogout}
-        />
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <UserDropdown
+            user={user}
+            onSettingsClick={handleSettingsClick}
+            onLogout={handleLogout}
+          />
+        </div>
       </div>
 
       {showUserSettings && !onSettingsClick && (

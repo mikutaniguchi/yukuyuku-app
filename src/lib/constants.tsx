@@ -50,6 +50,45 @@ export const colorPalette: ColorPalette = {
   },
 };
 
+export const darkColorPalette: ColorPalette = {
+  sandRed: {
+    bg: '#4A3534', // 元の#AB8686を暗く
+    text: '#D4B4B4', // lightカラーをテキストに
+    light: '#5D4342', // 少し明るめの背景
+    lightText: '#AB8686', // 元のbgカラーをアクセントに
+  },
+  rubyGrey: {
+    bg: '#4B3E3E',
+    text: '#E1C7C7',
+    light: '#5A4848',
+    lightText: '#C7A2A2',
+  },
+  roseQuartz: {
+    bg: '#423A42',
+    text: '#CDB7CC',
+    light: '#4D434C',
+    lightText: '#AA98A9',
+  },
+  aquaBlue: {
+    bg: '#3A464C',
+    text: '#C4D6DC',
+    light: '#445055',
+    lightText: '#A4C0C9',
+  },
+  abyssGreen: {
+    bg: '#5a6350',
+    text: '#FFFFFF',
+    light: '#40453A',
+    lightText: '#B8C5A8',
+  },
+  strawBeige: {
+    bg: '#463E33',
+    text: '#D9CDB4',
+    light: '#52473A',
+    lightText: '#C3B091',
+  },
+};
+
 // lib/utils.ts
 export const getDatesInRange = (
   startDate: string,
