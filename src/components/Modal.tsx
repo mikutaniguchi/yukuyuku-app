@@ -3,6 +3,7 @@
 import React, { useEffect } from 'react';
 import { X, LucideIcon } from 'lucide-react';
 import { colorPalette } from '@/lib/constants';
+import { useTheme } from '@/contexts/ThemeContext';
 import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
 
 interface ModalProps {
@@ -28,6 +29,7 @@ export default function Modal({
   fixedFooter,
   children,
 }: ModalProps) {
+  const { resolvedTheme } = useTheme();
   useBodyScrollLock(isOpen);
 
   useEffect(() => {
@@ -57,7 +59,12 @@ export default function Modal({
   return (
     <div
       className="fixed inset-0 flex items-center justify-center p-4 z-50"
-      style={{ backgroundColor: 'rgba(248, 248, 248, 0.7)' }}
+      style={{
+        backgroundColor:
+          resolvedTheme === 'dark'
+            ? 'rgba(26, 26, 26, 0.8)'
+            : 'rgba(248, 248, 248, 0.7)',
+      }}
       onClick={onClose}
     >
       <div

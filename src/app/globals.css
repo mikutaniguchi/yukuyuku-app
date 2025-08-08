@@ -90,6 +90,10 @@ select:disabled {
   }
 
   /* ボーダー色 */
+  & .border-stone-100 {
+    border-color: rgba(68, 64, 60, 0.3);
+  }
+
   & .border-stone-200 {
     border-color: rgba(68, 64, 60, 0.5);
   }

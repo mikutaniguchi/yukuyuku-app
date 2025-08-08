@@ -20,7 +20,7 @@ interface FilesPageProps {
 }
 
 export default function FilesPage({ trip }: FilesPageProps) {
-  const { resolvedTheme } = useTheme();
+  const { resolvedTheme, colors } = useTheme();
   const [showImageModal, setShowImageModal] = useState<string | null>(null);
   const [showPDFModal, setShowPDFModal] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -146,9 +146,17 @@ export default function FilesPage({ trip }: FilesPageProps) {
               onClick={() => setSelectedCategory(category.id)}
               className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                 selectedCategory === category.id
-                  ? 'bg-blue-100 text-blue-800 border border-blue-200'
+                  ? 'text-white border'
                   : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
               }`}
+              style={
+                selectedCategory === category.id
+                  ? {
+                      backgroundColor: colors.roseQuartz.bg,
+                      borderColor: colors.roseQuartz.bg,
+                    }
+                  : {}
+              }
             >
               {category.label} ({category.count})
             </button>
