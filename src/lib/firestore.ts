@@ -127,7 +127,7 @@ export const getInviteInfo = async (inviteCode: string) => {
   }
 
   try {
-    // まずinvitesコレクションを確認
+    // invitesコレクションのみを確認（認証不要）
     const inviteDoc = await getDoc(doc(db, 'invites', inviteCode));
 
     if (inviteDoc.exists()) {
@@ -137,32 +137,8 @@ export const getInviteInfo = async (inviteCode: string) => {
       };
     }
 
-    // invitesになければtripsコレクションから検索してキャッシュ
-    const q = query(
-      collection(db, 'trips'),
-      where('inviteCode', '==', inviteCode)
-    );
-    const snapshot = await getDocs(q);
-
-    if (!snapshot.empty) {
-      const tripData = snapshot.docs[0].data();
-
-      // invitesコレクションにキャッシュ
-      try {
-        await setDoc(doc(db, 'invites', inviteCode), {
-          tripTitle: tripData.title,
-          createdAt: serverTimestamp(),
-        });
-      } catch (cacheError) {
-        console.warn('Failed to cache invite info:', cacheError);
-      }
-
-      return {
-        tripTitle: tripData.title,
-        createdAt: tripData.createdAt,
-      };
-    }
-
+    // invitesコレクションにデータがない場合はnullを返す
+    console.log('Invite document not found for code:', inviteCode);
     return null;
   } catch (error) {
     console.error('Failed to get invite info:', error);

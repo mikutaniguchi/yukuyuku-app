@@ -98,7 +98,6 @@ export interface Trip {
 
 export interface ColorPalette {
   sandRed: ColorVariant;
-  rubyGrey: ColorVariant;
   roseQuartz: ColorVariant;
   aquaBlue: ColorVariant;
   abyssGreen: ColorVariant;

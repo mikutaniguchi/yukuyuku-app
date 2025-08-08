@@ -60,7 +60,7 @@ export default function MembersModal({
         onClose={onClose}
         title="メンバー"
         icon={Users}
-        iconColor={colorPalette.rubyGrey.bg}
+        iconColor={colorPalette.sandRed.bg}
       >
         {/* 招待セクション */}
         <div className="mb-6">
@@ -127,10 +127,6 @@ export default function MembersModal({
             </div>
           )}
         </div>
-
-        <Button onClick={onClose} color="rubyGrey" fullWidth>
-          閉じる
-        </Button>
       </Modal>
 
       <Modal
@@ -164,7 +160,7 @@ export default function MembersModal({
                   setMemberToDelete(null);
                 }}
                 variant="outlined"
-                color="rubyGrey"
+                color="sandRed"
                 className="flex-1"
               >
                 キャンセル

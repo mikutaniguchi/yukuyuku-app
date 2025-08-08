@@ -86,7 +86,7 @@ export default function LoginModal({
             <Button
               onClick={handleGuestLogin}
               variant="outlined"
-              color="rubyGrey"
+              color="sandRed"
               size="lg"
               fullWidth
             >

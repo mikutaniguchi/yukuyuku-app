@@ -1,9 +1,17 @@
 'use client';
 
 import React, { useState } from 'react';
-import { FileText, ImageIcon, Download, Calendar, Clock } from 'lucide-react';
+import {
+  FileText,
+  ImageIcon,
+  Download,
+  Calendar,
+  Clock,
+  MapPin,
+} from 'lucide-react';
 import { Trip, UploadedFile } from '@/types';
-import { formatDate } from '@/lib/constants';
+import { formatDate, colorPalette } from '@/lib/constants';
+import { useTheme } from '@/contexts/ThemeContext';
 import ImageModal from './ImageModal';
 import PDFModal from './PDFModal';
 
@@ -12,6 +20,7 @@ interface FilesPageProps {
 }
 
 export default function FilesPage({ trip }: FilesPageProps) {
+  const { resolvedTheme } = useTheme();
   const [showImageModal, setShowImageModal] = useState<string | null>(null);
   const [showPDFModal, setShowPDFModal] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -82,7 +91,12 @@ export default function FilesPage({ trip }: FilesPageProps) {
     if (isImageFile(file)) {
       return <ImageIcon className="w-5 h-5 text-blue-600" />;
     } else if (isPDFFile(file)) {
-      return <FileText className="w-5 h-5 text-red-600" />;
+      return (
+        <FileText
+          className="w-5 h-5"
+          style={{ color: colorPalette.roseQuartz.bg }}
+        />
+      );
     } else {
       return <FileText className="w-5 h-5 text-stone-600" />;
     }
@@ -182,8 +196,9 @@ export default function FilesPage({ trip }: FilesPageProps) {
                       </div>
                     </div>
 
-                    <div className="text-sm text-stone-500 truncate mt-1">
-                      📍 {item.scheduleTitle}
+                    <div className="text-sm text-stone-600 truncate mt-1 flex items-center gap-1">
+                      <MapPin className="w-3 h-3" />
+                      <span>{item.scheduleTitle}</span>
                     </div>
                   </div>
 
@@ -193,7 +208,11 @@ export default function FilesPage({ trip }: FilesPageProps) {
                       e.stopPropagation();
                       downloadFile(item.file);
                     }}
-                    className="flex items-center gap-1 px-3 py-1 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors flex-shrink-0"
+                    className={`flex items-center gap-1 px-3 py-1 text-sm rounded-lg transition-colors flex-shrink-0 ${
+                      resolvedTheme === 'dark'
+                        ? 'text-blue-300 hover:text-blue-100 hover:bg-blue-900/20'
+                        : 'text-blue-600 hover:text-blue-800 hover:bg-blue-50'
+                    }`}
                   >
                     <Download className="w-4 h-4" />
                     ダウンロード

@@ -12,56 +12,50 @@ import {
 import { ColorPalette } from '../types';
 
 export const colorPalette: ColorPalette = {
-  sandRed: {
-    bg: '#AB8686',
-    text: '#FFFFFF',
-    light: '#D4B4B4',
-    lightText: '#6B4444',
-  },
-  rubyGrey: {
-    bg: '#C7A2A2',
-    text: '#FFFFFF',
-    light: '#E1C7C7',
-    lightText: '#7A5A5A',
-  },
-  roseQuartz: {
-    bg: '#AA98A9',
-    text: '#FFFFFF',
-    light: '#CDB7CC',
-    lightText: '#6A586A',
-  },
-  aquaBlue: {
-    bg: '#A4C0C9',
-    text: '#FFFFFF',
-    light: '#C4D6DC',
-    lightText: '#5A7B86',
-  },
   abyssGreen: {
     bg: '#7D8470',
     text: '#FFFFFF',
     light: '#A8B198',
     lightText: '#4D5142',
   },
+  sandRed: {
+    bg: '#AB8686',
+    text: '#FFFFFF',
+    light: '#D4B4B4',
+    lightText: '#6B4444',
+  },
+  roseQuartz: {
+    bg: '#8A7A8D',
+    text: '#FFFFFF',
+    light: '#CDB7CC',
+    lightText: '#6A586A',
+  },
+  aquaBlue: {
+    bg: '#738A94',
+    text: '#FFFFFF',
+    light: '#C4D6DC',
+    lightText: '#5A7B86',
+  },
   strawBeige: {
-    bg: '#C3B091',
-    text: '#6B5B42',
+    bg: '#A89373',
+    text: '#FFFFFF',
     light: '#D9CDB4',
     lightText: '#5A4D35',
   },
 };
 
 export const darkColorPalette: ColorPalette = {
+  abyssGreen: {
+    bg: '#5a6350',
+    text: '#FFFFFF',
+    light: '#40453A',
+    lightText: '#B8C5A8',
+  },
   sandRed: {
     bg: '#4A3534', // 元の#AB8686を暗く
     text: '#D4B4B4', // lightカラーをテキストに
     light: '#5D4342', // 少し明るめの背景
     lightText: '#AB8686', // 元のbgカラーをアクセントに
-  },
-  rubyGrey: {
-    bg: '#4B3E3E',
-    text: '#E1C7C7',
-    light: '#5A4848',
-    lightText: '#C7A2A2',
   },
   roseQuartz: {
     bg: '#423A42',
@@ -75,17 +69,11 @@ export const darkColorPalette: ColorPalette = {
     light: '#445055',
     lightText: '#A4C0C9',
   },
-  abyssGreen: {
-    bg: '#5a6350',
-    text: '#FFFFFF',
-    light: '#40453A',
-    lightText: '#B8C5A8',
-  },
   strawBeige: {
-    bg: '#463E33',
+    bg: '#3D352B',
     text: '#D9CDB4',
     light: '#52473A',
-    lightText: '#C3B091',
+    lightText: '#A89373',
   },
 };
 

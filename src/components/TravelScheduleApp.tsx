@@ -570,7 +570,7 @@ export default function TravelApp() {
             <div className="flex gap-2">
               <Button
                 onClick={() => setShowMembersModal(true)}
-                color="rubyGrey"
+                color="sandRed"
                 size="md"
               >
                 <Users className="w-4 h-4" />

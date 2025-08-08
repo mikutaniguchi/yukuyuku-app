@@ -61,6 +61,22 @@ select:disabled {
   );
 }
 
+/* カスタムアニメーション */
+@keyframes fadeInSubtle {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-subtle {
+  animation: fadeInSubtle 0.2s ease-out both;
+}
+
 /* ダークモード用の追加スタイル */
 .dark {
   /* カード・モーダルの背景 */

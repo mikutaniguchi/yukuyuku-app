@@ -43,7 +43,7 @@ export default function Button({
     switch (variant) {
       case 'outlined':
         return {
-          className: 'border-2 bg-transparent hover:bg-stone-50',
+          className: 'border-2 box-border bg-transparent hover:bg-stone-50',
           style: {
             borderColor: colorConfig.bg,
             color: colorConfig.bg,

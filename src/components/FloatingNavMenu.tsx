@@ -65,7 +65,7 @@ export default function FloatingNavMenu({
       <div className="relative">
         {/* Menu Items */}
         {showFloatingMenu && (
-          <div className="absolute bottom-16 right-0 bg-white rounded-lg shadow-xl border border-stone-200 py-2 w-48 mb-2 animate-in slide-in-from-bottom-4 fade-in duration-300">
+          <div className="absolute bottom-16 right-0 bg-white rounded-lg shadow-xl border border-stone-200 py-2 w-48 mb-2 animate-fade-in-subtle">
             {navItems.map((item, index) => {
               const Icon = item.icon;
               const colors = Object.values(colorPalette);

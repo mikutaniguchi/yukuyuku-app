@@ -222,7 +222,7 @@ export default function UserSettingsModal({
             </Button>
             <Button
               onClick={() => setShowDeleteConfirm(false)}
-              color="rubyGrey"
+              color="sandRed"
               size="md"
               className="flex-1"
             >

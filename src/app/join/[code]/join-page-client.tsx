@@ -13,6 +13,7 @@ import { loginAsGuest } from '@/lib/auth';
 import { auth } from '@/lib/firebase';
 import { colorPalette } from '@/lib/constants';
 import LoginModal from '@/components/LoginModal';
+import Button from '@/components/Button';
 import SchedulePage from '@/components/SchedulePage';
 import MemoPage from '@/components/MemoPage';
 import ChecklistPage from '@/components/ChecklistPage';
@@ -293,31 +294,34 @@ export default function JoinPageClient({ inviteCode }: JoinPageClientProps) {
             </div>
 
             <div className="space-y-4">
-              <button
-                onClick={handleMemberJoin}
-                className="w-full py-3 px-4 rounded-lg hover:opacity-90 transition-colors font-medium"
-                style={{
-                  backgroundColor: colorPalette.aquaBlue.bg,
-                  color: colorPalette.aquaBlue.text,
-                }}
-              >
-                メンバーとして参加（Googleログイン）
-                <p className="text-sm opacity-90 mt-1">編集・管理が可能</p>
-              </button>
-              <button
-                onClick={handleGuestAccess}
-                className="w-full py-3 px-4 rounded-lg transition-colors font-medium border-2 hover:opacity-90"
-                style={{
-                  borderColor: colorPalette.strawBeige.bg,
-                  backgroundColor: colorPalette.strawBeige.light,
-                  color: colorPalette.strawBeige.text,
-                }}
-              >
-                ゲストとして閲覧
-                <p className="text-sm opacity-75 mt-1">
-                  閲覧のみ・ログイン不要
+              <div className="text-center">
+                <Button
+                  onClick={handleMemberJoin}
+                  color="aquaBlue"
+                  size="lg"
+                  fullWidth
+                >
+                  <div className="w-5 h-5 bg-white rounded flex items-center justify-center">
+                    <span className="text-xs font-bold text-blue-600">G</span>
+                  </div>
+                  メンバーとしてGoogleログイン
+                </Button>
+                <p className="text-xs text-stone-500 mt-1">編集・管理が可能</p>
+              </div>
+
+              <div className="text-center">
+                <Button
+                  onClick={handleGuestAccess}
+                  color="sandRed"
+                  size="lg"
+                  fullWidth
+                >
+                  ゲスト
+                </Button>
+                <p className="text-xs text-stone-500 mt-1">
+                  ログイン不要・閲覧のみ
                 </p>
-              </button>
+              </div>
             </div>
           </div>
         )}

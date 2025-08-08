@@ -124,7 +124,7 @@ export default function CreateTripModal({
             <Button
               onClick={onClose}
               variant="outlined"
-              color="rubyGrey"
+              color="sandRed"
               className="flex-1"
             >
               キャンセル
