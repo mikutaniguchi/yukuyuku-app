@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { colorPalette } from '@/lib/constants';
+import { useTheme } from '@/contexts/ThemeContext';
 
 type ColorKey = keyof typeof colorPalette;
 type ButtonVariant = 'filled' | 'outlined' | 'ghost' | 'icon' | 'danger';
@@ -30,6 +31,7 @@ export default function Button({
   variant = 'filled',
   fullWidth = false,
 }: ButtonProps) {
+  const { colors } = useTheme();
   const sizeClasses = {
     xs: 'p-1 text-xs',
     sm: 'px-3 py-1 text-sm',
@@ -38,7 +40,7 @@ export default function Button({
   };
 
   const getVariantStyles = () => {
-    const colorConfig = colorPalette[color];
+    const colorConfig = colors[color];
 
     switch (variant) {
       case 'outlined':

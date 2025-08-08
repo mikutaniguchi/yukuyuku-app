@@ -279,49 +279,49 @@ export default function SchedulePage({
       id: '',
       name: 'なし',
       bgColor: colorPalette.strawBeige.light,
-      iconColor: colorPalette.strawBeige.lightText,
+      iconColor: colorPalette.strawBeige.accentText,
     },
     {
       id: 'meal',
       name: '食事',
       bgColor: colorPalette.sandRed.light,
-      iconColor: colorPalette.sandRed.lightText,
+      iconColor: colorPalette.sandRed.accentText,
     },
     {
       id: 'camera',
       name: '観光',
       bgColor: colorPalette.strawBeige.light,
-      iconColor: colorPalette.strawBeige.lightText,
+      iconColor: colorPalette.strawBeige.accentText,
     },
     {
       id: 'bed',
       name: '宿泊',
       bgColor: colorPalette.roseQuartz.light,
-      iconColor: colorPalette.roseQuartz.lightText,
+      iconColor: colorPalette.roseQuartz.accentText,
     },
     {
       id: 'car',
       name: '車',
       bgColor: colorPalette.aquaBlue.light,
-      iconColor: colorPalette.aquaBlue.lightText,
+      iconColor: colorPalette.aquaBlue.accentText,
     },
     {
       id: 'train',
       name: '電車',
       bgColor: colorPalette.aquaBlue.light,
-      iconColor: colorPalette.aquaBlue.lightText,
+      iconColor: colorPalette.aquaBlue.accentText,
     },
     {
       id: 'bus',
       name: 'バス',
       bgColor: colorPalette.aquaBlue.light,
-      iconColor: colorPalette.aquaBlue.lightText,
+      iconColor: colorPalette.aquaBlue.accentText,
     },
     {
       id: 'plane',
       name: '飛行機',
       bgColor: colorPalette.aquaBlue.light,
-      iconColor: colorPalette.aquaBlue.lightText,
+      iconColor: colorPalette.aquaBlue.accentText,
     },
   ];
 
@@ -536,8 +536,8 @@ export default function SchedulePage({
                 style={
                   selectedDate === date
                     ? {
-                        backgroundColor: colorPalette.abyssGreen.bg,
-                        color: colorPalette.abyssGreen.text,
+                        backgroundColor: colors.abyssGreen.bg,
+                        color: colors.abyssGreen.text,
                       }
                     : {}
                 }
@@ -565,8 +565,8 @@ export default function SchedulePage({
               style={
                 selectedDate === 'unscheduled'
                   ? {
-                      backgroundColor: colorPalette.abyssGreen.bg,
-                      color: colorPalette.abyssGreen.text,
+                      backgroundColor: colors.abyssGreen.bg,
+                      color: colors.abyssGreen.text,
                     }
                   : {}
               }
@@ -623,7 +623,7 @@ export default function SchedulePage({
                           <div className="flex items-center gap-3">
                             <span
                               className="text-lg font-semibold"
-                              style={{ color: colors.abyssGreen.lightText }}
+                              style={{ color: colorPalette.abyssGreen.light }}
                             >
                               {schedule.startTime}
                             </span>

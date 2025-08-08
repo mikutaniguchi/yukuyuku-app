@@ -108,7 +108,7 @@ export interface ColorVariant {
   bg: string;
   text: string;
   light: string;
-  lightText: string;
+  accentText: string;
 }
 
 export interface Memo {

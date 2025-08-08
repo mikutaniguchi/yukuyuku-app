@@ -16,64 +16,64 @@ export const colorPalette: ColorPalette = {
     bg: '#7D8470',
     text: '#FFFFFF',
     light: '#A8B198',
-    lightText: '#4D5142',
+    accentText: '#4D5142',
   },
   sandRed: {
     bg: '#AB8686',
     text: '#FFFFFF',
     light: '#D4B4B4',
-    lightText: '#6B4444',
+    accentText: '#6B4444',
   },
   roseQuartz: {
     bg: '#8A7A8D',
     text: '#FFFFFF',
     light: '#CDB7CC',
-    lightText: '#6A586A',
+    accentText: '#6A586A',
   },
   aquaBlue: {
     bg: '#738A94',
     text: '#FFFFFF',
     light: '#C4D6DC',
-    lightText: '#5A7B86',
+    accentText: '#5A7B86',
   },
   strawBeige: {
     bg: '#A89373',
     text: '#FFFFFF',
     light: '#D9CDB4',
-    lightText: '#5A4D35',
+    accentText: '#5A4D35',
   },
 };
 
 export const darkColorPalette: ColorPalette = {
   abyssGreen: {
-    bg: '#5a6350',
+    bg: '#4A5545',
     text: '#FFFFFF',
-    light: '#40453A',
-    lightText: '#B8C5A8',
+    light: '#B8C8B2',
+    accentText: '#4D5142',
   },
   sandRed: {
-    bg: '#4A3534', // 元の#AB8686を暗く
-    text: '#D4B4B4', // lightカラーをテキストに
-    light: '#5D4342', // 少し明るめの背景
-    lightText: '#AB8686', // 元のbgカラーをアクセントに
+    bg: '#6A5352',
+    text: '#FFFFFF',
+    light: '#D4B4B4',
+    accentText: '#6B4444',
   },
   roseQuartz: {
-    bg: '#423A42',
-    text: '#CDB7CC',
-    light: '#4D434C',
-    lightText: '#AA98A9',
+    bg: '#625A62',
+    text: '#FFFFFF',
+    light: '#CDB7CC',
+    accentText: '#6A586A',
   },
   aquaBlue: {
-    bg: '#3A464C',
-    text: '#C4D6DC',
-    light: '#445055',
-    lightText: '#A4C0C9',
+    bg: '#5A666C',
+    text: '#FFFFFF',
+    light: '#C4D6DC',
+    accentText: '#5A7B86',
   },
   strawBeige: {
-    bg: '#3D352B',
-    text: '#D9CDB4',
-    light: '#52473A',
-    lightText: '#A89373',
+    bg: '#5D554B',
+    text: '#FFFFFF',
+    light: '#D9CDB4',
+    accentText: '#5A4D35',
   },
 };
 

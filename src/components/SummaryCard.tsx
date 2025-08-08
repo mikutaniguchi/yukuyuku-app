@@ -28,7 +28,7 @@ export default React.memo(function SummaryCard({
       <Icon className="w-8 h-8 mx-auto mb-2" style={{ color: colors.bg }} />
       <h3
         className="text-sm font-semibold mb-1"
-        style={{ color: colors.lightText }}
+        style={{ color: colors.accentText }}
       >
         {title}
       </h3>

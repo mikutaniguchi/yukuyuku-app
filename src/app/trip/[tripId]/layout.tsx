@@ -30,7 +30,8 @@ import {
   X,
 } from 'lucide-react';
 import { Trip, User } from '@/types';
-import { colorPalette, formatDate } from '@/lib/constants';
+import { formatDate } from '@/lib/constants';
+import { useTheme } from '@/contexts/ThemeContext';
 import { updateUserDisplayName, deleteCurrentUser } from '@/lib/auth';
 import UserSettingsModal from '@/components/UserSettingsModal';
 import {
@@ -54,6 +55,7 @@ export default function TripLayout({ children }: TripLayoutProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { user: firebaseUser, isGuest } = useAuth();
+  const { colors } = useTheme();
   const [trip, setTrip] = useState<Trip | null>(null);
   const [loading, setLoading] = useState(true);
   const [editingTripTitle, setEditingTripTitle] = useState(false);
@@ -360,7 +362,7 @@ export default function TripLayout({ children }: TripLayoutProps) {
             <div className="flex items-center gap-3">
               <Calendar
                 className="w-8 h-8"
-                style={{ color: colorPalette.aquaBlue.bg }}
+                style={{ color: colors.aquaBlue.bg }}
               />
               {editingTripTitle ? (
                 <div className="flex items-center gap-2">
@@ -460,8 +462,8 @@ export default function TripLayout({ children }: TripLayoutProps) {
         <div className="flex flex-wrap gap-2 mb-6">
           {navItems.map((item, index) => {
             const Icon = item.icon;
-            const colors = Object.values(colorPalette);
-            const color = colors[index % colors.length];
+            const colorValues = Object.values(colors);
+            const color = colorValues[index % colorValues.length];
             const isActive = pathname === item.path;
 
             return (
