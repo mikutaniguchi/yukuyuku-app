@@ -3,9 +3,10 @@
 import React, { useState } from 'react';
 import { Plus, X } from 'lucide-react';
 import { Trip, Checklist, ChecklistItem } from '@/types';
+import { colorPalette } from '@/lib/constants';
 import Button from './Button';
 import CancelButton from './CancelButton';
-import Card from './Card';
+import Modal from './Modal';
 
 interface CreateChecklistModalProps {
   isOpen: boolean;
@@ -45,107 +46,96 @@ export default function CreateChecklistModal({
     onClose();
   };
 
-  if (!isOpen) return null;
+  const handleClose = () => {
+    onClose();
+    setNewChecklist({ name: '', items: [''] });
+  };
 
   return (
-    <div
-      className="fixed inset-0 flex items-center justify-center p-4 z-50"
-      onClick={() => {
-        onClose();
-        setNewChecklist({ name: '', items: [''] });
-      }}
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      title="新しいチェックリスト"
+      icon={Plus}
+      iconColor={colorPalette.roseQuartz.bg}
+      maxWidth="md"
     >
-      <Card
-        variant="modal"
-        className="w-full max-w-md"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h3 className="text-xl font-semibold mb-4 text-stone-800">
-          新しいチェックリスト
-        </h3>
-        <div className="space-y-4">
-          <input
-            type="text"
-            placeholder="リスト名"
-            value={newChecklist.name}
-            onChange={(e) =>
-              setNewChecklist({ ...newChecklist, name: e.target.value })
-            }
-            className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-stone-900 bg-white"
-          />
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-stone-700">項目</label>
-            {newChecklist.items.map((item, index) => (
-              <div key={index} className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder={`項目 ${index + 1}`}
-                  value={item}
-                  onChange={(e) => {
-                    const updatedItems = [...newChecklist.items];
-                    updatedItems[index] = e.target.value;
+      <div className="space-y-4">
+        <input
+          type="text"
+          placeholder="リスト名"
+          value={newChecklist.name}
+          onChange={(e) =>
+            setNewChecklist({ ...newChecklist, name: e.target.value })
+          }
+          className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-stone-900 bg-white"
+        />
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-stone-700">項目</label>
+          {newChecklist.items.map((item, index) => (
+            <div key={index} className="flex gap-2">
+              <input
+                type="text"
+                placeholder={`項目 ${index + 1}`}
+                value={item}
+                onChange={(e) => {
+                  const updatedItems = [...newChecklist.items];
+                  updatedItems[index] = e.target.value;
+                  setNewChecklist({
+                    ...newChecklist,
+                    items: updatedItems,
+                  });
+                }}
+                className="flex-1 px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-sm text-stone-900 bg-white"
+              />
+              {newChecklist.items.length > 1 && (
+                <Button
+                  onClick={() => {
+                    const updatedItems = newChecklist.items.filter(
+                      (_, i) => i !== index
+                    );
                     setNewChecklist({
                       ...newChecklist,
                       items: updatedItems,
                     });
                   }}
-                  className="flex-1 px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-sm text-stone-900 bg-white"
-                />
-                {newChecklist.items.length > 1 && (
-                  <Button
-                    onClick={() => {
-                      const updatedItems = newChecklist.items.filter(
-                        (_, i) => i !== index
-                      );
-                      setNewChecklist({
-                        ...newChecklist,
-                        items: updatedItems,
-                      });
-                    }}
-                    variant="icon"
-                    color="sandRed"
-                    size="sm"
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
-                )}
-              </div>
-            ))}
-            <Button
-              onClick={() =>
-                setNewChecklist({
-                  ...newChecklist,
-                  items: [...newChecklist.items, ''],
-                })
-              }
-              variant="ghost"
-              size="sm"
-              className="text-blue-600 hover:text-blue-800"
-            >
-              <Plus className="w-4 h-4" />
-              項目を追加
-            </Button>
-          </div>
-        </div>
-        <div className="flex gap-3 mt-6">
-          <CancelButton
-            onClick={() => {
-              onClose();
-              setNewChecklist({ name: '', items: [''] });
-            }}
-            className="flex-1"
-          />
+                  variant="icon"
+                  color="sandRed"
+                  size="sm"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              )}
+            </div>
+          ))}
           <Button
-            onClick={addNewChecklistCategory}
-            disabled={!newChecklist.name.trim()}
-            variant="filled"
-            color="roseQuartz"
-            className="flex-1"
+            onClick={() =>
+              setNewChecklist({
+                ...newChecklist,
+                items: [...newChecklist.items, ''],
+              })
+            }
+            variant="ghost"
+            size="sm"
+            className="text-blue-600 hover:text-blue-800"
           >
-            作成
+            <Plus className="w-4 h-4" />
+            項目を追加
           </Button>
         </div>
-      </Card>
-    </div>
+      </div>
+      <div className="flex gap-3 pt-4">
+        <CancelButton onClick={handleClose} className="flex-1" />
+        <Button
+          onClick={addNewChecklistCategory}
+          disabled={!newChecklist.name.trim()}
+          variant="filled"
+          color="roseQuartz"
+          className="flex-1"
+        >
+          作成
+        </Button>
+      </div>
+    </Modal>
   );
 }
