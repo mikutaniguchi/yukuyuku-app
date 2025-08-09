@@ -121,7 +121,7 @@ export default function ChecklistItemComponent({
                 autoFocus
               />
               <Button onClick={saveEdit} variant="icon" color="abyssGreen">
-                <Check className="w-4 h-4" />
+                <Check className="w-4 h-4 text-stone-700 dark:text-stone-300" />
               </Button>
               <Button onClick={onCancelEdit} variant="icon">
                 <X className="w-4 h-4" />

@@ -125,7 +125,7 @@ export default function UserSettingsModal({
                     }
                     className="p-1 text-green-600 hover:text-green-700 disabled:text-stone-400 transition-colors"
                   >
-                    <Check className="w-4 h-4" />
+                    <Check className="w-4 h-4 text-stone-700 dark:text-stone-300" />
                   </button>
                   <button
                     onClick={handleCancelNameEdit}

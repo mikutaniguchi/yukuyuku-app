@@ -106,7 +106,7 @@ export default function ThemeToggle() {
                 <span className="text-sm">{option.label}</span>
               </div>
               {theme === option.value && (
-                <Check className="h-4 w-4 text-green-600" />
+                <Check className="h-4 w-4 text-stone-700 dark:text-stone-300" />
               )}
             </button>
           ))}

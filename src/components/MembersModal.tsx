@@ -77,7 +77,7 @@ export default function MembersModal({
               className="text-stone-600 hover:text-stone-800"
             >
               {copiedInvite ? (
-                <Check className="w-5 h-5 text-green-600" />
+                <Check className="w-5 h-5 text-stone-700 dark:text-stone-300" />
               ) : (
                 <Copy className="w-5 h-5" />
               )}
