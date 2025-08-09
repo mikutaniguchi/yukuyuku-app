@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Plus, X } from 'lucide-react';
 import { Trip, Checklist, ChecklistItem } from '@/types';
 import Button from './Button';
+import CancelButton from './CancelButton';
 import Card from './Card';
 
 interface CreateChecklistModalProps {
@@ -127,25 +128,21 @@ export default function CreateChecklistModal({
           </div>
         </div>
         <div className="flex gap-3 mt-6">
+          <CancelButton
+            onClick={() => {
+              onClose();
+              setNewChecklist({ name: '', items: [''] });
+            }}
+            className="flex-1"
+          />
           <Button
             onClick={addNewChecklistCategory}
             disabled={!newChecklist.name.trim()}
             variant="filled"
             color="roseQuartz"
-            fullWidth
+            className="flex-1"
           >
             作成
-          </Button>
-          <Button
-            onClick={() => {
-              onClose();
-              setNewChecklist({ name: '', items: [''] });
-            }}
-            variant="filled"
-            color="sandRed"
-            fullWidth
-          >
-            キャンセル
           </Button>
         </div>
       </Card>

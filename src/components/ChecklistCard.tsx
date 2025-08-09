@@ -1,12 +1,12 @@
 'use client';
 
 import React, { useRef, useEffect } from 'react';
-import { Settings, Edit2, Trash2, Save, X } from 'lucide-react';
+import { Settings, Edit2, Trash2 } from 'lucide-react';
 import { Checklist, ChecklistItem } from '@/types';
 import { colorPalette } from '@/lib/constants';
 import Button from './Button';
 import Card from './Card';
-import { useKeyboardEvent } from '@/hooks/useKeyboardEvent';
+import InlineEditForm from './InlineEditForm';
 import {
   DndContext,
   closestCenter,
@@ -31,7 +31,6 @@ interface ChecklistCardProps {
   completionRate: number;
   showSettings: string | null;
   editingChecklistName: string | null;
-  tempChecklistName: string;
   editingItem: string | null;
   editingText: string;
   swipedItem: string | null;
@@ -58,7 +57,6 @@ export default function ChecklistCard({
   completionRate,
   showSettings,
   editingChecklistName,
-  tempChecklistName,
   editingItem,
   editingText,
   swipedItem,
@@ -79,7 +77,6 @@ export default function ChecklistCard({
   onSetSwipedItem,
 }: ChecklistCardProps) {
   const settingsRef = useRef<HTMLDivElement>(null);
-  const { handleEnterKey, handleEscapeKey } = useKeyboardEvent();
 
   // ドラッグ&ドロップのセンサー設定
   const sensors = useSensors(
@@ -123,35 +120,21 @@ export default function ChecklistCard({
     <Card>
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
-          {editingChecklistName === checklist.id ? (
-            <div className="flex items-center gap-2">
-              <input
-                type="text"
-                value={tempChecklistName}
-                onChange={(e) => onSetTempChecklistName(e.target.value)}
-                onKeyDown={(e) => {
-                  handleEnterKey(e, () => onSaveChecklistName(checklist.id));
-                  handleEscapeKey(e, onCancelEditChecklistName);
-                }}
-                className="text-lg font-semibold text-stone-800 bg-transparent border-b-2 border-stone-300 focus:outline-none focus:border-stone-500"
-                autoFocus
-              />
-              <Button
-                onClick={() => onSaveChecklistName(checklist.id)}
-                variant="icon"
-                color="abyssGreen"
-              >
-                <Save className="w-4 h-4" />
-              </Button>
-              <Button onClick={onCancelEditChecklistName} variant="icon">
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
-          ) : (
-            <h3 className="text-lg font-semibold text-stone-800">
-              {checklist.name}
-            </h3>
-          )}
+          <InlineEditForm
+            value={checklist.name}
+            isEditing={editingChecklistName === checklist.id}
+            onStartEdit={() =>
+              onEditChecklistName(checklist.id, checklist.name)
+            }
+            onSave={(newName) => {
+              onSetTempChecklistName(newName);
+              onSaveChecklistName(checklist.id);
+            }}
+            onCancel={onCancelEditChecklistName}
+            displayClassName="text-lg font-semibold text-stone-800"
+            inputClassName="text-lg font-semibold"
+            showEditButton={false}
+          />
           <div className="flex items-center gap-2 mt-1">
             <div className="w-full bg-stone-200 rounded-full h-2 flex-1">
               <div
@@ -258,17 +241,13 @@ export default function ChecklistCard({
             type="text"
             placeholder="新しい項目を追加..."
             onKeyDown={(e) => {
-              handleEnterKey(
-                e,
-                () => {
-                  onAddChecklistItem(checklist.id, e.currentTarget.value);
+              if (e.key === 'Enter') {
+                const value = e.currentTarget.value;
+                if (value.trim()) {
+                  onAddChecklistItem(checklist.id, value.trim());
                   e.currentTarget.value = '';
-                },
-                {
-                  requireValue: true,
-                  target: e.currentTarget,
                 }
-              );
+              }
             }}
             className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-sm text-stone-900 bg-white"
           />

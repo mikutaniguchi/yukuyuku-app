@@ -222,13 +222,13 @@ export default function JoinPageClient({ inviteCode }: JoinPageClientProps) {
             <h1 className="text-2xl font-bold text-stone-800 mb-4">
               参加処理中...
             </h1>
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-stone-600 mx-auto"></div>
           </>
         )}
 
         {status === 'success' && (
           <>
-            <h1 className="text-2xl font-bold text-green-600 mb-4">
+            <h1 className="text-2xl font-bold text-stone-800 mb-4">
               参加完了！
             </h1>
             <p className="text-stone-600 mb-4">「{tripName}」に参加しました</p>
@@ -240,7 +240,7 @@ export default function JoinPageClient({ inviteCode }: JoinPageClientProps) {
 
         {status === 'not-found' && (
           <>
-            <h1 className="text-2xl font-bold text-red-600 mb-4">
+            <h1 className="text-2xl font-bold text-stone-800 mb-4">
               招待リンクが無効です
             </h1>
             <p className="text-stone-600 mb-6">
@@ -261,7 +261,7 @@ export default function JoinPageClient({ inviteCode }: JoinPageClientProps) {
 
         {status === 'error' && (
           <>
-            <h1 className="text-2xl font-bold text-red-600 mb-4">
+            <h1 className="text-2xl font-bold text-stone-800 mb-4">
               エラーが発生しました
             </h1>
             <p className="text-stone-600 mb-6">
@@ -301,9 +301,7 @@ export default function JoinPageClient({ inviteCode }: JoinPageClientProps) {
                   size="lg"
                   fullWidth
                 >
-                  <div className="w-5 h-5 bg-white rounded flex items-center justify-center">
-                    <span className="text-xs font-bold text-blue-600">G</span>
-                  </div>
+                  <span className="text-xl font-bold text-white">G</span>
                   メンバーとしてGoogleログイン
                 </Button>
                 <p className="text-xs text-stone-500 mt-1">編集・管理が可能</p>

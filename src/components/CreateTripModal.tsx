@@ -7,6 +7,7 @@ import Modal from './Modal';
 import FormInput from './FormInput';
 import ErrorMessage from './ErrorMessage';
 import Button from './Button';
+import CancelButton from './CancelButton';
 
 interface CreateTripModalProps {
   onCreateTrip: (tripData: {
@@ -120,16 +121,7 @@ export default function CreateTripModal({
         </div>
 
         <div className="flex gap-3 pt-4">
-          {onClose && (
-            <Button
-              onClick={onClose}
-              variant="outlined"
-              color="sandRed"
-              className="flex-1"
-            >
-              キャンセル
-            </Button>
-          )}
+          {onClose && <CancelButton onClick={onClose} className="flex-1" />}
           <Button
             type="submit"
             disabled={!title.trim() || !startDate || !endDate}

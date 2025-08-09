@@ -5,6 +5,7 @@ import { Trash2 } from 'lucide-react';
 import Modal from './Modal';
 import { Trip } from '@/types';
 import Button from './Button';
+import CancelButton from './CancelButton';
 
 interface DeleteTripModalProps {
   isOpen: boolean;
@@ -29,7 +30,6 @@ export default function DeleteTripModal({
       onClose={onCancel}
       title="旅行を削除"
       icon={Trash2}
-      iconColor="#DC2626"
       maxWidth="md"
     >
       <div className="space-y-4">
@@ -38,7 +38,7 @@ export default function DeleteTripModal({
         </p>
         <p className="text-stone-700">
           削除するには、旅行名「
-          <span className="font-semibold text-stone-900">{trip?.title}</span>
+          <span className="font-semibold">{trip?.title}</span>
           」を入力してください：
         </p>
         <input
@@ -55,14 +55,12 @@ export default function DeleteTripModal({
         <Button
           onClick={onConfirmDelete}
           disabled={deleteConfirmTitle !== trip?.title}
-          variant="danger"
+          color="sandRed"
           className="flex-1"
         >
           削除
         </Button>
-        <Button onClick={onCancel} color="strawBeige" className="flex-1">
-          キャンセル
-        </Button>
+        <CancelButton onClick={onCancel} className="flex-1" />
       </div>
     </Modal>
   );

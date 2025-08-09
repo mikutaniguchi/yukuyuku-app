@@ -556,7 +556,7 @@ export default function TravelApp() {
                         )}
                         <button
                           onClick={handleDeleteTrip}
-                          className="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 flex items-center gap-2"
+                          className="w-full px-4 py-2 text-left flex items-center gap-2"
                         >
                           <Trash2 className="w-4 h-4" />
                           旅行を削除

@@ -63,16 +63,14 @@ export default function EditScheduleModal({
 
   const footerButtons = (
     <div className="flex gap-3">
-      <button
-        onClick={() => {
-          if (confirm('本当に削除しますか？')) {
-            onDelete();
-          }
-        }}
-        className="w-12 h-12 flex items-center justify-center rounded-lg bg-stone-200 hover:bg-stone-300 text-stone-600 hover:text-stone-700 transition-colors"
+      <Button
+        onClick={onDelete}
+        color="sandRed"
+        size="md"
+        className="w-12 h-12 p-0"
       >
         <Trash2 className="w-5 h-5" />
-      </button>
+      </Button>
       <Button
         onClick={onSave}
         disabled={!isValid}

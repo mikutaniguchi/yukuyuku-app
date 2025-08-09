@@ -1,18 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
-import {
-  Settings,
-  User as UserIcon,
-  Trash2,
-  Edit2,
-  X,
-  Check,
-} from 'lucide-react';
+import { Settings, User as UserIcon, Trash2 } from 'lucide-react';
 import { User } from '@/types';
 import { colorPalette } from '@/lib/constants';
 import Modal from './Modal';
 import Button from './Button';
+import CancelButton from './CancelButton';
+import InlineEditForm from './InlineEditForm';
 
 interface UserSettingsModalProps {
   isOpen: boolean;
@@ -29,18 +24,15 @@ export default function UserSettingsModal({
   onUpdateUser,
   onDeleteAccount,
 }: UserSettingsModalProps) {
-  const [editedName, setEditedName] = useState(user.name);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteConfirmName, setDeleteConfirmName] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
 
-  const handleSaveName = async () => {
-    if (!editedName.trim()) return;
-
+  const handleSaveName = async (newName: string) => {
     setIsSaving(true);
     try {
-      await onUpdateUser(editedName.trim());
+      await onUpdateUser(newName);
       setIsEditingName(false);
     } catch (error) {
       console.error('Failed to update user name:', error);
@@ -51,12 +43,10 @@ export default function UserSettingsModal({
   };
 
   const handleCancelNameEdit = () => {
-    setEditedName(user.name);
     setIsEditingName(false);
   };
 
   const handleStartEdit = () => {
-    setEditedName(user.name);
     setIsEditingName(true);
   };
 
@@ -73,7 +63,6 @@ export default function UserSettingsModal({
   };
 
   const resetForm = () => {
-    setEditedName(user.name);
     setShowDeleteConfirm(false);
     setDeleteConfirmName('');
   };
@@ -103,48 +92,15 @@ export default function UserSettingsModal({
               </label>
             </div>
 
-            {isEditingName ? (
-              <div className="flex items-center gap-2 p-3 border border-stone-300 rounded-lg bg-stone-50/50">
-                <input
-                  type="text"
-                  value={editedName}
-                  onChange={(e) => setEditedName(e.target.value)}
-                  className="flex-1 bg-transparent border-none outline-none text-stone-900"
-                  placeholder="名前を入力してください"
-                  autoFocus
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') handleSaveName();
-                    if (e.key === 'Escape') handleCancelNameEdit();
-                  }}
-                />
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={handleSaveName}
-                    disabled={
-                      !editedName.trim() || editedName === user.name || isSaving
-                    }
-                    className="p-1 text-green-600 hover:text-green-700 disabled:text-stone-400 transition-colors"
-                  >
-                    <Check className="w-4 h-4 text-stone-700 dark:text-stone-300" />
-                  </button>
-                  <button
-                    onClick={handleCancelNameEdit}
-                    disabled={isSaving}
-                    className="p-1 text-stone-500 hover:text-stone-600 transition-colors"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div
-                onClick={handleStartEdit}
-                className="flex items-center justify-between p-3 border border-stone-200 rounded-lg hover:bg-stone-50 cursor-pointer transition-colors group"
-              >
-                <span className="text-stone-800">{user.name}</span>
-                <Edit2 className="w-4 h-4 text-stone-400 group-hover:text-stone-600 transition-colors" />
-              </div>
-            )}
+            <InlineEditForm
+              value={user.name}
+              isEditing={isEditingName && !isSaving}
+              onStartEdit={handleStartEdit}
+              onSave={handleSaveName}
+              onCancel={handleCancelNameEdit}
+              placeholder="名前を入力してください"
+              displayClassName="p-3 border border-stone-200 rounded-lg bg-stone-50 text-stone-800"
+            />
           </div>
 
           {/* アカウント情報 */}
@@ -220,14 +176,11 @@ export default function UserSettingsModal({
               <Trash2 className="w-4 h-4" />
               削除する
             </Button>
-            <Button
+            <CancelButton
               onClick={() => setShowDeleteConfirm(false)}
-              color="sandRed"
               size="md"
               className="flex-1"
-            >
-              キャンセル
-            </Button>
+            />
           </div>
         </div>
       </Modal>

@@ -6,6 +6,7 @@ import { Trip, User } from '@/types';
 import { colorPalette, generateInviteLink } from '@/lib/constants';
 import Modal from './Modal';
 import Button from './Button';
+import CancelButton from './CancelButton';
 
 interface MembersModalProps {
   isOpen: boolean;
@@ -154,17 +155,13 @@ export default function MembersModal({
               >
                 削除する
               </Button>
-              <Button
+              <CancelButton
                 onClick={() => {
                   setShowDeleteMemberModal(false);
                   setMemberToDelete(null);
                 }}
-                variant="outlined"
-                color="sandRed"
                 className="flex-1"
-              >
-                キャンセル
-              </Button>
+              />
             </div>
           </>
         )}

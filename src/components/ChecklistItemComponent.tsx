@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
-import { Edit2, Trash2, X, Check } from 'lucide-react';
+import React, { useState } from 'react';
+import { Edit2, Trash2 } from 'lucide-react';
 import { ChecklistItem } from '@/types';
 import { colorPalette } from '@/lib/constants';
 import Button from './Button';
-import { useKeyboardEvent } from '@/hooks/useKeyboardEvent';
+import InlineEditForm from './InlineEditForm';
 
 interface ChecklistItemComponentProps {
   item: ChecklistItem;
@@ -36,8 +36,6 @@ export default function ChecklistItemComponent({
   editingText,
   onCancelEdit,
 }: ChecklistItemComponentProps) {
-  const editingInputRef = useRef<HTMLInputElement>(null);
-  const { handleEnterKey, handleEscapeKey } = useKeyboardEvent();
   const [startX, setStartX] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -57,12 +55,6 @@ export default function ChecklistItemComponent({
     const deltaX = endX - startX;
     onSwipe(item.id, deltaX);
     setIsDragging(false);
-  };
-
-  const saveEdit = () => {
-    const inputValue = editingInputRef.current?.value || editingText;
-    if (!inputValue.trim()) return;
-    onEditItem(checklistId, item.id, inputValue.trim());
   };
 
   return (
@@ -108,24 +100,18 @@ export default function ChecklistItemComponent({
           </button>
 
           {editingItem === item.id ? (
-            <div className="flex-1 flex items-center gap-2">
-              <input
-                ref={editingInputRef}
-                type="text"
-                defaultValue={editingText}
-                onKeyDown={(e) => {
-                  handleEnterKey(e, saveEdit);
-                  handleEscapeKey(e, onCancelEdit);
+            <div className="flex-1">
+              <InlineEditForm
+                value={editingText}
+                isEditing={true}
+                onStartEdit={() => {}}
+                onSave={(newText) => {
+                  onEditItem(checklistId, item.id, newText);
                 }}
-                className="flex-1 px-2 py-1 border border-stone-300 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-stone-900 bg-white"
-                autoFocus
+                onCancel={onCancelEdit}
+                inputClassName="text-sm px-2 py-1"
+                showEditButton={false}
               />
-              <Button onClick={saveEdit} variant="icon" color="abyssGreen">
-                <Check className="w-4 h-4 text-stone-700 dark:text-stone-300" />
-              </Button>
-              <Button onClick={onCancelEdit} variant="icon">
-                <X className="w-4 h-4" />
-              </Button>
             </div>
           ) : (
             <>

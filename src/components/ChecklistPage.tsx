@@ -248,7 +248,6 @@ export default function ChecklistPage({
                   completionRate={getCompletionRate(checklist)}
                   showSettings={showSettings}
                   editingChecklistName={editingChecklistName}
-                  tempChecklistName={tempChecklistName}
                   editingItem={editingItem}
                   editingText={editingText}
                   swipedItem={swipedItem}
@@ -275,16 +274,6 @@ export default function ChecklistPage({
               <div className="text-center py-12 text-stone-500">
                 <CheckSquare className="w-12 h-12 mx-auto mb-4 text-stone-300" />
                 <p>チェックリストがまだありません</p>
-                {canEdit && (
-                  <Button
-                    onClick={() => setShowNewChecklistModal(true)}
-                    variant="filled"
-                    color="roseQuartz"
-                    className="mt-4"
-                  >
-                    リストを作成
-                  </Button>
-                )}
               </div>
             )}
           </>

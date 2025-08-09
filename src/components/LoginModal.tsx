@@ -8,6 +8,7 @@ import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { loginAsGuest } from '@/lib/auth';
 import Button from './Button';
+import ErrorMessage from './ErrorMessage';
 
 interface LoginModalProps {
   onLogin: (user: User) => void;
@@ -76,9 +77,7 @@ export default function LoginModal({
             size="lg"
             fullWidth
           >
-            <div className="w-5 h-5 bg-white rounded flex items-center justify-center">
-              <span className="text-xs font-bold text-blue-600">G</span>
-            </div>
+            <span className="text-xl font-bold text-white">G</span>
             Googleアカウントでログイン
           </Button>
 
@@ -95,11 +94,7 @@ export default function LoginModal({
           )}
         </div>
 
-        {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-            {error}
-          </div>
-        )}
+        {error && <ErrorMessage message={error} className="mb-4" />}
       </div>
     </div>
   );
