@@ -122,7 +122,9 @@ export default function InlineEditForm({
             : 'text-stone-400 cursor-not-allowed'
         }`}
       >
-        <Check className="w-4 h-4" />
+        <Check
+          className={`w-4 h-4 ${canSave ? 'stroke-[2.5] text-green-600' : 'text-stone-400'}`}
+        />
       </Button>
       <Button onClick={handleCancel} variant="icon" size="sm">
         <X className="w-4 h-4 text-stone-500 hover:text-stone-600" />

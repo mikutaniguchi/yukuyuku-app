@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   useParams,
   useRouter,
@@ -26,8 +26,6 @@ import {
   FileText,
   Edit2,
   Trash2,
-  Save,
-  X,
 } from 'lucide-react';
 import { Trip, User } from '@/types';
 import { formatDate } from '@/lib/constants';
@@ -44,6 +42,8 @@ import DeleteTripModal from '@/components/DeleteTripModal';
 import Header from '@/components/Header';
 import FloatingNavMenu from '@/components/FloatingNavMenu';
 import LoadingScreen from '@/components/LoadingScreen';
+import Dropdown, { DropdownOption } from '@/components/Dropdown';
+import InlineEditForm from '@/components/InlineEditForm';
 
 interface TripLayoutProps {
   children: React.ReactNode;
@@ -59,8 +59,7 @@ export default function TripLayout({ children }: TripLayoutProps) {
   const [trip, setTrip] = useState<Trip | null>(null);
   const [loading, setLoading] = useState(true);
   const [editingTripTitle, setEditingTripTitle] = useState(false);
-  const [tempTripTitle, setTempTripTitle] = useState('');
-  const [showTripSettings, setShowTripSettings] = useState(false);
+  const [tripSettingsValue, setTripSettingsValue] = useState('');
   const [showMembersModal, setShowMembersModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showUserSettings, setShowUserSettings] = useState(false);
@@ -68,7 +67,6 @@ export default function TripLayout({ children }: TripLayoutProps) {
     'schedule' | 'checklist' | 'files' | 'memo' | 'budget'
   >('schedule');
   const [deleteConfirmTitle, setDeleteConfirmTitle] = useState('');
-  const tripSettingsRef = useRef<HTMLDivElement>(null);
 
   const tripId = params.tripId as string;
 
@@ -132,23 +130,6 @@ export default function TripLayout({ children }: TripLayoutProps) {
     };
   }, []);
 
-  // 旅行設定メニューの外部クリックで閉じる
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        tripSettingsRef.current &&
-        !tripSettingsRef.current.contains(event.target as Node)
-      ) {
-        setShowTripSettings(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
-
   useEffect(() => {
     const loadTrip = async () => {
       if (!firebaseUser || !tripId) {
@@ -206,30 +187,36 @@ export default function TripLayout({ children }: TripLayoutProps) {
 
   const handleEditTripTitle = () => {
     if (!trip) return;
-    setTempTripTitle(trip.title);
     setEditingTripTitle(true);
-    setShowTripSettings(false);
   };
 
-  const handleSaveTripTitle = async () => {
-    if (!trip || !tempTripTitle.trim()) return;
+  const handleSaveTripTitle = async (newTitle: string) => {
+    if (!trip || !newTitle.trim()) return;
 
     await updateTrip((t) => ({
       ...t,
-      title: tempTripTitle.trim(),
+      title: newTitle.trim(),
     }));
     setEditingTripTitle(false);
   };
 
   const handleCancelEditTitle = () => {
     setEditingTripTitle(false);
-    setTempTripTitle('');
   };
 
   const handleDeleteTrip = () => {
     setDeleteConfirmTitle('');
     setShowDeleteConfirm(true);
-    setShowTripSettings(false);
+  };
+
+  // Trip settings dropdown handler
+  const handleTripSettingsChange = (value: string) => {
+    if (value === 'edit') {
+      handleEditTripTitle();
+    } else if (value === 'delete') {
+      handleDeleteTrip();
+    }
+    setTripSettingsValue(''); // Reset selection
   };
 
   const confirmDeleteTrip = async () => {
@@ -364,73 +351,53 @@ export default function TripLayout({ children }: TripLayoutProps) {
                 className="w-8 h-8"
                 style={{ color: colors.aquaBlue.bg }}
               />
-              {editingTripTitle ? (
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={tempTripTitle}
-                    onChange={(e) => setTempTripTitle(e.target.value)}
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter') handleSaveTripTitle();
-                      if (e.key === 'Escape') handleCancelEditTitle();
-                    }}
-                    className="text-xl md:text-3xl font-bold text-stone-800 bg-transparent border-b-2 border-stone-300 focus:outline-none focus:border-stone-500"
-                    autoFocus
-                  />
-                  <button
-                    onClick={handleSaveTripTitle}
-                    className="p-1 text-green-600 hover:text-green-700 transition-colors"
-                  >
-                    <Save className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={handleCancelEditTitle}
-                    className="p-1 text-stone-400 hover:text-stone-600 transition-colors"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2 relative">
-                  <h1 className="text-xl md:text-3xl font-bold text-stone-800">
-                    {trip.title}
-                  </h1>
-                  {canEdit && !isGuest && !isGuestAccess && (
-                    <div className="relative" ref={tripSettingsRef}>
-                      <button
-                        onClick={() => setShowTripSettings(!showTripSettings)}
-                        className="p-1 text-stone-400 hover:text-stone-600 transition-colors opacity-60 hover:opacity-100"
-                      >
-                        <Settings className="w-5 h-5" />
-                      </button>
+              <div className="flex items-center gap-2 relative">
+                <InlineEditForm
+                  value={trip.title}
+                  isEditing={editingTripTitle}
+                  onStartEdit={() => setEditingTripTitle(true)}
+                  onSave={handleSaveTripTitle}
+                  onCancel={handleCancelEditTitle}
+                  displayClassName="text-xl md:text-3xl font-bold text-stone-800"
+                  inputClassName="text-xl md:text-3xl font-bold"
+                  showEditButton={false}
+                />
+                {canEdit && !isGuest && !isGuestAccess && (
+                  <div className="relative">
+                    {(() => {
+                      const options: DropdownOption[] = [
+                        {
+                          value: 'edit',
+                          label: 'タイトル変更',
+                          icon: Edit2,
+                        },
+                      ];
 
-                      {showTripSettings && (
-                        <div className="absolute top-8 right-0 bg-white border border-stone-200 rounded-lg shadow-lg py-2 w-40 z-10">
-                          <button
-                            onClick={handleEditTripTitle}
-                            className="w-full px-4 py-2 text-left text-stone-700 hover:bg-stone-50 flex items-center gap-2"
-                          >
-                            <Edit2 className="w-4 h-4" />
-                            タイトル変更
-                          </button>
-                          {isCreator && (
-                            <>
-                              <div className="border-t border-stone-200 my-1" />
-                              <button
-                                onClick={handleDeleteTrip}
-                                className="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 flex items-center gap-2"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                                旅行を削除
-                              </button>
-                            </>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
+                      if (isCreator) {
+                        options.push({
+                          value: 'delete',
+                          label: '旅行を削除',
+                          icon: Trash2,
+                        });
+                      }
+
+                      return (
+                        <Dropdown
+                          options={options}
+                          value={tripSettingsValue}
+                          onChange={handleTripSettingsChange}
+                          placeholder={<Settings className="w-5 h-5" />}
+                          showChevron={false}
+                          showSelectedIcon={false}
+                          position="right"
+                          width="160px"
+                          className="p-1 border-0 bg-transparent text-stone-400 hover:text-stone-900 opacity-60 hover:opacity-100 focus:outline-none"
+                        />
+                      );
+                    })()}
+                  </div>
+                )}
+              </div>
             </div>
             {!isGuest && !isGuestAccess && (
               <div className="flex gap-2">

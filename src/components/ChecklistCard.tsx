@@ -4,9 +4,9 @@ import React, { useRef, useEffect } from 'react';
 import { Settings, Edit2, Trash2 } from 'lucide-react';
 import { Checklist, ChecklistItem } from '@/types';
 import { colorPalette } from '@/lib/constants';
-import Button from './Button';
 import Card from './Card';
 import InlineEditForm from './InlineEditForm';
+import Dropdown, { DropdownOption } from './Dropdown';
 import {
   DndContext,
   closestCenter,
@@ -49,6 +49,8 @@ interface ChecklistCardProps {
   onAddChecklistItem: (checklistId: string, text: string) => void;
   onSwipe: (itemId: string, deltaX: number) => void;
   onSetSwipedItem: (itemId: string | null) => void;
+  checklistSettingsValue?: string;
+  onChecklistSettingsChange?: (value: string) => void;
 }
 
 export default function ChecklistCard({
@@ -75,6 +77,8 @@ export default function ChecklistCard({
   onAddChecklistItem,
   onSwipe,
   onSetSwipedItem,
+  checklistSettingsValue = '',
+  onChecklistSettingsChange,
 }: ChecklistCardProps) {
   const settingsRef = useRef<HTMLDivElement>(null);
 
@@ -151,44 +155,46 @@ export default function ChecklistCard({
           </div>
         </div>
         {canEdit && (
-          <div className="relative" ref={settingsRef}>
-            <Button
-              onClick={() =>
-                onSetShowSettings(
-                  showSettings === checklist.id ? null : checklist.id
-                )
-              }
-              variant="icon"
-              className="opacity-60 hover:opacity-100"
-            >
-              <Settings className="w-4 h-4" />
-            </Button>
+          <div className="relative">
+            {(() => {
+              const options: DropdownOption[] = [
+                {
+                  value: 'edit',
+                  label: '名前を変更',
+                  icon: Edit2,
+                },
+                {
+                  value: 'delete',
+                  label: 'リストを削除',
+                  icon: Trash2,
+                },
+              ];
 
-            {showSettings === checklist.id && (
-              <div className="absolute top-8 right-0 bg-white border border-stone-200 rounded-lg shadow-lg py-2 w-40 z-10">
-                <Button
-                  onClick={() =>
-                    onEditChecklistName(checklist.id, checklist.name)
-                  }
-                  variant="ghost"
-                  fullWidth
-                  className="justify-start px-4 py-2 text-left text-stone-700 hover:bg-stone-50"
-                >
-                  <Edit2 className="w-4 h-4" />
-                  名前を変更
-                </Button>
-                <Button
-                  onClick={() => onDeleteChecklist(checklist.id)}
-                  variant="ghost"
-                  color="sandRed"
-                  fullWidth
-                  className="justify-start px-4 py-2 text-left hover:bg-red-50"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  リストを削除
-                </Button>
-              </div>
-            )}
+              const handleChange = (value: string) => {
+                if (value === 'edit') {
+                  onEditChecklistName(checklist.id, checklist.name);
+                } else if (value === 'delete') {
+                  onDeleteChecklist(checklist.id);
+                }
+                if (onChecklistSettingsChange) {
+                  onChecklistSettingsChange(''); // Reset selection
+                }
+              };
+
+              return (
+                <Dropdown
+                  options={options}
+                  value={checklistSettingsValue}
+                  onChange={handleChange}
+                  placeholder={<Settings className="w-4 h-4" />}
+                  showChevron={false}
+                  showSelectedIcon={false}
+                  position="right"
+                  width="140px"
+                  className="p-1 border-0 bg-transparent text-stone-400 hover:text-stone-900 opacity-60 hover:opacity-100 focus:outline-none"
+                />
+              );
+            })()}
           </div>
         )}
       </div>
