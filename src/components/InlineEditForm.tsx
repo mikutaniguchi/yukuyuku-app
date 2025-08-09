@@ -50,6 +50,27 @@ export default function InlineEditForm({
     }
   }, [isEditing]);
 
+  // Handle outside click to cancel editing
+  useEffect(() => {
+    if (!isEditing) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        inputRef.current &&
+        !inputRef.current
+          .closest('.inline-edit-form')
+          ?.contains(event.target as Node)
+      ) {
+        onCancel();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isEditing, onCancel]);
+
   const handleSave = () => {
     const trimmedValue = editValue.trim();
     if (required && !trimmedValue) return;
@@ -100,7 +121,7 @@ export default function InlineEditForm({
   }
 
   return (
-    <div className={`flex items-center gap-2 ${className}`}>
+    <div className={`inline-edit-form flex items-center gap-2 ${className}`}>
       <input
         ref={inputRef}
         type="text"
