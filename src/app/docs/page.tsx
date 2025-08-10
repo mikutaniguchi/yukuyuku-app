@@ -2,52 +2,11 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
-// import { useAuth } from '@/contexts/AuthContext';
 import { FileText, Database } from 'lucide-react';
 import { colorPalette } from '@/lib/constants';
 
-// 環境変数から開発者のメールアドレスリストを取得
-// const DEVELOPER_EMAILS = process.env.NEXT_PUBLIC_DEVELOPER_EMAILS
-//   ? process.env.NEXT_PUBLIC_DEVELOPER_EMAILS.split(',')
-//   : [];
-
 export default function DocsPage() {
   const router = useRouter();
-  // const { user, loading } = useAuth();
-
-  // 認証チェックを一時的に無効化（面談用）
-  // if (loading) {
-  //   return (
-  //     <div className="min-h-screen flex items-center justify-center">
-  //       <div className="text-stone-600">読み込み中...</div>
-  //     </div>
-  //   );
-  // }
-
-  // if (!user || !DEVELOPER_EMAILS.includes(user.email || '')) {
-  //   return (
-  //     <div className="min-h-screen flex items-center justify-center bg-stone-50">
-  //       <div className="text-center">
-  //         <h1 className="text-2xl font-bold text-stone-800 mb-4">
-  //           アクセス権限がありません
-  //         </h1>
-  //         <p className="text-stone-600 mb-4">
-  //           このページは開発者のみアクセスできます
-  //         </p>
-  //         <button
-  //           onClick={() => router.push('/')}
-  //           className="px-4 py-2 rounded-lg text-white"
-  //           style={{
-  //             backgroundColor: colorPalette.aquaBlue.bg,
-  //             color: colorPalette.aquaBlue.text,
-  //           }}
-  //         >
-  //           ホームに戻る
-  //         </button>
-  //       </div>
-  //     </div>
-  //   );
-  // }
 
   // ドキュメントセクション
   const docSections = [

@@ -2,32 +2,11 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
-// import { useAuth } from '@/contexts/AuthContext';
 import { ArrowLeft, FileText } from 'lucide-react';
 import { colorPalette } from '@/lib/constants';
 
-// 環境変数から開発者のメールアドレスリストを取得
-// const DEVELOPER_EMAILS = process.env.NEXT_PUBLIC_DEVELOPER_EMAILS
-//   ? process.env.NEXT_PUBLIC_DEVELOPER_EMAILS.split(',')
-//   : [];
-
 export default function ArchitecturePage() {
   const router = useRouter();
-  // const { user, loading } = useAuth();
-
-  // 認証チェックを一時的に無効化（面談用）
-  // if (loading) {
-  //   return (
-  //     <div className="min-h-screen flex items-center justify-center">
-  //       <div className="text-stone-600">読み込み中...</div>
-  //     </div>
-  //   );
-  // }
-
-  // if (!user || !DEVELOPER_EMAILS.includes(user.email || '')) {
-  //   router.push('/');
-  //   return null;
-  // }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-stone-50 to-neutral-100">
