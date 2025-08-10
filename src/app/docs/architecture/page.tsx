@@ -31,16 +31,16 @@ export default function ArchitecturePage() {
           </div>
 
           <div className="prose prose-stone max-w-none">
-            <h2>システム概要</h2>
+            <h2 className="text-2xl font-bold mt-8 mb-4">システム概要</h2>
             <p>
               yukuyuku-appは、Next.js
               15とFirebaseを使用したモダンな旅行管理アプリケーションです。
               PWA対応により、モバイルアプリのような体験を提供します。
             </p>
 
-            <h2>技術スタック</h2>
+            <h2 className="text-2xl font-bold mt-8 mb-4">技術スタック</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              <div className="bg-blue-50 p-4 rounded-lg">
+              <div className="bg-stone-100 p-4 rounded-lg">
                 <h4 className="font-semibold mb-2">フロントエンド</h4>
                 <ul className="text-sm space-y-1">
                   <li>• Next.js 15 (App Router)</li>
@@ -51,7 +51,7 @@ export default function ArchitecturePage() {
                   <li>• next-pwa (PWA)</li>
                 </ul>
               </div>
-              <div className="bg-green-50 p-4 rounded-lg">
+              <div className="bg-stone-100 p-4 rounded-lg">
                 <h4 className="font-semibold mb-2">バックエンド・インフラ</h4>
                 <ul className="text-sm space-y-1">
                   <li>• Firebase Authentication</li>
@@ -62,7 +62,7 @@ export default function ArchitecturePage() {
               </div>
             </div>
 
-            <h2>ディレクトリ構造</h2>
+            <h2 className="text-2xl font-bold mt-8 mb-4">ディレクトリ構造</h2>
             <pre className="bg-stone-100 p-4 rounded-lg overflow-x-auto text-sm">{`src/
 ├── app/                    # Next.js App Router
 │   ├── docs/              # 開発者向けドキュメント
@@ -85,52 +85,51 @@ export default function ArchitecturePage() {
 └── types/                 # TypeScript型定義
     └── index.ts`}</pre>
 
-            <h2>データフロー</h2>
-            <h2>認証フロー</h2>
-            <div className="bg-slate-50 p-6 rounded-lg mb-6">
-              <h4 className="font-semibold mb-4 text-slate-800">Google認証</h4>
+            <h2 className="text-2xl font-bold mt-8 mb-4">認証フロー</h2>
+            <div className="bg-stone-100 p-6 rounded-lg mb-6">
+              <h4 className="font-semibold mb-4 text-stone-800">Google認証</h4>
               <div className="flex items-center gap-4 mb-4">
                 <div className="bg-white p-3 rounded border text-center min-w-[120px]">
                   <div className="text-sm font-medium">ログイン画面</div>
                 </div>
-                <div className="text-slate-400">→</div>
+                <div className="text-stone-400">→</div>
                 <div className="bg-white p-3 rounded border text-center min-w-[120px]">
                   <div className="text-sm font-medium">Firebase Auth</div>
                 </div>
-                <div className="text-slate-400">→</div>
+                <div className="text-stone-400">→</div>
                 <div className="bg-white p-3 rounded border text-center min-w-[120px]">
                   <div className="text-sm font-medium">AuthContext</div>
                 </div>
-                <div className="text-slate-400">→</div>
+                <div className="text-stone-400">→</div>
                 <div className="bg-white p-3 rounded border text-center min-w-[120px]">
                   <div className="text-sm font-medium">アプリ画面</div>
                 </div>
               </div>
             </div>
 
-            <div className="bg-slate-50 p-6 rounded-lg mb-6">
-              <h4 className="font-semibold mb-4 text-slate-800">ゲスト認証</h4>
+            <div className="bg-stone-100 p-6 rounded-lg mb-6">
+              <h4 className="font-semibold mb-4 text-stone-800">ゲスト認証</h4>
               <div className="flex items-center gap-4 mb-4">
                 <div className="bg-white p-3 rounded border text-center min-w-[120px]">
                   <div className="text-sm font-medium">招待URL</div>
                 </div>
-                <div className="text-slate-400">→</div>
+                <div className="text-stone-400">→</div>
                 <div className="bg-white p-3 rounded border text-center min-w-[120px]">
                   <div className="text-sm font-medium">匿名認証</div>
                 </div>
-                <div className="text-slate-400">→</div>
+                <div className="text-stone-400">→</div>
                 <div className="bg-white p-3 rounded border text-center min-w-[120px]">
                   <div className="text-sm font-medium">閲覧専用</div>
                 </div>
               </div>
-              <p className="text-xs text-slate-600">
+              <p className="text-xs text-stone-600">
                 ※ セッション終了時に自動削除
               </p>
             </div>
 
-            <h2>データフロー</h2>
-            <div className="bg-slate-50 p-6 rounded-lg mb-4">
-              <h4 className="font-semibold mb-2 text-slate-800">
+            <h2 className="text-2xl font-bold mt-8 mb-4">データフロー</h2>
+            <div className="bg-stone-100 p-6 rounded-lg mb-4">
+              <h4 className="font-semibold mb-2 text-stone-800">
                 旅行管理フロー
               </h4>
               <ol className="list-decimal ml-6 space-y-1 text-sm">
@@ -141,9 +140,9 @@ export default function ArchitecturePage() {
               </ol>
             </div>
 
-            <h2>認証・認可</h2>
-            <div className="bg-slate-50 p-6 rounded-lg mb-6">
-              <h4 className="font-semibold mb-4 text-slate-800">
+            <h2 className="text-2xl font-bold mt-8 mb-4">認証・認可</h2>
+            <div className="bg-stone-100 p-6 rounded-lg mb-6">
+              <h4 className="font-semibold mb-4 text-stone-800">
                 アクセス権限
               </h4>
               <ul className="list-disc ml-6 text-sm space-y-1">
@@ -155,9 +154,11 @@ export default function ArchitecturePage() {
               </ul>
             </div>
 
-            <h2>パフォーマンス最適化</h2>
+            <h2 className="text-2xl font-bold mt-8 mb-4">
+              パフォーマンス最適化
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-indigo-50 p-4 rounded-lg">
+              <div className="bg-stone-100 p-4 rounded-lg">
                 <h4 className="font-semibold mb-2">フロントエンド</h4>
                 <ul className="text-sm space-y-1">
                   <li>• Next.js App Router（サーバーコンポーネント）</li>
@@ -166,7 +167,7 @@ export default function ArchitecturePage() {
                   <li>• 画像最適化（next/image）</li>
                 </ul>
               </div>
-              <div className="bg-teal-50 p-4 rounded-lg">
+              <div className="bg-stone-100 p-4 rounded-lg">
                 <h4 className="font-semibold mb-2">バックエンド</h4>
                 <ul className="text-sm space-y-1">
                   <li>• Firestoreインデックス最適化</li>
@@ -176,8 +177,8 @@ export default function ArchitecturePage() {
               </div>
             </div>
 
-            <h2>デプロイメント</h2>
-            <div className="bg-gray-50 p-4 rounded-lg">
+            <h2 className="text-2xl font-bold mt-8 mb-4">デプロイメント</h2>
+            <div className="bg-stone-100 p-4 rounded-lg">
               <h4 className="font-semibold mb-2">CI/CD パイプライン</h4>
               <ol className="list-decimal ml-6 text-sm space-y-1">
                 <li>GitHub mainブランチへのpush</li>
@@ -187,8 +188,8 @@ export default function ArchitecturePage() {
               </ol>
             </div>
 
-            <h2>今後の拡張予定</h2>
-            <div className="bg-pink-50 p-4 rounded-lg">
+            <h2 className="text-2xl font-bold mt-8 mb-4">今後の拡張予定</h2>
+            <div className="bg-stone-100 p-4 rounded-lg">
               <h4 className="font-semibold mb-2">機能拡張</h4>
               <ul className="list-disc ml-6 text-sm space-y-1">
                 <li>しおり印刷機能</li>

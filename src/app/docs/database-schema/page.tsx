@@ -2,32 +2,11 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
-// import { useAuth } from '@/contexts/AuthContext';
 import { ArrowLeft, Database } from 'lucide-react';
 import { colorPalette } from '@/lib/constants';
 
-// 環境変数から開発者のメールアドレスリストを取得
-// const DEVELOPER_EMAILS = process.env.NEXT_PUBLIC_DEVELOPER_EMAILS
-//   ? process.env.NEXT_PUBLIC_DEVELOPER_EMAILS.split(',')
-//   : [];
-
 export default function DatabaseSchemaPage() {
   const router = useRouter();
-  // const { user, loading } = useAuth();
-
-  // 認証チェックを一時的に無効化（面談用）
-  // if (loading) {
-  //   return (
-  //     <div className="min-h-screen flex items-center justify-center">
-  //       <div className="text-stone-600">読み込み中...</div>
-  //     </div>
-  //   );
-  // }
-
-  // if (!user || !DEVELOPER_EMAILS.includes(user.email || '')) {
-  //   router.push('/');
-  //   return null;
-  // }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-stone-50 to-neutral-100">
@@ -53,37 +32,37 @@ export default function DatabaseSchemaPage() {
 
           <div className="prose prose-stone max-w-none">
             <h2>データベース全体図</h2>
-            <div className="bg-slate-50 p-8 rounded-xl mb-8 border border-slate-300 shadow-sm">
+            <div className="bg-stone-100 p-8 rounded-xl mb-8 border border-stone-300 shadow-sm">
               <div className="text-center mb-8">
-                <h4 className="text-2xl font-bold text-slate-800 mb-2">
+                <h4 className="text-2xl font-bold text-stone-800 mb-2">
                   Firestore Database
                 </h4>
-                <p className="text-slate-600">yukuyuku-app のデータ構造</p>
+                <p className="text-stone-600">yukuyuku-app のデータ構造</p>
               </div>
 
               {/* メインリレーション図 */}
               <div className="flex flex-col lg:flex-row justify-center items-start gap-8 mb-8">
                 {/* Trips Collection */}
-                <div className="bg-white p-6 rounded-2xl shadow-md border-2 border-slate-300 min-w-[280px]">
+                <div className="bg-white p-6 rounded-2xl shadow-md border-2 border-stone-300 min-w-[280px]">
                   <div className="text-center mb-4">
-                    <div className="font-bold text-slate-800 text-xl">
+                    <div className="font-bold text-stone-800 text-xl">
                       trips
                     </div>
-                    <div className="text-sm text-slate-600">旅行管理</div>
+                    <div className="text-sm text-stone-600">旅行管理</div>
                   </div>
                   <div className="space-y-2 text-sm">
-                    <div className="bg-slate-50 p-2 rounded">id: 旅行ID</div>
-                    <div className="bg-slate-50 p-2 rounded">
+                    <div className="bg-stone-100 p-2 rounded">id: 旅行ID</div>
+                    <div className="bg-stone-100 p-2 rounded">
                       title: タイトル
                     </div>
-                    <div className="bg-slate-50 p-2 rounded">dates: 期間</div>
-                    <div className="bg-blue-100 p-2 rounded font-medium">
+                    <div className="bg-stone-100 p-2 rounded">dates: 期間</div>
+                    <div className="bg-stone-100 p-2 rounded font-medium">
                       memberIds: [メンバーID]
                     </div>
-                    <div className="bg-slate-50 p-2 rounded">
+                    <div className="bg-stone-100 p-2 rounded">
                       creator: 作成者ID
                     </div>
-                    <div className="bg-slate-50 p-2 rounded">
+                    <div className="bg-stone-100 p-2 rounded">
                       inviteCode: 招待コード
                     </div>
                   </div>
@@ -92,17 +71,17 @@ export default function DatabaseSchemaPage() {
                 {/* 関連線とラベル */}
                 <div className="flex items-center justify-center">
                   <div className="text-center">
-                    <div className="bg-white p-4 rounded-xl border-2 border-blue-300 shadow-md">
-                      <div className="font-semibold text-slate-800">
+                    <div className="bg-white p-4 rounded-xl border-2 border-stone-300 shadow-md">
+                      <div className="font-semibold text-stone-800">
                         リレーション
                       </div>
-                      <div className="text-sm text-slate-700 mt-2">
+                      <div className="text-sm text-stone-700 mt-2">
                         trips.memberIds
                         <br />
                         ↕<br />
                         users.id
                       </div>
-                      <div className="text-xs text-slate-600 mt-2">
+                      <div className="text-xs text-stone-600 mt-2">
                         1つの旅行に複数のユーザーが参加
                       </div>
                     </div>
@@ -110,24 +89,24 @@ export default function DatabaseSchemaPage() {
                 </div>
 
                 {/* Users Collection */}
-                <div className="bg-white p-6 rounded-2xl shadow-md border-2 border-slate-300 min-w-[280px]">
+                <div className="bg-white p-6 rounded-2xl shadow-md border-2 border-stone-300 min-w-[280px]">
                   <div className="text-center mb-4">
-                    <div className="font-bold text-slate-800 text-xl">
+                    <div className="font-bold text-stone-800 text-xl">
                       users
                     </div>
-                    <div className="text-sm text-slate-600">ユーザー情報</div>
+                    <div className="text-sm text-stone-600">ユーザー情報</div>
                   </div>
                   <div className="space-y-2 text-sm">
-                    <div className="bg-blue-100 p-2 rounded font-medium">
+                    <div className="bg-stone-100 p-2 rounded font-medium">
                       id: ユーザーID
                     </div>
-                    <div className="bg-slate-50 p-2 rounded">
+                    <div className="bg-stone-100 p-2 rounded">
                       email: メールアドレス
                     </div>
-                    <div className="bg-slate-50 p-2 rounded">
+                    <div className="bg-stone-100 p-2 rounded">
                       displayName: 表示名
                     </div>
-                    <div className="bg-slate-50 p-2 rounded">
+                    <div className="bg-stone-100 p-2 rounded">
                       photoURL: プロフィール画像
                     </div>
                   </div>
@@ -135,46 +114,46 @@ export default function DatabaseSchemaPage() {
               </div>
 
               {/* 下部のコンテンツ構造 */}
-              <div className="pt-8 border-t border-slate-300">
-                <h5 className="text-lg font-semibold text-slate-700 mb-4 text-center">
+              <div className="pt-8 border-t border-stone-300">
+                <h5 className="text-lg font-semibold text-stone-700 mb-4 text-center">
                   trips コレクション内の主要コンテンツ
                 </h5>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div className="bg-white p-4 rounded-xl border border-slate-300 shadow-sm">
+                  <div className="bg-white p-4 rounded-xl border border-stone-300 shadow-sm">
                     <div className="text-center">
-                      <div className="font-semibold text-slate-800">
+                      <div className="font-semibold text-stone-800">
                         schedules
                       </div>
-                      <div className="text-xs text-slate-600 mt-2">
+                      <div className="text-xs text-stone-600 mt-2">
                         日付別スケジュール
                       </div>
-                      <div className="text-xs text-slate-500 mt-1">
+                      <div className="text-xs text-stone-500 mt-1">
                         files, budget, transport含む
                       </div>
                     </div>
                   </div>
-                  <div className="bg-white p-4 rounded-xl border border-slate-300 shadow-sm">
+                  <div className="bg-white p-4 rounded-xl border border-stone-300 shadow-sm">
                     <div className="text-center">
-                      <div className="font-semibold text-slate-800">
+                      <div className="font-semibold text-stone-800">
                         members
                       </div>
-                      <div className="text-xs text-slate-600 mt-2">
+                      <div className="text-xs text-stone-600 mt-2">
                         メンバー詳細配列
                       </div>
-                      <div className="text-xs text-slate-500 mt-1">
+                      <div className="text-xs text-stone-500 mt-1">
                         memberIdsと連動
                       </div>
                     </div>
                   </div>
-                  <div className="bg-white p-4 rounded-xl border border-slate-300 shadow-sm">
+                  <div className="bg-white p-4 rounded-xl border border-stone-300 shadow-sm">
                     <div className="text-center">
-                      <div className="font-semibold text-slate-800">
+                      <div className="font-semibold text-stone-800">
                         checklists
                       </div>
-                      <div className="text-xs text-slate-600 mt-2">
+                      <div className="text-xs text-stone-600 mt-2">
                         チェックリスト配列
                       </div>
-                      <div className="text-xs text-slate-500 mt-1">
+                      <div className="text-xs text-stone-500 mt-1">
                         アイテムと完了状態
                       </div>
                     </div>
@@ -183,7 +162,7 @@ export default function DatabaseSchemaPage() {
               </div>
             </div>
 
-            <h2>データ構造</h2>
+            <h2 className="text-2xl font-bold mt-8 mb-4">データ構造</h2>
 
             <pre className="bg-stone-100 p-4 rounded-lg overflow-x-auto text-sm">
               {`trips/
@@ -221,9 +200,9 @@ export default function DatabaseSchemaPage() {
       └── updatedAt?: Date | string`}
             </pre>
 
-            <h2>型定義</h2>
+            <h2 className="text-2xl font-bold mt-8 mb-4">型定義</h2>
 
-            <h3>Trip</h3>
+            <h3 className="text-xl font-semibold mt-6 mb-3">Trip</h3>
             <pre className="bg-stone-100 p-4 rounded-lg overflow-x-auto text-sm">
               {`interface Trip {
   id: string;
@@ -240,7 +219,7 @@ export default function DatabaseSchemaPage() {
 }`}
             </pre>
 
-            <h3>Schedule</h3>
+            <h3 className="text-xl font-semibold mt-6 mb-3">Schedule</h3>
             <pre className="bg-stone-100 p-4 rounded-lg overflow-x-auto text-sm">
               {`interface Schedule {
   id: string;
@@ -255,7 +234,7 @@ export default function DatabaseSchemaPage() {
 }`}
             </pre>
 
-            <h3>Member</h3>
+            <h3 className="text-xl font-semibold mt-6 mb-3">Member</h3>
             <pre className="bg-stone-100 p-4 rounded-lg overflow-x-auto text-sm">
               {`interface Member {
   id: string;
