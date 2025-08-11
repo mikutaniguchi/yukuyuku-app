@@ -6,7 +6,7 @@ import { colorPalette } from '@/lib/constants';
 import Modal from './Modal';
 import ScheduleForm from './ScheduleForm';
 import ScheduleFiles from './ScheduleFiles';
-import Button from './Button';
+import { Button } from './buttons';
 import { Schedule, ScheduleFormData } from '@/types';
 
 interface EditScheduleModalProps {

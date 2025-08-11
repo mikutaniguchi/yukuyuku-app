@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { CheckSquare, Plus } from 'lucide-react';
 import { Trip, Checklist, ChecklistItem } from '@/types';
-import Button from './Button';
+import { Button } from './buttons';
 import { DragEndEvent } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
 import LoadingSpinner from './LoadingSpinner';

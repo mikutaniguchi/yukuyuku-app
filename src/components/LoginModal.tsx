@@ -7,7 +7,7 @@ import { colorPalette } from '../lib/constants';
 import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { loginAsGuest } from '@/lib/auth';
-import Button from './Button';
+import { Button } from './buttons';
 import ErrorMessage from './ErrorMessage';
 
 interface LoginModalProps {

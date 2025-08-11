@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Edit2, Trash2 } from 'lucide-react';
 import { ChecklistItem } from '@/types';
 import { colorPalette } from '@/lib/constants';
-import Button from './Button';
+import { Button } from './buttons';
 import InlineEditForm from './InlineEditForm';
 
 interface ChecklistItemComponentProps {

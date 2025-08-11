@@ -13,7 +13,7 @@ import { loginAsGuest } from '@/lib/auth';
 import { auth } from '@/lib/firebase';
 import { colorPalette } from '@/lib/constants';
 import LoginModal from '@/components/LoginModal';
-import Button from '@/components/Button';
+import { Button } from '@/components/buttons';
 import SchedulePage from '@/components/SchedulePage';
 import MemoPage from '@/components/MemoPage';
 import ChecklistPage from '@/components/ChecklistPage';

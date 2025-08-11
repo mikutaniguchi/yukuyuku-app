@@ -5,8 +5,7 @@ import { Settings, User as UserIcon, Trash2 } from 'lucide-react';
 import { User } from '@/types';
 import { colorPalette } from '@/lib/constants';
 import Modal from './Modal';
-import Button from './Button';
-import CancelButton from './CancelButton';
+import { DeleteButton, CancelButton } from './buttons';
 import InlineEditForm from './InlineEditForm';
 
 interface UserSettingsModalProps {
@@ -121,14 +120,11 @@ export default function UserSettingsModal({
                 <Trash2 className="w-4 h-4" />
                 危険な操作
               </h3>
-              <Button
+              <DeleteButton
                 onClick={() => setShowDeleteConfirm(true)}
-                color="sandRed"
                 size="md"
-                className="w-full"
-              >
-                アカウントを削除
-              </Button>
+                fullWidth
+              />
             </div>
           )}
         </div>
@@ -166,16 +162,12 @@ export default function UserSettingsModal({
           </div>
 
           <div className="flex gap-3 pt-4">
-            <Button
+            <DeleteButton
               onClick={handleDeleteAccount}
               disabled={deleteConfirmName !== user.name}
-              color="sandRed"
               size="md"
-              className="flex-1"
-            >
-              <Trash2 className="w-4 h-4" />
-              削除する
-            </Button>
+              fullWidth
+            />
             <CancelButton
               onClick={() => setShowDeleteConfirm(false)}
               size="md"

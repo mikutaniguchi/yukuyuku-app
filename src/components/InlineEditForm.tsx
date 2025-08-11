@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Check, X, Edit2 } from 'lucide-react';
-import Button from './Button';
+import { Button } from './buttons';
 
 interface InlineEditFormProps {
   value: string;

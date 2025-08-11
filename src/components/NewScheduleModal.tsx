@@ -5,7 +5,7 @@ import { Plus } from 'lucide-react';
 import { colorPalette } from '@/lib/constants';
 import Modal from './Modal';
 import ScheduleForm from './ScheduleForm';
-import Button from './Button';
+import { Button } from './buttons';
 import { ScheduleFormData } from '@/types';
 
 interface NewScheduleModalProps {

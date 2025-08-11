@@ -3,11 +3,11 @@
 import React, { useState } from 'react';
 import { Calendar } from 'lucide-react';
 import { colorPalette } from '@/lib/constants';
+import { LABELS } from '@/lib/labels';
 import Modal from './Modal';
 import FormInput from './FormInput';
 import ErrorMessage from './ErrorMessage';
-import Button from './Button';
-import CancelButton from './CancelButton';
+import { Button, CancelButton } from './buttons';
 
 interface CreateTripModalProps {
   onCreateTrip: (tripData: {
@@ -128,7 +128,7 @@ export default function CreateTripModal({
             color="abyssGreen"
             className="flex-1"
           >
-            作成する
+            {LABELS.CREATE}
           </Button>
         </div>
       </form>

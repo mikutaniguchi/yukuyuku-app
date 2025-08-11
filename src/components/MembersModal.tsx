@@ -5,8 +5,7 @@ import { Users, X, Copy, Check } from 'lucide-react';
 import { Trip, User } from '@/types';
 import { colorPalette, generateInviteLink } from '@/lib/constants';
 import Modal from './Modal';
-import Button from './Button';
-import CancelButton from './CancelButton';
+import { Button, CancelButton } from './buttons';
 
 interface MembersModalProps {
   isOpen: boolean;

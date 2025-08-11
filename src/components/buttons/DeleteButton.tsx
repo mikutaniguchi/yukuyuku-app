@@ -2,30 +2,33 @@
 
 import React from 'react';
 import Button from './Button';
+import { LABELS } from '@/lib/labels';
 
-interface CancelButtonProps {
+interface DeleteButtonProps {
   onClick: () => void;
   className?: string;
   size?: 'xs' | 'sm' | 'md' | 'lg';
   fullWidth?: boolean;
+  disabled?: boolean;
 }
 
-export default function CancelButton({
+export default function DeleteButton({
   onClick,
   className = '',
   size = 'md',
   fullWidth = false,
-}: CancelButtonProps) {
+  disabled = false,
+}: DeleteButtonProps) {
   return (
     <Button
       onClick={onClick}
-      variant="outlined"
-      color="strawBeige"
+      variant="danger"
       size={size}
       fullWidth={fullWidth}
       className={className}
+      disabled={disabled}
     >
-      キャンセル
+      {LABELS.DELETE}
     </Button>
   );
 }

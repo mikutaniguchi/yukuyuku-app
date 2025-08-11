@@ -36,7 +36,7 @@ import {
   updateUserNameInAllTrips,
   removeUserFromAllTrips,
 } from '@/lib/firestore';
-import Button from '@/components/Button';
+import { Button } from '@/components/buttons';
 import MembersModal from '@/components/MembersModal';
 import DeleteTripModal from '@/components/DeleteTripModal';
 import Header from '@/components/Header';

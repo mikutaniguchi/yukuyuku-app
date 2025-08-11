@@ -165,6 +165,7 @@ export default function ArchitecturePage() {
                   <li>• 動的インポートによるコード分割</li>
                   <li>• PWAによるオフライン対応</li>
                   <li>• 画像最適化（next/image）</li>
+                  <li>• 1MB以上の画像を自動圧縮（Canvas API使用）</li>
                 </ul>
               </div>
               <div className="bg-stone-100 p-4 rounded-lg">
@@ -194,9 +195,11 @@ export default function ArchitecturePage() {
               <ul className="list-disc ml-6 text-sm space-y-1">
                 <li>しおり印刷機能</li>
                 <li>PDFのオフライン対応</li>
-                <li>日付未定欄設置</li>
+                <li className="line-through text-stone-400">日付未定欄設置</li>
                 <li>ブックマーク機能</li>
-                <li>ダークモード対応</li>
+                <li className="line-through text-stone-400">
+                  ダークモード対応
+                </li>
                 <li>言語共通化（i18n）</li>
               </ul>
             </div>

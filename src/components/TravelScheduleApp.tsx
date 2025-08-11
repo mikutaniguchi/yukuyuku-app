@@ -37,7 +37,7 @@ import MemoPage from './MemoPage';
 import ChecklistPage from './ChecklistPage';
 import BudgetPage from './BudgetPage';
 import FilesPage from './FilesPage';
-import Button from './Button';
+import { Button } from './buttons';
 
 // モックデータ（初期は空）
 const initialTrips: Trip[] = [];
