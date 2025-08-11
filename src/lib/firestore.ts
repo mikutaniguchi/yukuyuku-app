@@ -41,54 +41,60 @@ export const createTrip = async (
 };
 
 export const getTrip = async (tripId: string) => {
-  const tripDoc = await getDoc(doc(db, 'trips', tripId));
-  if (tripDoc.exists()) {
-    const trip = { id: tripDoc.id, ...tripDoc.data() } as Trip;
+  try {
+    const tripDoc = await getDoc(doc(db, 'trips', tripId));
+    if (tripDoc.exists()) {
+      const trip = { id: tripDoc.id, ...tripDoc.data() } as Trip;
 
-    // memberIdsとmembersの同期チェック
-    const memberIds = trip.memberIds || [];
-    const members = trip.members || [];
-    const memberIdsInMembers = members.map((m) => m.id);
+      // memberIdsとmembersの同期チェック
+      const memberIds = trip.memberIds || [];
+      const members = trip.members || [];
+      const memberIdsInMembers = members.map((m) => m.id);
 
-    // memberIdsにあるがmembersにないメンバーを見つける
-    const missingMemberIds = memberIds.filter(
-      (id) => !memberIdsInMembers.includes(id)
-    );
+      // memberIdsにあるがmembersにないメンバーを見つける
+      const missingMemberIds = memberIds.filter(
+        (id) => !memberIdsInMembers.includes(id)
+      );
 
-    if (missingMemberIds.length > 0) {
-      // 不足しているメンバー情報を追加
-      const missingMembers = missingMemberIds.map((id, index) => ({
-        id: id,
-        tripId: trip.id,
-        userId: id,
-        name:
-          id === trip.creator
-            ? '作成者'
-            : `参加者 ${members.length + index + 1}`,
-        email: '',
-        type: 'google' as const,
-        joinedAt: trip.createdAt || new Date().toISOString(),
-      }));
+      if (missingMemberIds.length > 0) {
+        // 不足しているメンバー情報を追加
+        const missingMembers = missingMemberIds.map((id, index) => ({
+          id: id,
+          tripId: trip.id,
+          userId: id,
+          name:
+            id === trip.creator
+              ? '作成者'
+              : `参加者 ${members.length + index + 1}`,
+          email: '',
+          type: 'google' as const,
+          joinedAt: trip.createdAt || new Date().toISOString(),
+        }));
 
-      const updatedMembers = [...members, ...missingMembers];
+        const updatedMembers = [...members, ...missingMembers];
 
-      // Firestoreを更新
-      try {
-        await updateDoc(doc(db, 'trips', tripId), {
-          members: updatedMembers,
-          updatedAt: serverTimestamp(),
-        });
+        // Firestoreを更新
+        try {
+          await updateDoc(doc(db, 'trips', tripId), {
+            members: updatedMembers,
+            updatedAt: serverTimestamp(),
+          });
 
-        return { ...trip, members: updatedMembers };
-      } catch (error) {
-        console.error('Failed to update members:', error);
-        return trip;
+          return { ...trip, members: updatedMembers };
+        } catch (error) {
+          console.error('Failed to update members:', error);
+          return trip;
+        }
       }
-    }
 
-    return trip;
+      return trip;
+    }
+    return null;
+  } catch (error) {
+    console.error('Error getting trip:', error);
+    // エラーが発生した場合もnullを返して、呼び出し元で404処理させる
+    return null;
   }
-  return null;
 };
 
 export const getUserTrips = async (userId: string) => {

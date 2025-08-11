@@ -139,7 +139,9 @@ export default function TripLayout({ children }: TripLayoutProps) {
 
       try {
         // 参加直後の場合は少し待機してからデータを取得
-        const isFromJoin = document.referrer.includes('/join/');
+        const isFromJoin =
+          typeof document !== 'undefined' &&
+          document.referrer.includes('/join/');
         if (isFromJoin) {
           await new Promise((resolve) => setTimeout(resolve, 1000));
         }
@@ -152,7 +154,13 @@ export default function TripLayout({ children }: TripLayoutProps) {
         }
       } catch (error) {
         console.error('Failed to load trip:', error);
-        notFound();
+        // エラーの種類に関わらず404ページにリダイレクト
+        try {
+          notFound();
+        } catch {
+          // notFound()でエラーが発生した場合は手動で404にリダイレクト
+          window.location.href = '/not-found';
+        }
       } finally {
         setLoading(false);
       }
