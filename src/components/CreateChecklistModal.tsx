@@ -4,8 +4,7 @@ import React, { useState } from 'react';
 import { Plus, X } from 'lucide-react';
 import { Trip, Checklist, ChecklistItem } from '@/types';
 import { colorPalette } from '@/lib/constants';
-import { LABELS } from '@/lib/labels';
-import { Button, CancelButton } from './buttons';
+import { Button, CancelButton, SaveButton } from './buttons';
 import Modal from './Modal';
 
 interface CreateChecklistModalProps {
@@ -126,15 +125,12 @@ export default function CreateChecklistModal({
       </div>
       <div className="flex gap-3 pt-4">
         <CancelButton onClick={handleClose} className="flex-1" />
-        <Button
+        <SaveButton
           onClick={addNewChecklistCategory}
           disabled={!newChecklist.name.trim()}
-          variant="filled"
-          color="roseQuartz"
+          type="create"
           className="flex-1"
-        >
-          {LABELS.CREATE}
-        </Button>
+        />
       </div>
     </Modal>
   );

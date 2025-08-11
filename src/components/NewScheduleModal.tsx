@@ -5,7 +5,7 @@ import { Plus } from 'lucide-react';
 import { colorPalette } from '@/lib/constants';
 import Modal from './Modal';
 import ScheduleForm from './ScheduleForm';
-import { Button } from './buttons';
+import { SaveButton } from './buttons';
 import { ScheduleFormData } from '@/types';
 
 interface NewScheduleModalProps {
@@ -39,16 +39,13 @@ export default function NewScheduleModal({
     (newSchedule.date === 'unscheduled' || newSchedule.startTime !== '');
 
   const footerButton = (
-    <Button
+    <SaveButton
       onClick={onSubmit}
       disabled={!isValid}
-      color="abyssGreen"
+      type="add"
       size="md"
       className="w-full"
-    >
-      <Plus className="w-4 h-4" />
-      追加
-    </Button>
+    />
   );
 
   return (

@@ -1,12 +1,12 @@
 'use client';
 
 import React from 'react';
-import { Edit2, Save, Trash2 } from 'lucide-react';
+import { Edit2, Trash2 } from 'lucide-react';
 import { colorPalette } from '@/lib/constants';
 import Modal from './Modal';
 import ScheduleForm from './ScheduleForm';
 import ScheduleFiles from './ScheduleFiles';
-import { Button } from './buttons';
+import { Button, SaveButton } from './buttons';
 import { Schedule, ScheduleFormData } from '@/types';
 
 interface EditScheduleModalProps {
@@ -71,16 +71,13 @@ export default function EditScheduleModal({
       >
         <Trash2 className="w-5 h-5" />
       </Button>
-      <Button
+      <SaveButton
         onClick={onSave}
         disabled={!isValid}
-        color="abyssGreen"
+        type="save"
         size="md"
         className="flex-1"
-      >
-        <Save className="w-4 h-4" />
-        保存
-      </Button>
+      />
     </div>
   );
 

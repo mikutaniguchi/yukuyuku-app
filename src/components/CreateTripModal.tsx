@@ -3,11 +3,10 @@
 import React, { useState } from 'react';
 import { Calendar } from 'lucide-react';
 import { colorPalette } from '@/lib/constants';
-import { LABELS } from '@/lib/labels';
 import Modal from './Modal';
 import FormInput from './FormInput';
 import ErrorMessage from './ErrorMessage';
-import { Button, CancelButton } from './buttons';
+import { CancelButton, SaveButton } from './buttons';
 
 interface CreateTripModalProps {
   onCreateTrip: (tripData: {
@@ -29,9 +28,7 @@ export default function CreateTripModal({
   const [endDate, setEndDate] = useState('');
   const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const handleSubmit = () => {
     if (!title.trim()) {
       setError('旅行名を入力してください');
       return;
@@ -67,7 +64,7 @@ export default function CreateTripModal({
       iconColor={colorPalette.aquaBlue.bg}
       showCloseButton={!!onClose}
     >
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="space-y-4">
         <ErrorMessage message={error} />
 
         <div>
@@ -122,16 +119,14 @@ export default function CreateTripModal({
 
         <div className="flex gap-3 pt-4">
           {onClose && <CancelButton onClick={onClose} className="flex-1" />}
-          <Button
-            type="submit"
+          <SaveButton
+            onClick={handleSubmit}
             disabled={!title.trim() || !startDate || !endDate}
-            color="abyssGreen"
+            type="create"
             className="flex-1"
-          >
-            {LABELS.CREATE}
-          </Button>
+          />
         </div>
-      </form>
+      </div>
     </Modal>
   );
 }

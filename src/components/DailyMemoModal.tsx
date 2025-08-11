@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar } from 'lucide-react';
 import Modal from './Modal';
-import { Button, CancelButton, DeleteButton } from './buttons';
+import { CancelButton, DeleteButton, SaveButton } from './buttons';
 import { colorPalette } from '@/lib/constants';
 
 interface DailyMemoModalProps {
@@ -127,15 +127,13 @@ export default function DailyMemoModal({
           size="md"
           className={currentMemo && onDelete ? 'flex-1' : 'flex-1'}
         />
-        <Button
+        <SaveButton
           onClick={handleSave}
           disabled={!text.trim()}
-          color="abyssGreen"
+          type="save"
           size="md"
           className={currentMemo && onDelete ? 'flex-2' : 'flex-1'}
-        >
-          保存
-        </Button>
+        />
       </div>
     </Modal>
   );
