@@ -13,6 +13,7 @@ import {
   Footprints,
   Package,
   PackageOpen,
+  FileText,
 } from 'lucide-react';
 import { Trip, Schedule, ScheduleFormData } from '@/types';
 import {
@@ -28,6 +29,7 @@ import AddScheduleButton from './AddScheduleButton';
 import { processAndUploadFile, deleteFileFromStorage } from '@/lib/fileStorage';
 import NewScheduleModal from './NewScheduleModal';
 import EditScheduleModal from './EditScheduleModal';
+import DailyMemoModal from './DailyMemoModal';
 import ImageModal from './ImageModal';
 import PDFModal from './PDFModal';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -62,6 +64,8 @@ export default function SchedulePage({
     new Set()
   );
   const [allExpanded, setAllExpanded] = useState(false);
+  const [showDailyMemoModal, setShowDailyMemoModal] = useState(false);
+  const [selectedMemoDate, setSelectedMemoDate] = useState<string>('');
 
   // ユニークIDを生成する関数
   const generateUniqueId = () => {
@@ -509,6 +513,46 @@ export default function SchedulePage({
     });
   };
 
+  const handleMemoClick = (date: string) => {
+    // 該当日のメモの実際の開始日を特定
+    let actualMemoDate = date;
+
+    if (trip.dailyMemos) {
+      for (const [memoDate, memo] of Object.entries(trip.dailyMemos)) {
+        const memoStartDate = new Date(memoDate);
+        const currentDate = new Date(date);
+        const diffDays = Math.floor(
+          (currentDate.getTime() - memoStartDate.getTime()) /
+            (1000 * 60 * 60 * 24)
+        );
+
+        if (diffDays >= 0 && diffDays < memo.nights) {
+          actualMemoDate = memoDate; // 実際のメモの開始日を使用
+          break;
+        }
+      }
+    }
+
+    setSelectedMemoDate(actualMemoDate);
+    setShowDailyMemoModal(true);
+  };
+
+  const handleMemoSave = (text: string, nights: number) => {
+    onTripUpdate(trip.id, (currentTrip) => {
+      const updatedDailyMemos = { ...currentTrip.dailyMemos };
+      updatedDailyMemos[selectedMemoDate] = { text, nights };
+      return { ...currentTrip, dailyMemos: updatedDailyMemos };
+    });
+  };
+
+  const handleMemoDelete = () => {
+    onTripUpdate(trip.id, (currentTrip) => {
+      const updatedDailyMemos = { ...currentTrip.dailyMemos };
+      delete updatedDailyMemos[selectedMemoDate];
+      return { ...currentTrip, dailyMemos: updatedDailyMemos };
+    });
+  };
+
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] lg:grid-cols-[auto_1fr] gap-3 md:gap-6">
@@ -610,9 +654,48 @@ export default function SchedulePage({
                 className="bg-white rounded-xl shadow-sm border border-stone-200 p-3 md:p-6 scroll-mt-6"
               >
                 <div className="mb-6">
-                  <h2 className="text-xl font-semibold text-stone-800">
-                    {formatDate(date)}
-                  </h2>
+                  <div
+                    className="flex items-center gap-3 cursor-pointer"
+                    onClick={() => handleMemoClick(date)}
+                  >
+                    <h2 className="text-xl font-semibold text-stone-800">
+                      {formatDate(date)}
+                    </h2>
+                    {/* メモ表示 - 未入力時はアイコンのみ */}
+                    {/* メモの表示制御 - 連泊数により複数日表示 */}
+                    {(() => {
+                      // 該当日のメモを検索（連泊を考慮）
+                      let memoForDate = null;
+
+                      if (trip.dailyMemos) {
+                        for (const [memoDate, memo] of Object.entries(
+                          trip.dailyMemos
+                        )) {
+                          const memoStartDate = new Date(memoDate);
+                          const currentDate = new Date(date);
+                          const diffDays = Math.floor(
+                            (currentDate.getTime() - memoStartDate.getTime()) /
+                              (1000 * 60 * 60 * 24)
+                          );
+
+                          if (diffDays >= 0 && diffDays < memo.nights) {
+                            memoForDate = memo;
+                            break;
+                          }
+                        }
+                      }
+
+                      return memoForDate ? (
+                        <span className="text-xl font-semibold text-stone-800">
+                          {memoForDate.text}
+                        </span>
+                      ) : (
+                        <div className="flex items-center gap-1 text-stone-400 hover:text-stone-600 transition-colors">
+                          <FileText className="w-4 h-4" />
+                        </div>
+                      );
+                    })()}
+                  </div>
                 </div>
 
                 <div className="space-y-4">
@@ -1036,6 +1119,17 @@ export default function SchedulePage({
           onFilesUpload={handleFilesUpload}
         />
       )}
+
+      <DailyMemoModal
+        isOpen={showDailyMemoModal}
+        date={selectedMemoDate}
+        currentMemo={trip.dailyMemos?.[selectedMemoDate]}
+        onSave={handleMemoSave}
+        onDelete={
+          trip.dailyMemos?.[selectedMemoDate] ? handleMemoDelete : undefined
+        }
+        onClose={() => setShowDailyMemoModal(false)}
+      />
     </>
   );
 }

@@ -91,6 +91,12 @@ export interface Trip {
   memo: string;
   schedules: Record<string, Schedule[]>;
   checklists: Checklist[];
+  dailyMemos?: {
+    [date: string]: {
+      text: string;
+      nights: number;
+    };
+  };
   guestAccessEnabled?: boolean; // ゲストアクセスの有効/無効（デフォルト: true）
   createdAt?: Date | string;
   updatedAt?: Date | string;

@@ -40,7 +40,7 @@ export default function NotFound() {
 
           {/* エラーメッセージ */}
           <h1 className="text-6xl font-bold text-stone-800 mb-4">404</h1>
-          <h2 className="text-2xl font-semibold text-stone-700 mb-2">
+          <h2 className="text-xl font-bold text-stone-700 mb-2">
             ページが見つかりません
           </h2>
 

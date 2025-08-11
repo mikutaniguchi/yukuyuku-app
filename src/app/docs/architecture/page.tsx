@@ -200,7 +200,6 @@ export default function ArchitecturePage() {
                 <li className="line-through text-stone-400">
                   ダークモード対応
                 </li>
-                <li>言語共通化（i18n）</li>
               </ul>
             </div>
           </div>
