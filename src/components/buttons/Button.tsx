@@ -64,8 +64,11 @@ export default function Button({
         };
       case 'danger':
         return {
-          className: 'hover:bg-red-700',
-          style: { backgroundColor: '#dc2626', color: 'white' },
+          className: '',
+          style: {
+            backgroundColor: colorConfig.bg,
+            color: colorConfig.text,
+          },
         };
       default: // 'filled'
         return {

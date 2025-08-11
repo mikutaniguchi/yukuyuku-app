@@ -12,7 +12,8 @@ import {
   serverTimestamp,
 } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
-import { db } from './firebase';
+import { ref, listAll, deleteObject } from 'firebase/storage';
+import { db, storage } from './firebase';
 import { Trip, Schedule, Checklist, Memo, Tag, Member, Budget } from '@/types';
 
 // Trips
@@ -267,8 +268,93 @@ export const updateTrip = async (tripId: string, tripData: Partial<Trip>) => {
 };
 
 export const deleteTrip = async (tripId: string) => {
-  const tripRef = doc(db, 'trips', tripId);
-  await deleteDoc(tripRef);
+  try {
+    // 1. スケジュールを削除
+    const schedulesQuery = query(
+      collection(db, 'schedules'),
+      where('tripId', '==', tripId)
+    );
+    const schedulesSnapshot = await getDocs(schedulesQuery);
+    const deleteSchedulePromises = schedulesSnapshot.docs.map((doc) =>
+      deleteDoc(doc.ref)
+    );
+
+    // 2. チェックリストを削除（もしFirestoreに保存されている場合）
+    const checklistsQuery = query(
+      collection(db, 'checklists'),
+      where('tripId', '==', tripId)
+    );
+    const checklistsSnapshot = await getDocs(checklistsQuery);
+    const deleteChecklistPromises = checklistsSnapshot.docs.map((doc) =>
+      deleteDoc(doc.ref)
+    );
+
+    // 3. メモを削除（もしFirestoreに保存されている場合）
+    const memosQuery = query(
+      collection(db, 'memos'),
+      where('tripId', '==', tripId)
+    );
+    const memosSnapshot = await getDocs(memosQuery);
+    const deleteMemoPromises = memosSnapshot.docs.map((doc) =>
+      deleteDoc(doc.ref)
+    );
+
+    // 4. 予算情報を削除（もしFirestoreに保存されている場合）
+    const budgetsQuery = query(
+      collection(db, 'budgets'),
+      where('tripId', '==', tripId)
+    );
+    const budgetsSnapshot = await getDocs(budgetsQuery);
+    const deleteBudgetPromises = budgetsSnapshot.docs.map((doc) =>
+      deleteDoc(doc.ref)
+    );
+
+    // 5. Storage内のファイルを削除
+    const storageRef = ref(storage, `trips/${tripId}`);
+    let deleteStoragePromises: Promise<void>[] = [];
+    try {
+      const filesList = await listAll(storageRef);
+      deleteStoragePromises = filesList.items.map((fileRef) =>
+        deleteObject(fileRef)
+      );
+      // サブフォルダも削除
+      for (const folderRef of filesList.prefixes) {
+        const subFilesList = await listAll(folderRef);
+        const subDeletePromises = subFilesList.items.map((fileRef) =>
+          deleteObject(fileRef)
+        );
+        deleteStoragePromises.push(...subDeletePromises);
+      }
+    } catch {
+      // ストレージにファイルがない場合もあるのでエラーを無視
+      console.log(`No storage files found for trip ${tripId}`);
+    }
+
+    // 6. 招待コードを削除
+    const inviteRef = doc(db, 'invites', tripId);
+    const deleteInvitePromise = deleteDoc(inviteRef).catch(() => {
+      // 招待コードが存在しない場合もあるのでエラーを無視
+    });
+
+    // 7. すべての削除を並列実行
+    await Promise.all([
+      ...deleteSchedulePromises,
+      ...deleteChecklistPromises,
+      ...deleteMemoPromises,
+      ...deleteBudgetPromises,
+      ...deleteStoragePromises,
+      deleteInvitePromise,
+    ]);
+
+    // 8. 最後に旅行本体を削除
+    const tripRef = doc(db, 'trips', tripId);
+    await deleteDoc(tripRef);
+
+    console.log(`Trip ${tripId} and all related data deleted successfully`);
+  } catch (error) {
+    console.error('Error deleting trip and related data:', error);
+    throw error;
+  }
 };
 
 // Schedules

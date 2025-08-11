@@ -22,7 +22,8 @@ export default function DeleteButton({
   return (
     <Button
       onClick={onClick}
-      variant="danger"
+      variant="filled"
+      color="sandRed"
       size={size}
       fullWidth={fullWidth}
       className={className}

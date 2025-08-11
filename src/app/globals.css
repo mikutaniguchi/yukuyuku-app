@@ -77,6 +77,20 @@ select:disabled {
   animation: fadeInSubtle 0.2s ease-out both;
 }
 
+/* ゆっくり回転アニメーション */
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 3s linear infinite;
+}
+
 /* ダークモード用の追加スタイル */
 .dark {
   /* カード・モーダルの背景 */
