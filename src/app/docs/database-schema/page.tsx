@@ -106,9 +106,6 @@ export default function DatabaseSchemaPage() {
                     <div className="bg-stone-100 p-2 rounded">
                       displayName: 表示名
                     </div>
-                    <div className="bg-stone-100 p-2 rounded">
-                      photoURL: プロフィール画像
-                    </div>
                   </div>
                 </div>
               </div>
@@ -239,10 +236,44 @@ export default function DatabaseSchemaPage() {
               {`interface Member {
   id: string;
   name: string;
-  type: 'google' | 'guest' | 'email';
+  type: 'google' | 'guest';
   email?: string;
 }`}
             </pre>
+
+            <h2 className="text-2xl font-bold mt-8 mb-4">実装上の注意点</h2>
+            <div className="space-y-4">
+              <div className="bg-stone-100 p-4 rounded-lg">
+                <h4 className="font-semibold mb-2">IDの型について</h4>
+                <p className="text-sm text-stone-700">
+                  すべてのIDフィールドはstring型で定義されています。
+                  FirestoreのドキュメントIDは文字列として生成されるため、
+                  型の一貫性を保つためにstring型を使用しています。
+                  一部のIDは`Date.now().toString()`で生成される数値ベースのIDですが、
+                  これも文字列として扱います。
+                </p>
+              </div>
+
+              <div className="bg-stone-100 p-4 rounded-lg">
+                <h4 className="font-semibold mb-2">日付の保存形式について</h4>
+                <p className="text-sm text-stone-700">
+                  日付フィールドは文字列型（YYYY-MM-DD形式）で保存されています。
+                  これにより、タイムゾーンの問題を回避し、文字列のまま比較・表示が可能です。
+                  必要に応じてJavaScriptのDateオブジェクトに変換して使用します。
+                </p>
+              </div>
+
+              <div className="bg-stone-100 p-4 rounded-lg">
+                <h4 className="font-semibold mb-2">
+                  ファイルストレージについて
+                </h4>
+                <p className="text-sm text-stone-700">
+                  アップロードされたファイルはFirebase Storageに保存され、
+                  Firestoreにはファイルのメタデータ（URL、パス、サイズなど）のみが保存されます。
+                  1MB以上の画像は自動的に圧縮されてからアップロードされます。
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>

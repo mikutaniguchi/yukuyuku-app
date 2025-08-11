@@ -188,20 +188,6 @@ export default function ArchitecturePage() {
                 <li>本番環境への自動反映</li>
               </ol>
             </div>
-
-            <h2 className="text-2xl font-bold mt-8 mb-4">今後の拡張予定</h2>
-            <div className="bg-stone-100 p-4 rounded-lg">
-              <h4 className="font-semibold mb-2">機能拡張</h4>
-              <ul className="list-disc ml-6 text-sm space-y-1">
-                <li>しおり印刷機能</li>
-                <li>PDFのオフライン対応</li>
-                <li className="line-through text-stone-400">日付未定欄設置</li>
-                <li>ブックマーク機能</li>
-                <li className="line-through text-stone-400">
-                  ダークモード対応
-                </li>
-              </ul>
-            </div>
           </div>
         </div>
       </div>

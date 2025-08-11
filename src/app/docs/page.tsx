@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { FileText, Database } from 'lucide-react';
+import { FileText, Database, List } from 'lucide-react';
 import { colorPalette } from '@/lib/constants';
 
 export default function DocsPage() {
@@ -10,6 +10,12 @@ export default function DocsPage() {
 
   // ドキュメントセクション
   const docSections = [
+    {
+      title: '機能一覧',
+      icon: List,
+      description: 'アプリの全機能の詳細説明',
+      link: '/docs/features',
+    },
     {
       title: 'アーキテクチャ',
       icon: FileText,
@@ -72,22 +78,12 @@ export default function DocsPage() {
             </li>
             <li>
               <a
-                href="https://console.firebase.google.com"
+                href="https://zenn.dev/miku/articles/b8a39e5bdf0d89"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-stone-800 underline"
               >
-                Firebase Console
-              </a>
-            </li>
-            <li>
-              <a
-                href="https://vercel.com/dashboard"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-stone-800 underline"
-              >
-                Vercel Dashboard
+                Zenn記事: 旅行計画アプリ「yukuyuku」を作った話
               </a>
             </li>
           </ul>

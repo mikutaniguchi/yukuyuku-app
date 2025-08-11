@@ -12,7 +12,7 @@ export interface Member {
   tripId?: string;
   userId?: string;
   name: string;
-  type: 'google' | 'guest' | 'email';
+  type: 'google' | 'guest';
   email?: string;
   joinedAt?: Date | string;
 }
