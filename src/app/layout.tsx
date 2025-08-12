@@ -33,6 +33,23 @@ export const metadata: Metadata = {
     shortcut: '/favicon.ico',
     apple: '/apple-touch-icon.png',
   },
+  openGraph: {
+    title: 'ゆくゆく - 旅行計画アプリ',
+    description: 'みんなで作る旅行計画アプリ',
+    images: ['/icon.png'],
+    type: 'website',
+    siteName: 'ゆくゆく',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'ゆくゆく - 旅行計画アプリ',
+    description: 'みんなで作る旅行計画アプリ',
+    images: ['/icon.png'],
+  },
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export const viewport = {
