@@ -136,26 +136,35 @@ export default function SchedulePage({
 
   // スクロール時に現在の日付を検出
   useEffect(() => {
-    const handleScroll = () => {
-      const dateElements = tripDates.map((date) => ({
-        date,
-        element: document.getElementById(`schedule-${date}`),
-      }));
+    let timeoutId: NodeJS.Timeout;
 
-      // ビューポート内の要素を検出
-      for (const { date, element } of dateElements) {
-        if (element) {
-          const rect = element.getBoundingClientRect();
-          if (rect.top <= 100 && rect.bottom > 100) {
-            onDateChange(date);
-            break;
+    const handleScroll = () => {
+      // デバウンス処理：連続したスクロールイベントを制限
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        const dateElements = tripDates.map((date) => ({
+          date,
+          element: document.getElementById(`schedule-${date}`),
+        }));
+
+        // ビューポート内の要素を検出
+        for (const { date, element } of dateElements) {
+          if (element) {
+            const rect = element.getBoundingClientRect();
+            if (rect.top <= 100 && rect.bottom > 100) {
+              onDateChange(date);
+              break;
+            }
           }
         }
-      }
+      }, 100); // 100ms のデバウンス
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      clearTimeout(timeoutId);
+    };
   }, [tripDates, onDateChange]);
 
   const toggleScheduleExpansion = (scheduleId: string) => {

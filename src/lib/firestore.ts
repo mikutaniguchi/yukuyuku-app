@@ -145,7 +145,6 @@ export const getInviteInfo = async (inviteCode: string) => {
     }
 
     // invitesコレクションにデータがない場合はnullを返す
-    console.log('Invite document not found for code:', inviteCode);
     return null;
   } catch (error) {
     console.error('Failed to get invite info:', error);
@@ -333,7 +332,6 @@ export const deleteTrip = async (tripId: string) => {
       }
     } catch {
       // ストレージにファイルがない場合もあるのでエラーを無視
-      console.log(`No storage files found for trip ${tripId}`);
     }
 
     // 6. 招待コードを削除
@@ -355,8 +353,6 @@ export const deleteTrip = async (tripId: string) => {
     // 8. 最後に旅行本体を削除
     const tripRef = doc(db, 'trips', tripId);
     await deleteDoc(tripRef);
-
-    console.log(`Trip ${tripId} and all related data deleted successfully`);
   } catch (error) {
     console.error('Error deleting trip and related data:', error);
     throw error;

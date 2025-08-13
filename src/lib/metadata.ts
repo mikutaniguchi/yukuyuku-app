@@ -2,12 +2,10 @@ import { Metadata } from 'next';
 
 // 招待ページ用のOGPメタデータ生成
 export async function generateInviteMetadata(
-  inviteCode: string
+  _inviteCode: string
 ): Promise<Metadata> {
   // TODO: Admin SDKを使用してサーバーサイドでFirestoreアクセスを実装
   // 現在はクライアントSDKのためサーバーサイドでエラーが発生
-
-  console.log('generateInviteMetadata called for:', inviteCode);
 
   // 一時的にフォールバックのみ使用
   return generateDefaultInviteMetadata();

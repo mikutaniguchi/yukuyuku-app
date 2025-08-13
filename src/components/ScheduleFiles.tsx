@@ -112,6 +112,7 @@ export default function ScheduleFiles({
                           alt={file.name}
                           fill
                           unoptimized
+                          loading="lazy"
                           className="object-cover rounded-lg hover:opacity-80 transition-opacity"
                         />
                       </div>

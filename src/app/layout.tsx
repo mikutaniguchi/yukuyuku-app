@@ -16,6 +16,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_BASE_URL || 'https://yukuyuku-app.vercel.app'
+  ),
   title: 'ゆくゆく - 旅行計画アプリ',
   description: 'みんなで作る旅行計画アプリ',
   manifest: '/manifest.json',
