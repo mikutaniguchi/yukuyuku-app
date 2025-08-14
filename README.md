@@ -51,16 +51,13 @@ yarn install
 ```
 
 3. 環境変数を設定
-   `.env.local`ファイルを作成し、以下のFirebase設定を追加：
+   `.env.example`を`.env.local`にコピーして、Firebase設定を追加：
 
-```env
-NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_auth_domain
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_storage_bucket
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
-NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
+```bash
+cp .env.example .env.local
 ```
+
+その後、`.env.local`ファイルを編集して実際の値を設定してください。
 
 4. 開発サーバーを起動
 
@@ -70,7 +67,8 @@ npm run dev
 yarn dev
 ```
 
-5. ブラウザで [http://localhost:3000](http://localhost:3000) を開く
+5. ブラウザが自動的に [http://localhost:3003](http://localhost:3003) を開きます
+   （自動で開かない場合は手動でアクセスしてください）
 
 ## テスト
 
