@@ -74,10 +74,8 @@ export default function InlineEditForm({
   const handleSave = () => {
     const trimmedValue = editValue.trim();
     if (required && !trimmedValue) return;
-    if (trimmedValue === value) {
-      onCancel();
-      return;
-    }
+    // 値が変わっていなくても、ユーザーが保存ボタンを押したらonSaveを呼ぶ
+    // これにより、親コンポーネントで適切に処理できる
     onSave(trimmedValue);
   };
 
@@ -97,8 +95,8 @@ export default function InlineEditForm({
   };
 
   const isValid = required ? editValue.trim() !== '' : true;
-  const hasChanged = editValue.trim() !== value;
-  const canSave = isValid && hasChanged;
+  // 値が変わっていなくても保存ボタンを有効にする（ユーザーが保存したい場合があるため）
+  const canSave = isValid;
 
   if (!isEditing) {
     return (

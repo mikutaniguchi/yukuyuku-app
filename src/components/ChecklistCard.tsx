@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { Settings, Edit2, Trash2 } from 'lucide-react';
 import { Checklist, ChecklistItem } from '@/types';
 import { colorPalette } from '@/lib/constants';
@@ -36,9 +36,8 @@ interface ChecklistCardProps {
   swipedItem: string | null;
   onSetShowSettings: (id: string | null) => void;
   onEditChecklistName: (id: string, name: string) => void;
-  onSaveChecklistName: (id: string) => void;
+  onSaveChecklistName: (id: string, newName?: string) => void;
   onCancelEditChecklistName: () => void;
-  onSetTempChecklistName: (name: string) => void;
   onDeleteChecklist: (id: string) => void;
   onDragEnd: (event: DragEndEvent, checklistId: string) => void;
   onToggleChecklistItem: (checklistId: string, itemId: string) => void;
@@ -66,7 +65,6 @@ export default function ChecklistCard({
   onEditChecklistName,
   onSaveChecklistName,
   onCancelEditChecklistName,
-  onSetTempChecklistName,
   onDeleteChecklist,
   onDragEnd,
   onToggleChecklistItem,
@@ -81,6 +79,7 @@ export default function ChecklistCard({
   onChecklistSettingsChange,
 }: ChecklistCardProps) {
   const settingsRef = useRef<HTMLDivElement>(null);
+  const [newItemText, setNewItemText] = useState('');
 
   // ドラッグ&ドロップのセンサー設定
   const sensors = useSensors(
@@ -131,8 +130,8 @@ export default function ChecklistCard({
               onEditChecklistName(checklist.id, checklist.name)
             }
             onSave={(newName) => {
-              onSetTempChecklistName(newName);
-              onSaveChecklistName(checklist.id);
+              // 新しい名前を直接渡して保存
+              onSaveChecklistName(checklist.id, newName);
             }}
             onCancel={onCancelEditChecklistName}
             displayClassName="text-lg font-semibold text-stone-800"
@@ -242,22 +241,23 @@ export default function ChecklistCard({
       </DndContext>
 
       {canEdit && (
-        <div>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (newItemText.trim()) {
+              onAddChecklistItem(checklist.id, newItemText.trim());
+              setNewItemText('');
+            }
+          }}
+        >
           <input
             type="text"
             placeholder="新しい項目を追加..."
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                const value = e.currentTarget.value;
-                if (value.trim()) {
-                  onAddChecklistItem(checklist.id, value.trim());
-                  e.currentTarget.value = '';
-                }
-              }
-            }}
+            value={newItemText}
+            onChange={(e) => setNewItemText(e.target.value)}
             className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-sm text-stone-900 bg-white"
           />
-        </div>
+        </form>
       )}
     </Card>
   );

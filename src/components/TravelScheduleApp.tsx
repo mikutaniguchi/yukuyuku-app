@@ -154,7 +154,14 @@ export default function TravelApp() {
         inviteCode: Math.random().toString(36).substring(2, 8).toUpperCase(),
         memo: '',
         schedules: {},
-        checklists: [],
+        checklists: [
+          {
+            id: Date.now().toString(),
+            tripId: '', // tripIdは後で設定される
+            name: 'やること',
+            items: [],
+          },
+        ],
       };
 
       const tripId = await createTripInFirestore(newTrip);

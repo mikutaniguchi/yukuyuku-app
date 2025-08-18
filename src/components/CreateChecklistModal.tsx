@@ -62,7 +62,7 @@ export default function CreateChecklistModal({
       <div className="space-y-4">
         <input
           type="text"
-          placeholder="リスト名"
+          placeholder="リスト名（例：持ち物、旅行前にやること）"
           value={newChecklist.name}
           onChange={(e) =>
             setNewChecklist({ ...newChecklist, name: e.target.value })

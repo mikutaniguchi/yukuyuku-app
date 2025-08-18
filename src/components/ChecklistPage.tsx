@@ -22,6 +22,32 @@ export default function ChecklistPage({
   canEdit = true,
 }: ChecklistPageProps) {
   const [showNewChecklistModal, setShowNewChecklistModal] = useState(false);
+  const [pendingSortChecklistId, setPendingSortChecklistId] = useState<
+    string | null
+  >(null);
+
+  // pendingSortChecklistIdが変更されたときの処理
+  useEffect(() => {
+    if (!pendingSortChecklistId) return;
+
+    const timer = setTimeout(() => {
+      onTripUpdate(trip.id, (currentTrip) => ({
+        ...currentTrip,
+        checklists: currentTrip.checklists.map((checklist) => {
+          if (checklist.id === pendingSortChecklistId) {
+            const sortedItems = [...checklist.items].sort(
+              (a, b) => Number(a.checked) - Number(b.checked)
+            );
+            return { ...checklist, items: sortedItems };
+          }
+          return checklist;
+        }),
+      }));
+      setPendingSortChecklistId(null);
+    }, 200);
+
+    return () => clearTimeout(timer);
+  }, [pendingSortChecklistId, trip.id, onTripUpdate]);
   const [editingItem, setEditingItem] = useState<string | null>(null);
   const [editingText, setEditingText] = useState('');
   const [showSettings, setShowSettings] = useState<string | null>(null);
@@ -67,6 +93,7 @@ export default function ChecklistPage({
   };
 
   const toggleChecklistItem = (checklistId: string, itemId: string) => {
+    // チェック状態を更新（ソートはuseEffectで遅延実行）
     onTripUpdate(trip.id, (currentTrip) => ({
       ...currentTrip,
       checklists: currentTrip.checklists.map((checklist) => {
@@ -74,12 +101,14 @@ export default function ChecklistPage({
           const updatedItems = checklist.items.map((item) =>
             item.id === itemId ? { ...item, checked: !item.checked } : item
           );
-          updatedItems.sort((a, b) => Number(a.checked) - Number(b.checked));
           return { ...checklist, items: updatedItems };
         }
         return checklist;
       }),
     }));
+
+    // 0.2秒後にソートするためのマーカーを設定
+    setPendingSortChecklistId(checklistId);
   };
 
   const addChecklistItem = async (checklistId: string, text: string) => {
@@ -170,14 +199,15 @@ export default function ChecklistPage({
     setShowSettings(null);
   };
 
-  const saveChecklistName = (checklistId: string) => {
-    if (!tempChecklistName.trim()) return;
+  const saveChecklistName = (checklistId: string, newName?: string) => {
+    const nameToSave = newName !== undefined ? newName : tempChecklistName;
+    if (!nameToSave.trim()) return;
 
     onTripUpdate(trip.id, (currentTrip) => ({
       ...currentTrip,
       checklists: currentTrip.checklists.map((checklist) =>
         checklist.id === checklistId
-          ? { ...checklist, name: tempChecklistName.trim() }
+          ? { ...checklist, name: nameToSave.trim() }
           : checklist
       ),
     }));
@@ -255,7 +285,6 @@ export default function ChecklistPage({
                   onEditChecklistName={handleEditChecklistName}
                   onSaveChecklistName={saveChecklistName}
                   onCancelEditChecklistName={cancelEditChecklistName}
-                  onSetTempChecklistName={setTempChecklistName}
                   onDeleteChecklist={deleteChecklist}
                   onDragEnd={handleDragEnd}
                   onToggleChecklistItem={toggleChecklistItem}
