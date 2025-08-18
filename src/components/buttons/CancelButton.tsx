@@ -8,6 +8,7 @@ interface CancelButtonProps {
   className?: string;
   size?: 'xs' | 'sm' | 'md' | 'lg';
   fullWidth?: boolean;
+  disabled?: boolean;
 }
 
 export default function CancelButton({
@@ -15,6 +16,7 @@ export default function CancelButton({
   className = '',
   size = 'md',
   fullWidth = false,
+  disabled = false,
 }: CancelButtonProps) {
   return (
     <Button
@@ -23,6 +25,7 @@ export default function CancelButton({
       color="strawBeige"
       size={size}
       fullWidth={fullWidth}
+      disabled={disabled}
       className={className}
     >
       キャンセル

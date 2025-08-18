@@ -7,13 +7,14 @@ import Modal from './Modal';
 import FormInput from './FormInput';
 import ErrorMessage from './ErrorMessage';
 import { CancelButton, SaveButton } from './buttons';
+import LoadingSpinner from './LoadingSpinner';
 
 interface CreateTripModalProps {
   onCreateTrip: (tripData: {
     title: string;
     startDate: string;
     endDate: string;
-  }) => void;
+  }) => Promise<void>;
   onClose?: () => void;
   isOpen: boolean;
 }
@@ -27,8 +28,9 @@ export default function CreateTripModal({
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!title.trim()) {
       setError('旅行名を入力してください');
       return;
@@ -44,11 +46,20 @@ export default function CreateTripModal({
       return;
     }
 
-    onCreateTrip({
-      title: title.trim(),
-      startDate,
-      endDate,
-    });
+    setIsLoading(true);
+    setError('');
+
+    try {
+      await onCreateTrip({
+        title: title.trim(),
+        startDate,
+        endDate,
+      });
+    } catch {
+      setError('旅行の作成に失敗しました。もう一度お試しください。');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleClose = () => {
@@ -117,11 +128,24 @@ export default function CreateTripModal({
           </div>
         </div>
 
+        {isLoading && (
+          <div className="flex flex-col items-center py-4">
+            <LoadingSpinner size="medium" />
+            <p className="text-stone-600 mt-2">旅行を作成しています...</p>
+          </div>
+        )}
+
         <div className="flex gap-3 pt-4">
-          {onClose && <CancelButton onClick={onClose} className="flex-1" />}
+          {onClose && (
+            <CancelButton
+              onClick={onClose}
+              className="flex-1"
+              disabled={isLoading}
+            />
+          )}
           <SaveButton
             onClick={handleSubmit}
-            disabled={!title.trim() || !startDate || !endDate}
+            disabled={!title.trim() || !startDate || !endDate || isLoading}
             type="create"
             className="flex-1"
           />

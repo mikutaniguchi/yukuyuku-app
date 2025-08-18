@@ -4,7 +4,7 @@ import React from 'react';
 import { Trash2 } from 'lucide-react';
 import Modal from './Modal';
 import { Trip } from '@/types';
-import { DeleteButton, CancelButton } from './buttons';
+import { DeleteButton } from './buttons';
 
 interface DeleteTripModalProps {
   isOpen: boolean;
@@ -50,13 +50,12 @@ export default function DeleteTripModal({
         />
       </div>
 
-      <div className="flex gap-3 mt-6">
+      <div className="mt-6">
         <DeleteButton
           onClick={onConfirmDelete}
           disabled={deleteConfirmTitle !== trip?.title}
           fullWidth
         />
-        <CancelButton onClick={onCancel} fullWidth />
       </div>
     </Modal>
   );

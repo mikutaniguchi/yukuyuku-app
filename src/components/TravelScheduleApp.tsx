@@ -9,7 +9,7 @@ import {
   updateTrip as updateTripInFirestore,
   deleteTrip as deleteTripFromFirestore,
 } from '@/lib/firestore';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import {
   Calendar,
@@ -140,39 +140,38 @@ export default function TravelApp() {
     title: string;
     startDate: string;
     endDate: string;
-  }) => {
+  }): Promise<void> => {
     if (!appUser) return;
 
-    try {
-      const newTrip: Omit<Trip, 'id' | 'createdAt' | 'updatedAt'> = {
-        title: tripData.title,
-        startDate: tripData.startDate,
-        endDate: tripData.endDate,
-        creator: appUser.id,
-        memberIds: [appUser.id],
-        members: [appUser],
-        inviteCode: Math.random().toString(36).substring(2, 8).toUpperCase(),
-        memo: '',
-        schedules: {},
-        checklists: [
-          {
-            id: Date.now().toString(),
-            tripId: '', // tripIdは後で設定される
-            name: 'やること',
-            items: [],
-          },
-        ],
-      };
+    // まずtripIdを生成
+    const tripId = doc(collection(db, 'trips')).id;
 
-      const tripId = await createTripInFirestore(newTrip);
-      const createdTrip = { ...newTrip, id: tripId } as Trip;
-      setTrips([...trips, createdTrip]);
-      setSelectedTrip(createdTrip);
-      setSelectedDate(createdTrip.startDate);
-      setShowCreateTripModal(false);
-    } catch (error) {
-      console.error('Failed to create trip:', error);
-    }
+    const newTrip: Omit<Trip, 'id' | 'createdAt' | 'updatedAt'> = {
+      title: tripData.title,
+      startDate: tripData.startDate,
+      endDate: tripData.endDate,
+      creator: appUser.id,
+      memberIds: [appUser.id],
+      members: [appUser],
+      inviteCode: Math.random().toString(36).substring(2, 8).toUpperCase(),
+      memo: '',
+      schedules: {},
+      checklists: [
+        {
+          id: Date.now().toString(),
+          tripId: tripId, // 最初から正しいtripIdを設定
+          name: 'やること',
+          items: [],
+        },
+      ],
+    };
+
+    await createTripInFirestore(newTrip, tripId);
+    const createdTrip = { ...newTrip, id: tripId } as Trip;
+    setTrips([...trips, createdTrip]);
+    setSelectedTrip(createdTrip);
+    setSelectedDate(createdTrip.startDate);
+    setShowCreateTripModal(false);
   };
 
   const handleLogout = async () => {
