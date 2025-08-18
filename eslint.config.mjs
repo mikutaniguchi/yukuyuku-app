@@ -24,7 +24,13 @@ const eslintConfig = [
         }
       ],
       "@typescript-eslint/no-require-imports": "off",
-      "no-unused-vars": "off" // TypeScript版を使用
+      "no-unused-vars": "off", // TypeScript版を使用
+      "no-console": [
+        "warn",
+        {
+          "allow": ["error", "warn"]
+        }
+      ]
     }
   }
 ];

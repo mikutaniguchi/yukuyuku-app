@@ -161,7 +161,14 @@ export default function TravelApp() {
           id: Date.now().toString(),
           tripId: tripId, // 最初から正しいtripIdを設定
           name: 'やること',
-          items: [],
+          items: [
+            { id: `${Date.now()}_1`, text: 'ホテルの予約', checked: false },
+            {
+              id: `${Date.now()}_2`,
+              text: '持ち物リストの作成',
+              checked: false,
+            },
+          ],
         },
       ],
     };

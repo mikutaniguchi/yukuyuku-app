@@ -48,7 +48,7 @@ export default function SchedulePage({
   onTripUpdate,
   canEdit = true,
 }: SchedulePageProps) {
-  const { colors } = useTheme();
+  const { colors, resolvedTheme } = useTheme();
   const [showNewScheduleModal, setShowNewScheduleModal] = useState(false);
   const [showEditScheduleModal, setShowEditScheduleModal] = useState(false);
   const [editingSchedule, setEditingSchedule] = useState<Schedule | null>(null);
@@ -715,7 +715,12 @@ export default function SchedulePage({
                           <div className="flex items-center gap-3">
                             <span
                               className="text-lg font-semibold"
-                              style={{ color: colorPalette.abyssGreen.light }}
+                              style={{
+                                color:
+                                  resolvedTheme === 'light'
+                                    ? colorPalette.abyssGreen.accentText
+                                    : colorPalette.abyssGreen.light,
+                              }}
                             >
                               {schedule.startTime}
                             </span>

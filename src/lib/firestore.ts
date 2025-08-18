@@ -47,7 +47,28 @@ export const getTrip = async (tripId: string) => {
   try {
     const tripDoc = await getDoc(doc(db, 'trips', tripId));
     if (tripDoc.exists()) {
-      const trip = { id: tripDoc.id, ...tripDoc.data() } as Trip;
+      const data = tripDoc.data();
+
+      // チェックリストがない場合はデフォルトを設定
+      if (!data.checklists || data.checklists.length === 0) {
+        data.checklists = [
+          {
+            id: Date.now().toString(),
+            tripId: tripDoc.id,
+            name: 'やること',
+            items: [
+              { id: `${Date.now()}_1`, text: 'ホテルの予約', checked: false },
+              {
+                id: `${Date.now()}_2`,
+                text: '持ち物リストの作成',
+                checked: false,
+              },
+            ],
+          },
+        ];
+      }
+
+      const trip = { id: tripDoc.id, ...data } as Trip;
 
       // memberIdsとmembersの同期チェック
       const memberIds = trip.memberIds || [];
@@ -107,7 +128,31 @@ export const getUserTrips = async (userId: string) => {
     orderBy('updatedAt', 'desc')
   );
   const snapshot = await getDocs(q);
-  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as Trip);
+  const trips = snapshot.docs.map((doc) => {
+    const data = doc.data();
+
+    // チェックリストがない場合はデフォルトを設定
+    if (!data.checklists || data.checklists.length === 0) {
+      data.checklists = [
+        {
+          id: Date.now().toString(),
+          tripId: doc.id,
+          name: 'やること',
+          items: [
+            { id: `${Date.now()}_1`, text: 'ホテルの予約', checked: false },
+            {
+              id: `${Date.now()}_2`,
+              text: '持ち物リストの作成',
+              checked: false,
+            },
+          ],
+        },
+      ];
+    }
+
+    return { id: doc.id, ...data } as Trip;
+  });
+  return trips;
 };
 
 export const getTripByInviteCode = async (inviteCode: string) => {
