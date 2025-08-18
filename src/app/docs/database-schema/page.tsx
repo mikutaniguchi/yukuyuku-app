@@ -19,7 +19,7 @@ export default function DatabaseSchemaPage() {
           ドキュメントに戻る
         </button>
 
-        <div className="bg-white rounded-xl shadow-sm border border-stone-200 p-8">
+        <div className="bg-white rounded-xl shadow-sm border border-stone-200 p-4 sm:p-6 lg:p-8">
           <div className="flex items-center gap-3 mb-6">
             <Database
               className="w-8 h-8"
@@ -32,7 +32,7 @@ export default function DatabaseSchemaPage() {
 
           <div className="prose prose-stone max-w-none">
             <h2>データベース全体図</h2>
-            <div className="bg-stone-100 p-8 rounded-xl mb-8 border border-stone-300 shadow-sm">
+            <div className="bg-stone-100 p-4 sm:p-6 lg:p-8 rounded-xl mb-8 border border-stone-300 shadow-sm">
               <div className="text-center mb-8">
                 <h4 className="text-2xl font-bold text-stone-800 mb-2">
                   Firestore Database
@@ -41,9 +41,9 @@ export default function DatabaseSchemaPage() {
               </div>
 
               {/* メインリレーション図 */}
-              <div className="flex flex-col lg:flex-row justify-center items-start gap-8 mb-8">
+              <div className="flex flex-col lg:flex-row justify-center items-center lg:items-start gap-8 mb-8">
                 {/* Trips Collection */}
-                <div className="bg-white p-6 rounded-2xl shadow-md border-2 border-stone-300 min-w-[280px]">
+                <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-md border-2 border-stone-300 w-full lg:min-w-[280px] max-w-sm">
                   <div className="text-center mb-4">
                     <div className="font-bold text-stone-800 text-xl">
                       trips
@@ -69,9 +69,9 @@ export default function DatabaseSchemaPage() {
                 </div>
 
                 {/* 関連線とラベル */}
-                <div className="flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="bg-white p-4 rounded-xl border-2 border-stone-300 shadow-md">
+                <div className="flex items-center justify-center w-full lg:w-auto">
+                  <div className="text-center w-full lg:w-auto">
+                    <div className="bg-white p-3 sm:p-4 rounded-xl border-2 border-stone-300 shadow-md">
                       <div className="font-semibold text-stone-800">
                         リレーション
                       </div>
@@ -89,7 +89,7 @@ export default function DatabaseSchemaPage() {
                 </div>
 
                 {/* Users Collection */}
-                <div className="bg-white p-6 rounded-2xl shadow-md border-2 border-stone-300 min-w-[280px]">
+                <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-md border-2 border-stone-300 w-full lg:min-w-[280px] max-w-sm">
                   <div className="text-center mb-4">
                     <div className="font-bold text-stone-800 text-xl">
                       users
@@ -161,7 +161,7 @@ export default function DatabaseSchemaPage() {
 
             <h2 className="text-2xl font-bold mt-8 mb-4">データ構造</h2>
 
-            <pre className="bg-stone-100 p-4 rounded-lg overflow-x-auto text-sm">
+            <pre className="bg-stone-100 p-3 sm:p-4 rounded-lg overflow-x-auto text-xs sm:text-sm">
               {`trips/
   └── {tripId}
       ├── id: string
@@ -200,7 +200,7 @@ export default function DatabaseSchemaPage() {
             <h2 className="text-2xl font-bold mt-8 mb-4">型定義</h2>
 
             <h3 className="text-xl font-semibold mt-6 mb-3">Trip</h3>
-            <pre className="bg-stone-100 p-4 rounded-lg overflow-x-auto text-sm">
+            <pre className="bg-stone-100 p-3 sm:p-4 rounded-lg overflow-x-auto text-xs sm:text-sm">
               {`interface Trip {
   id: string;
   title: string;
@@ -217,7 +217,7 @@ export default function DatabaseSchemaPage() {
             </pre>
 
             <h3 className="text-xl font-semibold mt-6 mb-3">Schedule</h3>
-            <pre className="bg-stone-100 p-4 rounded-lg overflow-x-auto text-sm">
+            <pre className="bg-stone-100 p-3 sm:p-4 rounded-lg overflow-x-auto text-xs sm:text-sm">
               {`interface Schedule {
   id: string;
   title: string;
@@ -232,7 +232,7 @@ export default function DatabaseSchemaPage() {
             </pre>
 
             <h3 className="text-xl font-semibold mt-6 mb-3">Member</h3>
-            <pre className="bg-stone-100 p-4 rounded-lg overflow-x-auto text-sm">
+            <pre className="bg-stone-100 p-3 sm:p-4 rounded-lg overflow-x-auto text-xs sm:text-sm">
               {`interface Member {
   id: string;
   name: string;
