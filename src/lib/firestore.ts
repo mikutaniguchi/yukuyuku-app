@@ -18,9 +18,12 @@ import { Trip, Schedule, Checklist, Memo, Tag, Member, Budget } from '@/types';
 
 // Trips
 export const createTrip = async (
-  trip: Omit<Trip, 'id' | 'createdAt' | 'updatedAt'>
+  trip: Omit<Trip, 'id' | 'createdAt' | 'updatedAt'>,
+  tripId?: string
 ) => {
-  const tripRef = doc(collection(db, 'trips'));
+  const tripRef = tripId
+    ? doc(db, 'trips', tripId)
+    : doc(collection(db, 'trips'));
   const tripData = {
     ...trip,
     createdAt: serverTimestamp(),
