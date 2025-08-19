@@ -97,3 +97,19 @@ npx playwright show-report
 
 テスト実行後、失敗した場合は自動的にHTMLレポートが生成され、ブラウザで開きます。
 手動でレポートを確認する場合は `npx playwright show-report` を実行してください。
+
+## Firebase設定
+
+### Firestore Rulesのデプロイ
+
+Firestore Rulesを更新した場合は、以下のコマンドでデプロイします：
+
+```bash
+# Firebase CLIにログイン（初回のみ）
+firebase login
+
+# Firestore Rulesをデプロイ
+firebase deploy --only firestore:rules --project yukuyuku-app
+```
+
+※ Node.js 22環境での実行を推奨（`.node-version`ファイルで指定済み）

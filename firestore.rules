@@ -15,8 +15,9 @@ service cloud.firestore {
     
     // ヘルパー関数: ユーザーが旅行を編集可能かチェック
     function canEditTrip(tripData) {
-      return !isAnonymous() && (request.auth.uid == tripData.creator || 
-             request.auth.uid in tripData.memberIds);
+      return request.auth.uid == tripData.creator || 
+             request.auth.uid in tripData.memberIds ||
+             (isAnonymous() && tripData.guestAccessEnabled == true);
     }
     
     // 旅行の読み書きルール
@@ -99,7 +100,8 @@ service cloud.firestore {
     match /invites/{inviteCode} {
       allow read: if true;  // 誰でも読み取り可能（OGP用、タイトルのみ）
       allow create: if request.auth != null && !isAnonymous();  // 認証済み非匿名ユーザーのみ作成可能
-      allow update, delete: if false;  // 更新・削除は不可
+      allow update: if request.auth != null && !isAnonymous();  // 認証済み非匿名ユーザーのみ更新可能
+      allow delete: if false;  // 削除は不可
     }
   }
 }
