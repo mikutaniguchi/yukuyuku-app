@@ -75,15 +75,20 @@ export default function UserDropdown({
 
           {/* メニュー項目 */}
           <div className="py-2">
-            <button
-              onClick={handleSettingsClick}
-              className="w-full px-4 py-2 text-left hover:bg-stone-50 transition-colors flex items-center gap-3"
-            >
-              <Settings className="w-4 h-4 text-stone-500" />
-              <span className="text-stone-700">アカウント設定</span>
-            </button>
+            {/* ゲストユーザーの場合はアカウント設定を非表示 */}
+            {user.type !== 'guest' && (
+              <>
+                <button
+                  onClick={handleSettingsClick}
+                  className="w-full px-4 py-2 text-left hover:bg-stone-50 transition-colors flex items-center gap-3"
+                >
+                  <Settings className="w-4 h-4 text-stone-500" />
+                  <span className="text-stone-700">アカウント設定</span>
+                </button>
 
-            <div className="border-t border-stone-100 my-1" />
+                <div className="border-t border-stone-100 my-1" />
+              </>
+            )}
 
             <button
               onClick={handleLogoutClick}

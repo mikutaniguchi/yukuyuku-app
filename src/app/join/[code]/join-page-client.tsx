@@ -29,7 +29,8 @@ export default function JoinPageClient({ inviteCode }: JoinPageClientProps) {
   const [status, setStatus] = useState<
     | 'loading'
     | 'success'
-    | 'error'
+    | 'server-error'
+    | 'access-denied'
     | 'not-found'
     | 'choose-access'
     | 'guest-viewing'
@@ -55,7 +56,7 @@ export default function JoinPageClient({ inviteCode }: JoinPageClientProps) {
   useEffect(() => {
     const handleInitialLoad = async () => {
       if (!inviteCode) {
-        setStatus('error');
+        setStatus('not-found');
         return;
       }
 
@@ -93,11 +94,13 @@ export default function JoinPageClient({ inviteCode }: JoinPageClientProps) {
             router.push(`/trip/${result.tripId}`);
           }, 2000);
         } else {
-          setStatus('error');
+          // joinTripByCodeが失敗した場合は招待コードが無効
+          setStatus('not-found');
         }
       } catch (error) {
         console.error('Failed to process invite:', error);
-        setStatus('error');
+        // ネットワークエラーやFirestoreエラーはサーバーエラー
+        setStatus('server-error');
       }
     };
 
@@ -122,7 +125,7 @@ export default function JoinPageClient({ inviteCode }: JoinPageClientProps) {
       await handleLogin(user);
     } catch (error) {
       console.error('Google login failed:', error);
-      setStatus('error');
+      setStatus('server-error');
     }
   };
 
@@ -133,7 +136,7 @@ export default function JoinPageClient({ inviteCode }: JoinPageClientProps) {
 
       // 招待コードを検証
       if (!inviteCode) {
-        setStatus('error');
+        setStatus('not-found');
         return;
       }
 
@@ -151,7 +154,7 @@ export default function JoinPageClient({ inviteCode }: JoinPageClientProps) {
       setStatus('guest-viewing');
     } catch (error) {
       console.error('Failed to access as guest:', error);
-      setStatus('error');
+      setStatus('server-error');
     }
   };
 
@@ -160,7 +163,7 @@ export default function JoinPageClient({ inviteCode }: JoinPageClientProps) {
     // ログイン後、メンバーとして参加
     try {
       if (!inviteCode) {
-        setStatus('error');
+        setStatus('not-found');
         return;
       }
 
@@ -172,15 +175,33 @@ export default function JoinPageClient({ inviteCode }: JoinPageClientProps) {
           router.push(`/trip/${result.tripId}`);
         }, 1500);
       } else {
-        setStatus('error');
+        setStatus('not-found');
       }
     } catch {
-      setStatus('error');
+      setStatus('server-error');
     }
   };
 
   if (showLogin) {
     return <LoginModal onLogin={handleLogin} allowGuestAccess={true} />;
+  }
+
+  // 招待リンクが無効な場合は404ページへリダイレクト
+  if (status === 'not-found') {
+    router.push('/not-found');
+    return null;
+  }
+
+  // サーバーエラーの場合
+  if (status === 'server-error') {
+    router.push('/error');
+    return null;
+  }
+
+  // アクセス拒否の場合
+  if (status === 'access-denied') {
+    router.push('/access-denied');
+    return null;
   }
 
   if (status === 'guest-viewing' && tripData && user) {
@@ -235,48 +256,6 @@ export default function JoinPageClient({ inviteCode }: JoinPageClientProps) {
             <p className="text-sm text-stone-500">
               2秒後に旅行ページに移動します...
             </p>
-          </>
-        )}
-
-        {status === 'not-found' && (
-          <>
-            <h1 className="text-2xl font-bold text-stone-800 mb-4">
-              招待リンクが無効です
-            </h1>
-            <p className="text-stone-600 mb-6">
-              招待リンクが無効または期限切れの可能性があります
-            </p>
-            <button
-              onClick={() => router.push('/')}
-              className="px-6 py-2 rounded-lg hover:opacity-90 transition-colors"
-              style={{
-                backgroundColor: colorPalette.aquaBlue.bg,
-                color: colorPalette.aquaBlue.text,
-              }}
-            >
-              ホームに戻る
-            </button>
-          </>
-        )}
-
-        {status === 'error' && (
-          <>
-            <h1 className="text-2xl font-bold text-stone-800 mb-4">
-              エラーが発生しました
-            </h1>
-            <p className="text-stone-600 mb-6">
-              しばらく時間をおいて再度お試しください
-            </p>
-            <button
-              onClick={() => router.push('/')}
-              className="px-6 py-2 rounded-lg hover:opacity-90 transition-colors"
-              style={{
-                backgroundColor: colorPalette.aquaBlue.bg,
-                color: colorPalette.aquaBlue.text,
-              }}
-            >
-              ホームに戻る
-            </button>
           </>
         )}
 
