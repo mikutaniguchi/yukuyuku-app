@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { User as FirebaseUser } from 'firebase/auth';
 import { User } from '@/types';
 
 interface UseAuthStateReturn {
@@ -17,8 +17,10 @@ interface UseAuthStateReturn {
  * Firebase認証状態をアプリケーション用のUser型に変換し、
  * ゲストユーザーのアクセス制御を行う
  */
-export function useAuthState(): UseAuthStateReturn {
-  const { user: firebaseUser, loading } = useAuth();
+export function useAuthState(
+  firebaseUser: FirebaseUser | null,
+  loading: boolean
+): UseAuthStateReturn {
   const [appUser, setAppUser] = useState<User | null>(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
 
