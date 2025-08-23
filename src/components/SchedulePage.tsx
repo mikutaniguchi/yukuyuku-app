@@ -404,9 +404,16 @@ export default function SchedulePage({
   const deleteSchedule = (scheduleId: string) => {
     onTripUpdate(trip.id, (currentTrip) => {
       const updatedSchedules = { ...currentTrip.schedules };
-      updatedSchedules[selectedDate] = updatedSchedules[selectedDate].filter(
-        (s) => s.id !== scheduleId
-      );
+
+      // スケジュールIDで全日付から削除（IDは一意なので、より効率的で確実）
+      for (const [date, schedules] of Object.entries(updatedSchedules)) {
+        const hasSchedule = schedules.some((s) => s.id === scheduleId);
+        if (hasSchedule) {
+          updatedSchedules[date] = schedules.filter((s) => s.id !== scheduleId);
+          break; // IDは一意なので、見つかったら終了
+        }
+      }
+
       return { ...currentTrip, schedules: updatedSchedules };
     });
   };
