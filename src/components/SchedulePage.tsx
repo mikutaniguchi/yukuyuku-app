@@ -26,13 +26,13 @@ import {
 } from '@/lib/constants';
 import ScheduleFiles from './ScheduleFiles';
 import AddScheduleButton from './AddScheduleButton';
-import { processAndUploadFile, deleteFileFromStorage } from '@/lib/fileStorage';
 import NewScheduleModal from './NewScheduleModal';
 import EditScheduleModal from './EditScheduleModal';
 import DailyMemoModal from './DailyMemoModal';
 import ImageModal from './ImageModal';
 import PDFModal from './PDFModal';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useFileUpload } from '@/hooks/useFileUpload';
 interface SchedulePageProps {
   trip: Trip;
   selectedDate: string;
@@ -54,18 +54,29 @@ export default function SchedulePage({
   const [editingSchedule, setEditingSchedule] = useState<Schedule | null>(null);
   const [editingScheduleData, setEditingScheduleData] =
     useState<ScheduleFormData | null>(null);
-  const [expandedSchedules, setExpandedSchedules] = useState<Set<string>>(
-    new Set()
-  );
   const [showImageModal, setShowImageModal] = useState<string | null>(null);
   const [showPDFModal, setShowPDFModal] = useState<string | null>(null);
-  const [uploadingFiles, setUploadingFiles] = useState<Set<string>>(new Set());
   const [expandedDetails, setExpandedDetails] = useState<Set<string>>(
     new Set()
   );
   const [allExpanded, setAllExpanded] = useState(false);
   const [showDailyMemoModal, setShowDailyMemoModal] = useState(false);
   const [selectedMemoDate, setSelectedMemoDate] = useState<string>('');
+
+  // ファイルアップロード機能
+  const {
+    uploadingFiles,
+    expandedSchedules,
+    handleFileUpload,
+    handleFilesUpload,
+    handleFileDelete,
+    onToggleExpand,
+  } = useFileUpload({
+    trip,
+    onTripUpdate,
+    editingSchedule,
+    setEditingSchedule,
+  });
 
   // ユニークIDを生成する関数
   const generateUniqueId = () => {
@@ -109,14 +120,6 @@ export default function SchedulePage({
     paidBy: '',
     transport: { method: '', duration: '', cost: 0 },
   });
-
-  const createFileInput = () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.multiple = true;
-    input.accept = 'image/*,.pdf,.heic';
-    return input;
-  };
 
   const tripDates = getDatesInRange(trip.startDate, trip.endDate);
 
@@ -166,16 +169,6 @@ export default function SchedulePage({
       clearTimeout(timeoutId);
     };
   }, [tripDates, onDateChange]);
-
-  const toggleScheduleExpansion = (scheduleId: string) => {
-    const newExpanded = new Set(expandedSchedules);
-    if (newExpanded.has(scheduleId)) {
-      newExpanded.delete(scheduleId);
-    } else {
-      newExpanded.add(scheduleId);
-    }
-    setExpandedSchedules(newExpanded);
-  };
 
   const toggleDetailExpansion = (scheduleId: string) => {
     const newExpanded = new Set(expandedDetails);
@@ -357,110 +350,6 @@ export default function SchedulePage({
       default:
         return <Car className="w-4 h-4" />;
     }
-  };
-
-  const handleFileUpload = async (scheduleId: string) => {
-    const input = createFileInput();
-    input.onchange = async (e) => {
-      const files = (e.target as HTMLInputElement).files;
-      if (!files) return;
-
-      await handleFilesUpload(scheduleId, Array.from(files));
-    };
-    input.click();
-  };
-
-  const handleFilesUpload = async (scheduleId: string, files: File[]) => {
-    if (files.length === 0) return;
-
-    // アップロード開始
-    setUploadingFiles((prev) => new Set([...prev, scheduleId]));
-
-    try {
-      const uploadPromises = files.map(async (file) => {
-        return await processAndUploadFile(file, trip.id, scheduleId);
-      });
-
-      const uploadedFiles = await Promise.all(uploadPromises);
-
-      onTripUpdate(trip.id, (currentTrip) => {
-        const updatedSchedules = { ...currentTrip.schedules };
-
-        // 全ての日付からスケジュールを探して更新
-        for (const [date, schedules] of Object.entries(updatedSchedules)) {
-          const scheduleIndex = schedules.findIndex((s) => s.id === scheduleId);
-          if (scheduleIndex !== -1) {
-            updatedSchedules[date] = schedules.map((schedule) =>
-              schedule.id === scheduleId
-                ? {
-                    ...schedule,
-                    files: [...schedule.files, ...uploadedFiles],
-                  }
-                : schedule
-            );
-            break;
-          }
-        }
-
-        return { ...currentTrip, schedules: updatedSchedules };
-      });
-    } catch (error) {
-      console.error('ファイルアップロードエラー:', error);
-      alert(
-        `ファイルのアップロードに失敗しました: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
-    } finally {
-      // アップロード完了
-      setUploadingFiles((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(scheduleId);
-        return newSet;
-      });
-    }
-  };
-
-  const handleFileDelete = async (
-    scheduleId: string,
-    fileId: string | number
-  ) => {
-    // 削除対象のファイル情報を取得
-    const schedule = trip.schedules[selectedDate]?.find(
-      (s) => s.id === scheduleId
-    );
-    const fileToDelete = schedule?.files.find((f) => f.id === fileId);
-
-    if (fileToDelete?.fullPath) {
-      try {
-        // Firebase Storageから削除
-        await deleteFileFromStorage(fileToDelete.fullPath);
-      } catch (error) {
-        console.error('Storage削除エラー:', error);
-        // Storage削除に失敗してもUI上では削除を続行
-      }
-    }
-
-    // UIから削除
-    onTripUpdate(trip.id, (currentTrip) => {
-      const updatedSchedules = { ...currentTrip.schedules };
-
-      // 全ての日付からスケジュールを探して更新
-      for (const [date, schedules] of Object.entries(updatedSchedules)) {
-        const scheduleIndex = schedules.findIndex((s) => s.id === scheduleId);
-        if (scheduleIndex !== -1) {
-          updatedSchedules[date] = schedules.map((schedule) =>
-            schedule.id === scheduleId
-              ? {
-                  ...schedule,
-                  files: schedule.files.filter((file) => file.id !== fileId),
-                }
-              : schedule
-          );
-          break;
-        }
-      }
-
-      return { ...currentTrip, schedules: updatedSchedules };
-    });
   };
 
   const addNewSchedule = () => {
@@ -874,7 +763,7 @@ export default function SchedulePage({
                                   onFileDelete={handleFileDelete}
                                   uploadingFiles={uploadingFiles}
                                   expandedSchedules={expandedSchedules}
-                                  onToggleExpand={toggleScheduleExpansion}
+                                  onToggleExpand={onToggleExpand}
                                   onImageClick={(url) => setShowImageModal(url)}
                                   onPDFClick={(url) => setShowPDFModal(url)}
                                   onFilesUpload={handleFilesUpload}
@@ -1127,7 +1016,7 @@ export default function SchedulePage({
           onFileDelete={handleFileDelete}
           uploadingFiles={uploadingFiles}
           expandedSchedules={expandedSchedules}
-          onToggleExpand={toggleScheduleExpansion}
+          onToggleExpand={onToggleExpand}
           onImageClick={(url) => setShowImageModal(url)}
           onPDFClick={(url) => setShowPDFModal(url)}
           onFilesUpload={handleFilesUpload}
