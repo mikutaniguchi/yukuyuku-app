@@ -42,6 +42,7 @@ interface ChecklistCardProps {
   onDragEnd: (event: DragEndEvent, checklistId: string) => void;
   onToggleChecklistItem: (checklistId: string, itemId: string) => void;
   onStartEditingItem: (item: ChecklistItem) => void;
+  onUpdateEditingText: (text: string) => void;
   onSaveEditingItem: (checklistId: string, itemId: string) => void;
   onCancelEditingItem: () => void;
   onDeleteChecklistItem: (checklistId: string, itemId: string) => void;
@@ -69,6 +70,7 @@ export default function ChecklistCard({
   onDragEnd,
   onToggleChecklistItem,
   onStartEditingItem,
+  onUpdateEditingText,
   onSaveEditingItem,
   onCancelEditingItem,
   onDeleteChecklistItem,
@@ -231,6 +233,7 @@ export default function ChecklistCard({
                     onSetSwipedItem(null);
                   }}
                   onStartEditing={onStartEditingItem}
+                  onUpdateEditingText={onUpdateEditingText}
                   onSwipe={onSwipe}
                   onCancelEdit={onCancelEditingItem}
                 />

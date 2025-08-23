@@ -152,6 +152,10 @@ export default function ChecklistPage({
     setEditingText(item.text);
   };
 
+  const updateEditingText = (text: string) => {
+    setEditingText(text);
+  };
+
   const saveEditingItem = (checklistId: string, itemId: string) => {
     if (!editingText.trim()) return;
 
@@ -289,6 +293,7 @@ export default function ChecklistPage({
                   onDragEnd={handleDragEnd}
                   onToggleChecklistItem={toggleChecklistItem}
                   onStartEditingItem={startEditingItem}
+                  onUpdateEditingText={updateEditingText}
                   onSaveEditingItem={saveEditingItem}
                   onCancelEditingItem={cancelEditingItem}
                   onDeleteChecklistItem={deleteChecklistItem}

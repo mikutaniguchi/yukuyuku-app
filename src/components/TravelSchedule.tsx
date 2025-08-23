@@ -29,6 +29,7 @@ import MemoPage from './MemoPage';
 import ChecklistPage from './ChecklistPage';
 import BudgetPage from './BudgetPage';
 import FilesPage from './FilesPage';
+import LoadingScreen from './LoadingScreen';
 import { Button } from './buttons';
 
 export default function TravelSchedule() {
@@ -191,11 +192,7 @@ export default function TravelSchedule() {
 
   // ローディング中
   if (authLoading || loadingTrips) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-stone-50 to-neutral-100 flex items-center justify-center">
-        <div className="text-stone-600">読み込み中...</div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   // ログイン画面

@@ -3,13 +3,7 @@
 import React from 'react';
 import { colorPalette } from '@/lib/constants';
 
-interface LoadingScreenProps {
-  message?: string;
-}
-
-export default function LoadingScreen({
-  message = '旅行の準備中...',
-}: LoadingScreenProps) {
+export default function LoadingScreen() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-stone-50 to-neutral-100 flex items-center justify-center">
       <div className="text-center">
@@ -39,9 +33,6 @@ export default function LoadingScreen({
             ))}
           </div>
         </div>
-
-        {/* メッセージ表示 */}
-        <p className="text-lg text-stone-600 mt-6">{message}</p>
 
         {/* カスタムキーフレームアニメーション */}
         <style jsx>{`

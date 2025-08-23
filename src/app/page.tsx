@@ -13,6 +13,7 @@ import { colorPalette, formatDate } from '@/lib/constants';
 import LoginModal from '@/components/LoginModal';
 import CreateTripModal from '@/components/CreateTripModal';
 import Header from '@/components/Header';
+import LoadingScreen from '@/components/LoadingScreen';
 
 export default function Home() {
   const router = useRouter();
@@ -95,11 +96,7 @@ export default function Home() {
   };
 
   if (loading || loadingTrips) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-stone-50 to-neutral-100 flex items-center justify-center">
-        <div className="text-stone-600">読み込み中...</div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   if (showLoginModal) {

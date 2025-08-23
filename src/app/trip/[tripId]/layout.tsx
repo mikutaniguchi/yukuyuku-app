@@ -288,7 +288,7 @@ export default function TripLayout({ children }: TripLayoutProps) {
   };
 
   if (loading) {
-    return <LoadingScreen message="旅行データを読み込み中..." />;
+    return <LoadingScreen />;
   }
 
   if (!trip || !firebaseUser) {

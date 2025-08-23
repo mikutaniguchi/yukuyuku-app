@@ -10,6 +10,7 @@ interface InlineEditFormProps {
   onStartEdit: () => void;
   onSave: (newValue: string) => void;
   onCancel: () => void;
+  onTextChange?: (text: string) => void;
   placeholder?: string;
   className?: string;
   inputClassName?: string;
@@ -25,6 +26,7 @@ export default function InlineEditForm({
   onStartEdit,
   onSave,
   onCancel,
+  onTextChange,
   placeholder = '',
   className = '',
   inputClassName = '',
@@ -34,6 +36,7 @@ export default function InlineEditForm({
   maxLength,
 }: InlineEditFormProps) {
   const [editValue, setEditValue] = useState(value);
+  const [isComposing, setIsComposing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Reset edit value when entering edit mode
@@ -85,13 +88,21 @@ export default function InlineEditForm({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' && !isComposing) {
       e.preventDefault();
       handleSave();
     } else if (e.key === 'Escape') {
       e.preventDefault();
       handleCancel();
     }
+  };
+
+  const handleCompositionStart = () => {
+    setIsComposing(true);
+  };
+
+  const handleCompositionEnd = () => {
+    setIsComposing(false);
   };
 
   const isValid = required ? editValue.trim() !== '' : true;
@@ -124,8 +135,13 @@ export default function InlineEditForm({
         ref={inputRef}
         type="text"
         value={editValue}
-        onChange={(e) => setEditValue(e.target.value)}
+        onChange={(e) => {
+          setEditValue(e.target.value);
+          onTextChange?.(e.target.value);
+        }}
         onKeyDown={handleKeyDown}
+        onCompositionStart={handleCompositionStart}
+        onCompositionEnd={handleCompositionEnd}
         placeholder={placeholder}
         maxLength={maxLength}
         className={`flex-1 px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-stone-900 bg-white ${inputClassName}`}

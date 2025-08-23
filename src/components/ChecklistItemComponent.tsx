@@ -16,6 +16,7 @@ interface ChecklistItemComponentProps {
   onEditItem: (checklistId: string, itemId: string, text: string) => void;
   onDeleteItem: (checklistId: string, itemId: string) => void;
   onStartEditing: (item: ChecklistItem) => void;
+  onUpdateEditingText: (text: string) => void;
   onSwipe: (itemId: string, deltaX: number) => void;
   editingItem: string | null;
   editingText: string;
@@ -31,6 +32,7 @@ export default function ChecklistItemComponent({
   onEditItem,
   onDeleteItem,
   onStartEditing,
+  onUpdateEditingText,
   onSwipe,
   editingItem,
   editingText,
@@ -109,6 +111,7 @@ export default function ChecklistItemComponent({
                   onEditItem(checklistId, item.id, newText);
                 }}
                 onCancel={onCancelEdit}
+                onTextChange={onUpdateEditingText}
                 inputClassName="text-sm px-2 py-1"
                 showEditButton={false}
               />
