@@ -9,6 +9,8 @@ import { arrayMove } from '@dnd-kit/sortable';
 import LoadingSpinner from './LoadingSpinner';
 import ChecklistCard from './ChecklistCard';
 import CreateChecklistModal from './CreateChecklistModal';
+import ChecklistItemComponent from './ChecklistItemComponent';
+import { getIcon, formatDate } from '@/lib/constants';
 
 interface ChecklistPageProps {
   trip: Trip;
@@ -58,6 +60,10 @@ export default function ChecklistPage({
   const [swipedItem, setSwipedItem] = useState<string | null>(null);
   const [isAddingItem, setIsAddingItem] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [editingScheduleItem, setEditingScheduleItem] = useState<string | null>(
+    null
+  );
+  const [editingScheduleText, setEditingScheduleText] = useState('');
 
   // ページ読み込み完了の模擬
   useEffect(() => {
@@ -233,6 +239,116 @@ export default function ChecklistPage({
     }
   };
 
+  const handleScheduleItemSwipe = (
+    scheduleId: string,
+    itemId: string,
+    deltaX: number
+  ) => {
+    const swipeId = `${scheduleId}_${itemId}`;
+    if (deltaX < -50) {
+      setSwipedItem(swipeId);
+    } else if (deltaX > 50 || Math.abs(deltaX) < 10) {
+      setSwipedItem(null);
+    }
+  };
+
+  // スケジュール項目編集関数
+  const startEditingScheduleItem = (
+    scheduleId: string,
+    itemId: string,
+    currentText: string
+  ) => {
+    setEditingScheduleItem(`${scheduleId}_${itemId}`);
+    setEditingScheduleText(currentText);
+  };
+
+  const saveScheduleChecklistItem = (
+    scheduleId: string,
+    itemId: string,
+    text: string,
+    date?: string
+  ) => {
+    if (!text.trim() || !date) return;
+
+    onTripUpdate(trip.id, (currentTrip) => ({
+      ...currentTrip,
+      schedules: {
+        ...currentTrip.schedules,
+        [date]: currentTrip.schedules[date].map((s) =>
+          s.id === scheduleId
+            ? {
+                ...s,
+                checklistItems: s.checklistItems.map((checkItem) =>
+                  checkItem.id === itemId
+                    ? { ...checkItem, text: text.trim() }
+                    : checkItem
+                ),
+              }
+            : s
+        ),
+      },
+    }));
+
+    setEditingScheduleItem(null);
+    setEditingScheduleText('');
+  };
+
+  const cancelEditingScheduleItem = () => {
+    setEditingScheduleItem(null);
+    setEditingScheduleText('');
+  };
+
+  const toggleScheduleChecklistItem = (
+    scheduleId: string,
+    itemId: string,
+    date?: string
+  ) => {
+    if (!date) return;
+    onTripUpdate(trip.id, (currentTrip) => ({
+      ...currentTrip,
+      schedules: {
+        ...currentTrip.schedules,
+        [date]: currentTrip.schedules[date].map((s) =>
+          s.id === scheduleId
+            ? {
+                ...s,
+                checklistItems: s.checklistItems.map((checkItem) =>
+                  checkItem.id === itemId
+                    ? { ...checkItem, checked: !checkItem.checked }
+                    : checkItem
+                ),
+              }
+            : s
+        ),
+      },
+    }));
+  };
+
+  const deleteScheduleChecklistItem = (
+    scheduleId: string,
+    itemId: string,
+    date?: string
+  ) => {
+    if (!date) return;
+    onTripUpdate(trip.id, (currentTrip) => ({
+      ...currentTrip,
+      schedules: {
+        ...currentTrip.schedules,
+        [date]: currentTrip.schedules[date].map((s) =>
+          s.id === scheduleId
+            ? {
+                ...s,
+                checklistItems: s.checklistItems.filter(
+                  (checkItem) => checkItem.id !== itemId
+                ),
+              }
+            : s
+        ),
+      },
+    }));
+    setSwipedItem(null);
+  };
+
   const handleCreateChecklist = (checklist: Checklist) => {
     onTripUpdate(trip.id, (currentTrip) => ({
       ...currentTrip,
@@ -273,7 +389,7 @@ export default function ChecklistPage({
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
               {trip.checklists.map((checklist) => (
                 <ChecklistCard
                   key={checklist.id}
@@ -302,6 +418,87 @@ export default function ChecklistPage({
                   onSetSwipedItem={setSwipedItem}
                 />
               ))}
+              {/* スケジュールチェックリストセクション */}
+              {Object.values(trip.schedules)
+                .flat()
+                .some((schedule) => schedule.checklistItems?.length > 0) && (
+                <div className="bg-white border border-stone-200 rounded-lg p-4">
+                  <h3 className="text-lg font-semibold text-stone-800 mb-4">
+                    スケジュールより
+                  </h3>
+                  <div className="space-y-6">
+                    {Object.entries(trip.schedules)
+                      .sort(([dateA], [dateB]) => {
+                        if (dateA === 'unscheduled') return 1;
+                        if (dateB === 'unscheduled') return -1;
+                        return dateA.localeCompare(dateB);
+                      })
+                      .map(([date, schedules]) =>
+                        schedules
+                          .filter(
+                            (schedule) => schedule.checklistItems?.length > 0
+                          )
+                          .map((schedule) => (
+                            <div key={schedule.id}>
+                              <h4 className="mb-3 flex items-center gap-2">
+                                <span className="text-sm text-stone-600">
+                                  {date === 'unscheduled'
+                                    ? '日付未定'
+                                    : formatDate(date)}
+                                </span>
+                                {schedule.icon && (
+                                  <div className="w-4 h-4 flex items-center justify-center">
+                                    {getIcon(schedule.icon)}
+                                  </div>
+                                )}
+                                <span className="text-sm font-semibold text-stone-800">
+                                  {schedule.title}
+                                </span>
+                              </h4>
+                              <div className="space-y-2 ml-6">
+                                {schedule.checklistItems.map((item) => {
+                                  return (
+                                    <ChecklistItemComponent
+                                      key={item.id}
+                                      item={item}
+                                      checklistId={schedule.id}
+                                      canEdit={canEdit}
+                                      swipedItem={swipedItem}
+                                      onToggleItem={toggleScheduleChecklistItem}
+                                      onEditItem={saveScheduleChecklistItem}
+                                      onDeleteItem={deleteScheduleChecklistItem}
+                                      onStartEditing={(item) =>
+                                        startEditingScheduleItem(
+                                          schedule.id,
+                                          item.id,
+                                          item.text
+                                        )
+                                      }
+                                      onUpdateEditingText={
+                                        setEditingScheduleText
+                                      }
+                                      onSwipe={(itemId, deltaX) =>
+                                        handleScheduleItemSwipe(
+                                          schedule.id,
+                                          itemId,
+                                          deltaX
+                                        )
+                                      }
+                                      editingItem={editingScheduleItem}
+                                      editingText={editingScheduleText}
+                                      onCancelEdit={cancelEditingScheduleItem}
+                                      scheduleId={schedule.id}
+                                      scheduleDate={date}
+                                    />
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          ))
+                      )}
+                  </div>
+                </div>
+              )}
             </div>
 
             {!isLoading && trip.checklists.length === 0 && (

@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useEffect } from 'react';
-import { X } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { X, Plus, Trash2 } from 'lucide-react';
 import { getIcon, formatDate } from '@/lib/constants';
-import { ScheduleFormData } from '@/types';
+import { ScheduleFormData, ChecklistItem } from '@/types';
 
 interface ScheduleFormProps {
   schedule: ScheduleFormData;
@@ -25,6 +25,8 @@ export default function ScheduleForm({
   tripDates,
   iconOptions,
 }: ScheduleFormProps) {
+  const [newChecklistItem, setNewChecklistItem] = useState('');
+
   // 現在時刻の時間のみを取得（分は00）
   const getCurrentHour = () => {
     const now = new Date();
@@ -94,6 +96,50 @@ export default function ScheduleForm({
     onScheduleChange,
     schedule,
   ]);
+
+  const addChecklistItem = () => {
+    if (!newChecklistItem.trim()) return;
+
+    const newItem: ChecklistItem = {
+      id: `${Date.now()}_${Math.random()}`,
+      text: newChecklistItem.trim(),
+      checked: false,
+    };
+
+    onScheduleChange({
+      ...schedule,
+      checklistItems: [...schedule.checklistItems, newItem],
+    });
+
+    setNewChecklistItem('');
+  };
+
+  const removeChecklistItem = (itemId: string) => {
+    onScheduleChange({
+      ...schedule,
+      checklistItems: schedule.checklistItems.filter(
+        (item) => item.id !== itemId
+      ),
+    });
+  };
+
+  const toggleChecklistItem = (itemId: string) => {
+    onScheduleChange({
+      ...schedule,
+      checklistItems: schedule.checklistItems.map((item) =>
+        item.id === itemId ? { ...item, checked: !item.checked } : item
+      ),
+    });
+  };
+
+  const updateChecklistItem = (itemId: string, newText: string) => {
+    onScheduleChange({
+      ...schedule,
+      checklistItems: schedule.checklistItems.map((item) =>
+        item.id === itemId ? { ...item, text: newText } : item
+      ),
+    });
+  };
 
   return (
     <div className="space-y-4">
@@ -350,6 +396,66 @@ export default function ScheduleForm({
               )}
             </button>
           ))}
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-stone-700 mb-2">
+          やること
+        </label>
+
+        <div className="space-y-2">
+          {schedule.checklistItems.map((item) => (
+            <div
+              key={item.id}
+              className="flex items-center gap-2 p-2 border border-stone-200 rounded-lg"
+            >
+              <input
+                type="checkbox"
+                checked={item.checked}
+                onChange={() => toggleChecklistItem(item.id)}
+                className="w-4 h-4 text-stone-600 border-stone-300 rounded focus:ring-stone-500"
+              />
+              <input
+                type="text"
+                value={item.text}
+                onChange={(e) => updateChecklistItem(item.id, e.target.value)}
+                className="flex-1 px-2 py-1 border border-stone-300 rounded focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-sm text-stone-900 bg-white"
+              />
+              <button
+                type="button"
+                onClick={() => removeChecklistItem(item.id)}
+                className="p-1 text-stone-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                title="削除"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+          ))}
+
+          <div className="flex gap-2">
+            <input
+              type="text"
+              placeholder="チェック項目を追加"
+              value={newChecklistItem}
+              onChange={(e) => setNewChecklistItem(e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  addChecklistItem();
+                }
+              }}
+              className="flex-1 px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-base text-stone-900 bg-white"
+            />
+            <button
+              type="button"
+              onClick={addChecklistItem}
+              className="px-3 py-2 border border-stone-300 text-stone-500 rounded-lg hover:bg-stone-50 transition-colors flex items-center gap-1"
+            >
+              <Plus className="w-4 h-4" />
+              追加
+            </button>
+          </div>
         </div>
       </div>
     </div>

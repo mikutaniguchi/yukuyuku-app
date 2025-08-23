@@ -38,6 +38,7 @@ export interface Schedule {
   budgetPeople: number;
   paidBy?: string; // 立て替え者のメンバーID
   transport: Transport;
+  checklistItems: ChecklistItem[];
   createdAt?: Date | string;
 }
 
@@ -53,6 +54,7 @@ export interface ScheduleFormData {
   budgetPeople: number;
   paidBy: string;
   transport: { method: string; duration: string; cost: number };
+  checklistItems: ChecklistItem[];
 }
 
 export interface UploadedFile {

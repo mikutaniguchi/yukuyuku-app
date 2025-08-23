@@ -17,6 +17,7 @@ import {
   List,
   Clock,
   Printer,
+  CheckSquare,
 } from 'lucide-react';
 import { Trip, Schedule, ScheduleFormData } from '@/types';
 import {
@@ -110,13 +111,14 @@ export default function SchedulePage({
       budgetPeople: 1,
       paidBy: '',
       transport: { method: '', duration: '', cost: 0 },
+      checklistItems: [],
     });
     setShowNewScheduleModal(true);
   };
 
   const [newSchedule, setNewSchedule] = useState<ScheduleFormData>({
     date: selectedDate,
-    startTime: '12:00', // 固定値に変更
+    startTime: '12:00',
     endTime: undefined,
     title: '',
     location: '',
@@ -126,6 +128,7 @@ export default function SchedulePage({
     budgetPeople: 1,
     paidBy: '',
     transport: { method: '', duration: '', cost: 0 },
+    checklistItems: [],
   });
 
   const tripDates = getDatesInRange(trip.startDate, trip.endDate);
@@ -257,6 +260,7 @@ export default function SchedulePage({
           budgetPeople: scheduleData.budgetPeople,
           paidBy: scheduleData.paidBy,
           transport: scheduleData.transport,
+          checklistItems: scheduleData.checklistItems,
         });
       } else {
         // 同じ日付内での変更
@@ -278,6 +282,7 @@ export default function SchedulePage({
                   budgetPeople: scheduleData.budgetPeople,
                   paidBy: scheduleData.paidBy,
                   transport: scheduleData.transport,
+                  checklistItems: scheduleData.checklistItems,
                 }
               : s
         );
@@ -319,6 +324,7 @@ export default function SchedulePage({
       budgetPeople: newSchedule.budgetPeople,
       ...(newSchedule.paidBy && { paidBy: newSchedule.paidBy }),
       transport: newSchedule.transport,
+      checklistItems: newSchedule.checklistItems,
       files: [],
     };
 
@@ -346,6 +352,7 @@ export default function SchedulePage({
       budgetPeople: 1,
       paidBy: '',
       transport: { method: '', duration: '', cost: 0 },
+      checklistItems: [],
     });
     setShowNewScheduleModal(false);
     // selectedDateは変更しない（現在の日付を維持）
@@ -656,6 +663,7 @@ export default function SchedulePage({
                           duration: '',
                           cost: 0,
                         },
+                        checklistItems: schedule.checklistItems || [],
                       });
                       setShowEditScheduleModal(true);
                     }}
@@ -695,7 +703,25 @@ export default function SchedulePage({
                               )}
                             </div>
                             {canEdit && (
-                              <div className="flex gap-2">
+                              <div className="flex items-center gap-2">
+                                {schedule.checklistItems &&
+                                  schedule.checklistItems.some(
+                                    (item) => !item.checked
+                                  ) && (
+                                    <span
+                                      className="w-8 h-8 text-xs font-medium flex items-center justify-center"
+                                      style={{
+                                        backgroundColor:
+                                          colorPalette.sandRed.bg,
+                                        color: colorPalette.sandRed.text,
+                                        marginRight: '3rem',
+                                        borderRadius: '8px',
+                                      }}
+                                      title={`未完了のやること ${schedule.checklistItems.filter((item) => !item.checked).length}項目`}
+                                    >
+                                      <CheckSquare className="w-4 h-4" />
+                                    </span>
+                                  )}
                                 <button
                                   onClick={() => {
                                     setEditingSchedule(schedule);
@@ -715,6 +741,8 @@ export default function SchedulePage({
                                         duration: '',
                                         cost: 0,
                                       },
+                                      checklistItems:
+                                        schedule.checklistItems || [],
                                     });
                                     setShowEditScheduleModal(true);
                                   }}
@@ -769,7 +797,9 @@ export default function SchedulePage({
                           {/* アコーディオンが閉じている時の開くボタン */}
                           {(schedule.description ||
                             (schedule.budget && schedule.budget > 0) ||
-                            (schedule.files && schedule.files.length > 0)) &&
+                            (schedule.files && schedule.files.length > 0) ||
+                            (schedule.checklistItems &&
+                              schedule.checklistItems.length > 0)) &&
                             !expandedDetails.has(schedule.id) && (
                               <div className="relative">
                                 <button
@@ -823,6 +853,107 @@ export default function SchedulePage({
                                     {linkifyText(schedule.description)}
                                   </div>
                                 )}
+
+                                {/* チェックリスト表示 */}
+                                {schedule.checklistItems &&
+                                  schedule.checklistItems.length > 0 && (
+                                    <div className="bg-stone-50 rounded-lg p-3">
+                                      <div className="flex items-center gap-2 mb-2">
+                                        <CheckSquare className="w-4 h-4 text-stone-600" />
+                                        <span className="font-medium text-sm text-stone-700">
+                                          やること
+                                        </span>
+                                      </div>
+                                      <div className="space-y-2">
+                                        {schedule.checklistItems.map((item) => (
+                                          <div
+                                            key={item.id}
+                                            className="flex items-center gap-3"
+                                          >
+                                            <button
+                                              onClick={() => {
+                                                if (canEdit) {
+                                                  onTripUpdate(
+                                                    trip.id,
+                                                    (currentTrip) => ({
+                                                      ...currentTrip,
+                                                      schedules: {
+                                                        ...currentTrip.schedules,
+                                                        [date]:
+                                                          currentTrip.schedules[
+                                                            date
+                                                          ].map((s) =>
+                                                            s.id === schedule.id
+                                                              ? {
+                                                                  ...s,
+                                                                  checklistItems:
+                                                                    s.checklistItems.map(
+                                                                      (
+                                                                        checkItem
+                                                                      ) =>
+                                                                        checkItem.id ===
+                                                                        item.id
+                                                                          ? {
+                                                                              ...checkItem,
+                                                                              checked:
+                                                                                !checkItem.checked,
+                                                                            }
+                                                                          : checkItem
+                                                                    ),
+                                                                }
+                                                              : s
+                                                          ),
+                                                      },
+                                                    })
+                                                  );
+                                                }
+                                              }}
+                                              disabled={!canEdit}
+                                              className={`flex-shrink-0 w-4 h-4 rounded border-2 flex items-center justify-center transition-colors ${
+                                                item.checked
+                                                  ? 'text-white shadow-sm'
+                                                  : 'border-stone-300 hover:border-stone-400'
+                                              }`}
+                                              style={
+                                                item.checked
+                                                  ? {
+                                                      backgroundColor:
+                                                        colorPalette.abyssGreen
+                                                          .bg,
+                                                      borderColor:
+                                                        colorPalette.abyssGreen
+                                                          .bg,
+                                                      color:
+                                                        colorPalette.abyssGreen
+                                                          .text,
+                                                    }
+                                                  : {}
+                                              }
+                                            >
+                                              {item.checked && (
+                                                <svg
+                                                  className="w-3 h-3"
+                                                  fill="currentColor"
+                                                  viewBox="0 0 20 20"
+                                                >
+                                                  <path
+                                                    fillRule="evenodd"
+                                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                    clipRule="evenodd"
+                                                  />
+                                                </svg>
+                                              )}
+                                            </button>
+                                            <span
+                                              className={`text-sm ${item.checked ? 'line-through text-stone-500' : 'text-stone-700'}`}
+                                            >
+                                              {item.text}
+                                            </span>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
 
                                 {/* 詳細モードでのファイル表示 */}
                                 <div>
@@ -949,6 +1080,7 @@ export default function SchedulePage({
                                 duration: '',
                                 cost: 0,
                               },
+                              checklistItems: schedule.checklistItems || [],
                             });
                             setShowEditScheduleModal(true);
                           }}

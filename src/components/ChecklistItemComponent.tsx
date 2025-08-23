@@ -12,15 +12,23 @@ interface ChecklistItemComponentProps {
   checklistId: string;
   canEdit: boolean;
   swipedItem: string | null;
-  onToggleItem: (checklistId: string, itemId: string) => void;
-  onEditItem: (checklistId: string, itemId: string, text: string) => void;
-  onDeleteItem: (checklistId: string, itemId: string) => void;
+  onToggleItem: (checklistId: string, itemId: string, date?: string) => void;
+  onEditItem: (
+    checklistId: string,
+    itemId: string,
+    text: string,
+    date?: string
+  ) => void;
+  onDeleteItem: (checklistId: string, itemId: string, date?: string) => void;
   onStartEditing: (item: ChecklistItem) => void;
   onUpdateEditingText: (text: string) => void;
   onSwipe: (itemId: string, deltaX: number) => void;
   editingItem: string | null;
   editingText: string;
   onCancelEdit: () => void;
+  // スケジュール用の追加プロパティ
+  scheduleId?: string;
+  scheduleDate?: string;
 }
 
 export default function ChecklistItemComponent({
@@ -37,6 +45,8 @@ export default function ChecklistItemComponent({
   editingItem,
   editingText,
   onCancelEdit,
+  scheduleId,
+  scheduleDate,
 }: ChecklistItemComponentProps) {
   const [startX, setStartX] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -70,11 +80,19 @@ export default function ChecklistItemComponent({
       <div className="relative overflow-hidden">
         <div
           className={`flex items-center gap-3 group transition-transform duration-200 ${
-            swipedItem === item.id ? '-translate-x-16' : 'translate-x-0'
+            swipedItem === (scheduleId ? `${scheduleId}_${item.id}` : item.id)
+              ? '-translate-x-16'
+              : 'translate-x-0'
           }`}
         >
           <button
-            onClick={() => onToggleItem(checklistId, item.id)}
+            onClick={() => {
+              if (scheduleId) {
+                onToggleItem(checklistId, item.id, scheduleDate);
+              } else {
+                onToggleItem(checklistId, item.id);
+              }
+            }}
             className={`flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
               item.checked
                 ? 'text-white shadow-sm'
@@ -101,14 +119,19 @@ export default function ChecklistItemComponent({
             )}
           </button>
 
-          {editingItem === item.id ? (
+          {editingItem ===
+          (scheduleId ? `${scheduleId}_${item.id}` : item.id) ? (
             <div className="flex-1">
               <InlineEditForm
                 value={editingText}
                 isEditing={true}
                 onStartEdit={() => {}}
                 onSave={(newText) => {
-                  onEditItem(checklistId, item.id, newText);
+                  if (scheduleId) {
+                    onEditItem(checklistId, item.id, newText, scheduleDate);
+                  } else {
+                    onEditItem(checklistId, item.id, newText);
+                  }
                 }}
                 onCancel={onCancelEdit}
                 onTextChange={onUpdateEditingText}
@@ -135,7 +158,13 @@ export default function ChecklistItemComponent({
                     <Edit2 className="w-4 h-4" />
                   </Button>
                   <Button
-                    onClick={() => onDeleteItem(checklistId, item.id)}
+                    onClick={() => {
+                      if (scheduleId) {
+                        onDeleteItem(checklistId, item.id, scheduleDate);
+                      } else {
+                        onDeleteItem(checklistId, item.id);
+                      }
+                    }}
                     variant="icon"
                     color="sandRed"
                     className="opacity-0 group-hover:opacity-100 transition-all"
@@ -151,12 +180,18 @@ export default function ChecklistItemComponent({
         {/* スマホ用：スワイプで表示される削除ボタン */}
         <div
           className={`md:hidden absolute right-0 top-0 h-full flex items-center transition-transform duration-200 ${
-            swipedItem === item.id ? 'translate-x-0' : 'translate-x-full'
+            swipedItem === (scheduleId ? `${scheduleId}_${item.id}` : item.id)
+              ? 'translate-x-0'
+              : 'translate-x-full'
           }`}
         >
           <Button
             onClick={() => {
-              onDeleteItem(checklistId, item.id);
+              if (scheduleId) {
+                onDeleteItem(checklistId, item.id, scheduleDate);
+              } else {
+                onDeleteItem(checklistId, item.id);
+              }
             }}
             variant="filled"
             color="sandRed"
