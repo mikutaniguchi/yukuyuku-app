@@ -72,16 +72,29 @@ export default function TravelApp() {
   useEffect(() => {
     if (!loading) {
       if (firebaseUser) {
+        // ゲストユーザー（匿名認証）の場合
+        if (firebaseUser.isAnonymous) {
+          // ホームページの場合はログイン画面を表示
+          if (window.location.pathname === '/') {
+            setShowLoginModal(true);
+            setLoadingTrips(false);
+            return;
+          }
+        }
+
         const userData: User = {
           id: firebaseUser.uid,
           name: firebaseUser.displayName || 'ユーザー',
           email: firebaseUser.email || '',
-          type: 'google',
+          type: firebaseUser.isAnonymous ? 'guest' : 'google',
         };
         setAppUser(userData);
         setShowLoginModal(false);
         loadUserTrips(firebaseUser.uid);
       } else {
+        setAppUser(null);
+        setTrips([]);
+        setSelectedTrip(null);
         setShowLoginModal(true);
         setLoadingTrips(false);
       }
@@ -353,28 +366,6 @@ export default function TravelApp() {
     return <LoginModal onLogin={handleLogin} />;
   }
 
-  // ゲストユーザーの場合は専用メッセージを表示
-  if (!selectedTrip && appUser && appUser.type === 'guest') {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-stone-50 to-neutral-100 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-xl p-8 text-center max-w-md">
-          <h2 className="text-xl font-bold text-stone-800 mb-4">
-            ゲストユーザーです
-          </h2>
-          <p className="text-stone-600 mb-6">
-            旅行の作成や管理には、Googleアカウントでのログインが必要です。
-          </p>
-          <button
-            onClick={handleLogout}
-            className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            ログアウトして新規登録・ログイン
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   // 旅行がない場合は作成フォームを表示
   if (!selectedTrip && appUser) {
     if (showCreateTripModal) {
@@ -427,8 +418,8 @@ export default function TravelApp() {
   }
 
   // ゲストユーザーの権限チェック
-  const isGuest = appUser?.type === 'guest';
-  const canEdit = !isGuest;
+  const isGuestUser = appUser?.type === 'guest';
+  const canEdit = !isGuestUser;
   const isCreator = selectedTrip?.creator === appUser?.id;
 
   return (

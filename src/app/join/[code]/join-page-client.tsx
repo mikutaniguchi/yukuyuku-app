@@ -47,6 +47,9 @@ export default function JoinPageClient({ inviteCode }: JoinPageClientProps) {
         const inviteInfo = await getInviteInfo(inviteCode);
         if (inviteInfo) {
           setTripName(inviteInfo.tripTitle);
+        } else {
+          // 招待コードが無効な場合は404へ
+          setStatus('not-found');
         }
       }
     };
@@ -56,6 +59,13 @@ export default function JoinPageClient({ inviteCode }: JoinPageClientProps) {
   useEffect(() => {
     const handleInitialLoad = async () => {
       if (!inviteCode) {
+        setStatus('not-found');
+        return;
+      }
+
+      // まず招待コードの有効性をチェック
+      const trip = await getTripByInviteCode(inviteCode);
+      if (!trip) {
         setStatus('not-found');
         return;
       }
