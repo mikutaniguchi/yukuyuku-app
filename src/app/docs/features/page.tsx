@@ -39,6 +39,7 @@ export default function FeaturesPage() {
                 <li>• カスタムアイコンと色で視覚的に分類</li>
                 <li>• メンバー割り当て機能</li>
                 <li>• メモ・URL・予算の追加</li>
+                <li>• スケジュールごとの「やること」リスト</li>
               </ul>
             </div>
 
@@ -47,6 +48,7 @@ export default function FeaturesPage() {
               <ul className="space-y-2 text-sm">
                 <li>• カテゴリー別のチェックリスト作成</li>
                 <li>• チェック状態の記録と進捗表示</li>
+                <li>• スケジュールの「やること」を統合表示</li>
                 <li>• カテゴリーの追加・編集・削除</li>
                 <li>• 項目の動的な追加・削除</li>
               </ul>
@@ -157,9 +159,10 @@ export default function FeaturesPage() {
             <div className="bg-stone-50 p-6 rounded-lg">
               <ul className="space-y-2 text-sm">
                 <li>• ドラッグ&ドロップによるスケジュール並び替え</li>
-                <li>• しおり印刷機能</li>
+                <li>
+                  • <s>しおり印刷機能</s> ✓
+                </li>
                 <li>• PDFのオフライン対応</li>
-                <li>• ブックマーク機能</li>
                 <li>• リアルタイム同期（複数人での同時編集対応）</li>
                 <li>• データエクスポート（CSV/PDF）</li>
               </ul>

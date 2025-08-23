@@ -187,7 +187,8 @@ export default function DatabaseSchemaPage() {
       │         budgetPeople: number,
       │         paidBy?: string,
       │         transport: { method: string, duration: string, cost: number },
-      │         icon?: string
+      │         icon?: string,
+      │         checklistItems: ChecklistItem[]
       │       }
       │   ]
       ├── checklists: Checklist[] (チェックリスト)
