@@ -32,16 +32,15 @@ export default function ScheduleForm({
     return `${hours}:00`;
   };
 
-  // アイコンと交通手段の対応関係
-  const iconTransportMap: Record<string, string> = {
-    car: '車/タクシー',
-    train: '電車',
-    plane: '飛行機',
-    bus: 'バス',
-  };
-
   // アイコン変更時の交通手段自動設定
   useEffect(() => {
+    const iconTransportMap: Record<string, string> = {
+      car: '車/タクシー',
+      train: '電車',
+      plane: '飛行機',
+      bus: 'バス',
+    };
+
     if (schedule.icon && iconTransportMap[schedule.icon]) {
       const correspondingTransport = iconTransportMap[schedule.icon];
       if (schedule.transport.method !== correspondingTransport) {
@@ -51,7 +50,7 @@ export default function ScheduleForm({
         });
       }
     }
-  }, [schedule.icon]);
+  }, [schedule.icon, onScheduleChange, schedule]);
 
   // 移動時間の自動計算
   useEffect(() => {
@@ -92,6 +91,8 @@ export default function ScheduleForm({
     schedule.transport.method,
     schedule.startTime,
     schedule.endTime,
+    onScheduleChange,
+    schedule,
   ]);
 
   return (
@@ -262,22 +263,20 @@ export default function ScheduleForm({
             ))}
           </select>
         </div>
-        {schedule.budget > 0 && (
-          <select
-            value={schedule.paidBy}
-            onChange={(e) =>
-              onScheduleChange({ ...schedule, paidBy: e.target.value })
-            }
-            className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-base text-stone-900 bg-white"
-          >
-            <option value="">立て替えなし</option>
-            {tripMembers.map((member) => (
-              <option key={member.id} value={member.id}>
-                {member.name}が立て替え
-              </option>
-            ))}
-          </select>
-        )}
+        <select
+          value={schedule.paidBy}
+          onChange={(e) =>
+            onScheduleChange({ ...schedule, paidBy: e.target.value })
+          }
+          className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-base text-stone-900 bg-white"
+        >
+          <option value="">立て替えなし</option>
+          {tripMembers.map((member) => (
+            <option key={member.id} value={member.id}>
+              {member.name}が立て替え
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="border-t pt-3">

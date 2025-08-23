@@ -14,6 +14,9 @@ import {
   Package,
   PackageOpen,
   FileText,
+  List,
+  Clock,
+  Printer,
 } from 'lucide-react';
 import { Trip, Schedule, ScheduleFormData } from '@/types';
 import {
@@ -23,6 +26,8 @@ import {
   linkifyText,
   getGoogleMapsLink,
   getIcon,
+  iconOptions,
+  getIconOption,
 } from '@/lib/constants';
 import ScheduleFiles from './ScheduleFiles';
 import AddScheduleButton from './AddScheduleButton';
@@ -31,6 +36,7 @@ import EditScheduleModal from './EditScheduleModal';
 import DailyMemoModal from './DailyMemoModal';
 import ImageModal from './ImageModal';
 import PDFModal from './PDFModal';
+import TimelineView from './TimelineView';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useFileUpload } from '@/hooks/useFileUpload';
 interface SchedulePageProps {
@@ -62,6 +68,7 @@ export default function SchedulePage({
   const [allExpanded, setAllExpanded] = useState(false);
   const [showDailyMemoModal, setShowDailyMemoModal] = useState(false);
   const [selectedMemoDate, setSelectedMemoDate] = useState<string>('');
+  const [viewMode, setViewMode] = useState<'list' | 'timeline'>('list');
 
   // ファイルアップロード機能
   const {
@@ -280,63 +287,6 @@ export default function SchedulePage({
     });
   };
 
-  const iconOptions = [
-    {
-      id: '',
-      name: 'なし',
-      bgColor: colorPalette.strawBeige.light,
-      iconColor: colorPalette.strawBeige.accentText,
-    },
-    {
-      id: 'meal',
-      name: '食事',
-      bgColor: colorPalette.sandRed.light,
-      iconColor: colorPalette.sandRed.accentText,
-    },
-    {
-      id: 'camera',
-      name: '観光',
-      bgColor: colorPalette.strawBeige.light,
-      iconColor: colorPalette.strawBeige.accentText,
-    },
-    {
-      id: 'bed',
-      name: '宿泊',
-      bgColor: colorPalette.roseQuartz.light,
-      iconColor: colorPalette.roseQuartz.accentText,
-    },
-    {
-      id: 'car',
-      name: '車',
-      bgColor: colorPalette.aquaBlue.light,
-      iconColor: colorPalette.aquaBlue.accentText,
-    },
-    {
-      id: 'train',
-      name: '電車',
-      bgColor: colorPalette.aquaBlue.light,
-      iconColor: colorPalette.aquaBlue.accentText,
-    },
-    {
-      id: 'bus',
-      name: 'バス',
-      bgColor: colorPalette.aquaBlue.light,
-      iconColor: colorPalette.aquaBlue.accentText,
-    },
-    {
-      id: 'plane',
-      name: '飛行機',
-      bgColor: colorPalette.aquaBlue.light,
-      iconColor: colorPalette.aquaBlue.accentText,
-    },
-  ];
-
-  const getIconOption = (icon?: string) => {
-    return (
-      iconOptions.find((option) => option.id === (icon || '')) || iconOptions[0]
-    );
-  };
-
   const getTransportIcon = (method: string) => {
     switch (method) {
       case '徒歩':
@@ -458,6 +408,45 @@ export default function SchedulePage({
     });
   };
 
+  const handlePrint = () => {
+    // 印刷前にタイムライン表示に切り替え
+    const previousViewMode = viewMode;
+    setViewMode('timeline');
+
+    // 印刷用CSSを動的に読み込み
+    const printLink = document.createElement('link');
+    printLink.rel = 'stylesheet';
+    printLink.href = '/print.css';
+    printLink.id = 'print-styles';
+    document.head.appendChild(printLink);
+
+    // CSSの読み込み完了を待ってから印刷
+    printLink.onload = () => {
+      setTimeout(() => {
+        window.print();
+
+        // 印刷後にクリーンアップ
+        setTimeout(() => {
+          // 印刷CSSを削除
+          const printStyleElement = document.getElementById('print-styles');
+          if (printStyleElement) {
+            printStyleElement.remove();
+          }
+          // 元の表示モードに戻す
+          setViewMode(previousViewMode);
+        }, 500);
+      }, 100);
+    };
+
+    // CSS読み込みに失敗した場合のフォールバック
+    printLink.onerror = () => {
+      setTimeout(() => {
+        window.print();
+        setViewMode(previousViewMode);
+      }, 100);
+    };
+  };
+
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] lg:grid-cols-[auto_1fr] gap-3 md:gap-6">
@@ -527,18 +516,61 @@ export default function SchedulePage({
 
           <div className="border-t border-stone-200 mt-4 pt-4">
             <h2 className="text-lg font-semibold text-stone-800 mb-2">表示</h2>
-            <div className="flex justify-start">
-              <button
-                onClick={toggleAllDetails}
-                className="w-12 h-12 flex items-center justify-center rounded-full transition-colors hover:bg-stone-100 text-stone-600 hover:text-stone-800"
-              >
-                {allExpanded ? (
-                  <PackageOpen className="w-8 h-8" />
-                ) : (
-                  <Package className="w-8 h-8" />
-                )}
-              </button>
+            <div className="space-y-2">
+              <div className="bg-stone-100 rounded-lg p-1 flex">
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded-md transition-colors ${
+                    viewMode === 'list'
+                      ? 'bg-stone-800 text-white'
+                      : 'text-stone-600 hover:bg-stone-200'
+                  }`}
+                >
+                  <List className="w-4 h-4" />
+                  <span className="text-sm">リスト</span>
+                </button>
+                <button
+                  onClick={() => setViewMode('timeline')}
+                  className={`flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded-md transition-colors ${
+                    viewMode === 'timeline'
+                      ? 'bg-stone-800 text-white'
+                      : 'text-stone-600 hover:bg-stone-200'
+                  }`}
+                >
+                  <Clock className="w-4 h-4" />
+                  <span className="text-sm whitespace-nowrap">時間軸</span>
+                </button>
+              </div>
+
+              {viewMode === 'list' && (
+                <button
+                  onClick={toggleAllDetails}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg bg-stone-50 text-stone-600 hover:bg-stone-100 hover:text-stone-800 transition-colors w-full"
+                >
+                  {allExpanded ? (
+                    <PackageOpen className="w-4 h-4" />
+                  ) : (
+                    <Package className="w-4 h-4" />
+                  )}
+                  <span className="text-sm">
+                    {allExpanded ? '詳細を一気に閉じる' : '詳細を一気に表示'}
+                  </span>
+                </button>
+              )}
             </div>
+          </div>
+
+          <div className="border-t border-stone-200 mt-4 pt-4">
+            <h2 className="text-lg font-semibold text-stone-800 mb-2">
+              しおり
+            </h2>
+            <button
+              onClick={handlePrint}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-stone-50 text-stone-700 hover:bg-stone-100 transition-colors w-full"
+            >
+              <Printer className="w-4 h-4" />
+              <span className="text-sm">印刷</span>
+            </button>
           </div>
         </div>
 
@@ -603,231 +635,265 @@ export default function SchedulePage({
                   </div>
                 </div>
 
-                <div className="space-y-4">
-                  {daySchedules.map((schedule) => (
-                    <div key={schedule.id} className="relative">
-                      <div className="border border-stone-200 rounded-lg p-3 md:p-4 transition-shadow hover:shadow-md schedule-card">
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex items-center gap-3">
-                            <span
-                              className="text-lg font-semibold"
-                              style={{
-                                color:
-                                  resolvedTheme === 'light'
-                                    ? colorPalette.abyssGreen.accentText
-                                    : colorPalette.abyssGreen.light,
-                              }}
-                            >
-                              {schedule.startTime}
-                            </span>
-                            {schedule.icon && (
+                {viewMode === 'timeline' ? (
+                  <TimelineView
+                    schedules={daySchedules}
+                    onEditClick={(schedule) => {
+                      setEditingSchedule(schedule);
+                      setEditingScheduleData({
+                        date: schedule.date,
+                        startTime: schedule.startTime,
+                        endTime: schedule.endTime,
+                        title: schedule.title,
+                        location: schedule.location,
+                        description: schedule.description,
+                        icon: schedule.icon || '',
+                        budget: schedule.budget || 0,
+                        budgetPeople: schedule.budgetPeople || 1,
+                        paidBy: schedule.paidBy || '',
+                        transport: schedule.transport || {
+                          method: '',
+                          duration: '',
+                          cost: 0,
+                        },
+                      });
+                      setShowEditScheduleModal(true);
+                    }}
+                    canEdit={canEdit}
+                  />
+                ) : (
+                  <div className="space-y-4">
+                    {daySchedules.map((schedule) => (
+                      <div key={schedule.id} className="relative">
+                        <div className="border border-stone-200 rounded-lg p-3 md:p-4 transition-shadow hover:shadow-md schedule-card">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex items-center gap-3">
                               <span
-                                className="px-3 py-2 rounded-full text-xs font-medium flex items-center gap-1"
+                                className="text-lg font-semibold"
                                 style={{
-                                  backgroundColor: getIconOption(schedule.icon)
-                                    .bgColor,
-                                  color: getIconOption(schedule.icon).iconColor,
+                                  color:
+                                    resolvedTheme === 'light'
+                                      ? colorPalette.abyssGreen.accentText
+                                      : colorPalette.abyssGreen.light,
                                 }}
                               >
-                                {getIcon(schedule.icon)}
+                                {schedule.startTime}
                               </span>
+                              {schedule.icon && (
+                                <span
+                                  className="px-3 py-2 rounded-full text-xs font-medium flex items-center gap-1"
+                                  style={{
+                                    backgroundColor: getIconOption(
+                                      schedule.icon
+                                    ).bgColor,
+                                    color: getIconOption(schedule.icon)
+                                      .iconColor,
+                                  }}
+                                >
+                                  {getIcon(schedule.icon)}
+                                </span>
+                              )}
+                            </div>
+                            {canEdit && (
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => {
+                                    setEditingSchedule(schedule);
+                                    setEditingScheduleData({
+                                      date: schedule.date,
+                                      startTime: schedule.startTime,
+                                      endTime: schedule.endTime,
+                                      title: schedule.title,
+                                      location: schedule.location,
+                                      description: schedule.description,
+                                      icon: schedule.icon || '',
+                                      budget: schedule.budget || 0,
+                                      budgetPeople: schedule.budgetPeople || 1,
+                                      paidBy: schedule.paidBy || '',
+                                      transport: schedule.transport || {
+                                        method: '',
+                                        duration: '',
+                                        cost: 0,
+                                      },
+                                    });
+                                    setShowEditScheduleModal(true);
+                                  }}
+                                  className="p-1 text-stone-500 hover:text-blue-600 transition-colors cursor-pointer"
+                                >
+                                  <Edit2 className="w-4 h-4" />
+                                </button>
+                              </div>
                             )}
                           </div>
-                          {canEdit && (
-                            <div className="flex gap-2">
-                              <button
-                                onClick={() => {
-                                  setEditingSchedule(schedule);
-                                  setEditingScheduleData({
-                                    date: schedule.date,
-                                    startTime: schedule.startTime,
-                                    endTime: schedule.endTime,
-                                    title: schedule.title,
-                                    location: schedule.location,
-                                    description: schedule.description,
-                                    icon: schedule.icon || '',
-                                    budget: schedule.budget || 0,
-                                    budgetPeople: schedule.budgetPeople || 1,
-                                    paidBy: schedule.paidBy || '',
-                                    transport: schedule.transport || {
-                                      method: '',
-                                      duration: '',
-                                      cost: 0,
-                                    },
-                                  });
-                                  setShowEditScheduleModal(true);
-                                }}
-                                className="p-1 text-stone-500 hover:text-blue-600 transition-colors cursor-pointer"
+
+                          <h3 className="text-lg font-semibold text-stone-800 mb-1">
+                            {schedule.title}
+                          </h3>
+                          {schedule.location && (
+                            <div className="mb-2">
+                              <a
+                                href={
+                                  getGoogleMapsLink(schedule.location) || '#'
+                                }
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-stone-600 hover:text-stone-800 underline inline-flex items-center gap-1 break-all"
                               >
-                                <Edit2 className="w-4 h-4" />
-                              </button>
+                                <MapPin className="w-4 h-4 flex-shrink-0" />
+                                <span className="break-words">
+                                  {schedule.location}
+                                </span>
+                              </a>
+                            </div>
+                          )}
+
+                          {(schedule.transport?.method ||
+                            schedule.transport?.duration) && (
+                            <div className="bg-stone-50 rounded-lg p-3 mb-3">
+                              <div className="flex items-center gap-2 text-sm text-stone-600">
+                                {schedule.transport.method ? (
+                                  getTransportIcon(schedule.transport.method)
+                                ) : (
+                                  <Car className="w-4 h-4" />
+                                )}
+                                {schedule.transport.method && (
+                                  <span>{schedule.transport.method}</span>
+                                )}
+                                {schedule.transport.duration && (
+                                  <span>({schedule.transport.duration})</span>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* アコーディオンが閉じている時の開くボタン */}
+                          {(schedule.description ||
+                            (schedule.budget && schedule.budget > 0) ||
+                            (schedule.files && schedule.files.length > 0)) &&
+                            !expandedDetails.has(schedule.id) && (
+                              <div className="relative">
+                                <button
+                                  onClick={() =>
+                                    toggleDetailExpansion(schedule.id)
+                                  }
+                                  className="absolute inset-x-0 bottom-0 flex items-center justify-end py-3 pr-4 text-stone-500 hover:text-stone-700 hover:bg-stone-50 transition-colors rounded-b-lg -ml-3 -mr-3 -mb-3 w-[calc(100%+1.5rem)] md:-ml-4 md:-mr-4 md:-mb-4 md:w-[calc(100%+2rem)]"
+                                >
+                                  <div className="flex items-center gap-1">
+                                    <span className="text-sm">詳細</span>
+                                    <Plus className="w-5 h-5" />
+                                  </div>
+                                </button>
+                                <div className="h-5"></div>
+                              </div>
+                            )}
+
+                          {/* アコーディオンで表示される詳細情報 */}
+                          {expandedDetails.has(schedule.id) && (
+                            <div>
+                              <div className="space-y-3 mb-3">
+                                {!!schedule.budget && schedule.budget > 0 && (
+                                  <div className="bg-stone-50 rounded-lg p-3">
+                                    <div className="flex items-center gap-2 text-sm text-stone-600">
+                                      <span className="font-medium">予算:</span>
+                                      <span>
+                                        ¥{schedule.budget.toLocaleString()}
+                                      </span>
+                                      {schedule.budgetPeople &&
+                                        schedule.budgetPeople > 1 && (
+                                          <span>
+                                            ({schedule.budgetPeople}人分)
+                                          </span>
+                                        )}
+                                      {schedule.paidBy &&
+                                        schedule.paidBy.trim() && (
+                                          <span className="ml-2">
+                                            支払い:{' '}
+                                            {trip.members.find(
+                                              (member) =>
+                                                member.id === schedule.paidBy
+                                            )?.name || schedule.paidBy}
+                                          </span>
+                                        )}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {schedule.description && (
+                                  <div className="text-stone-700 whitespace-pre-wrap break-words overflow-wrap-anywhere">
+                                    {linkifyText(schedule.description)}
+                                  </div>
+                                )}
+
+                                {/* 詳細モードでのファイル表示 */}
+                                <div>
+                                  <ScheduleFiles
+                                    files={schedule.files}
+                                    scheduleId={schedule.id}
+                                    onFileUpload={handleFileUpload}
+                                    onFileDelete={handleFileDelete}
+                                    uploadingFiles={uploadingFiles}
+                                    expandedSchedules={expandedSchedules}
+                                    onToggleExpand={onToggleExpand}
+                                    onImageClick={(url) =>
+                                      setShowImageModal(url)
+                                    }
+                                    onPDFClick={(url) => setShowPDFModal(url)}
+                                    onFilesUpload={handleFilesUpload}
+                                  />
+                                </div>
+                              </div>
+
+                              {/* アコーディオンが開いている時の閉じるボタン（下付き） */}
+                              <div className="relative">
+                                <button
+                                  onClick={() =>
+                                    toggleDetailExpansion(schedule.id)
+                                  }
+                                  className="absolute inset-x-0 bottom-0 flex items-center justify-end py-3 pr-4 text-stone-500 hover:text-stone-700 hover:bg-stone-50 transition-colors rounded-b-lg -ml-3 -mr-3 -mb-3 w-[calc(100%+1.5rem)] md:-ml-4 md:-mr-4 md:-mb-4 md:w-[calc(100%+2rem)]"
+                                >
+                                  <div className="flex items-center gap-1">
+                                    <span className="text-sm">詳細</span>
+                                    <Minus className="w-5 h-5" />
+                                  </div>
+                                </button>
+                                <div className="h-5"></div>
+                              </div>
                             </div>
                           )}
                         </div>
-
-                        <h3 className="text-lg font-semibold text-stone-800 mb-1">
-                          {schedule.title}
-                        </h3>
-                        {schedule.location && (
-                          <div className="mb-2">
-                            <a
-                              href={getGoogleMapsLink(schedule.location) || '#'}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-stone-600 hover:text-stone-800 underline inline-flex items-center gap-1 break-all"
-                            >
-                              <MapPin className="w-4 h-4 flex-shrink-0" />
-                              <span className="break-words">
-                                {schedule.location}
-                              </span>
-                            </a>
-                          </div>
-                        )}
-
-                        {(schedule.transport?.method ||
-                          schedule.transport?.duration) && (
-                          <div className="bg-stone-50 rounded-lg p-3 mb-3">
-                            <div className="flex items-center gap-2 text-sm text-stone-600">
-                              {schedule.transport.method ? (
-                                getTransportIcon(schedule.transport.method)
-                              ) : (
-                                <Car className="w-4 h-4" />
-                              )}
-                              {schedule.transport.method && (
-                                <span>{schedule.transport.method}</span>
-                              )}
-                              {schedule.transport.duration && (
-                                <span>({schedule.transport.duration})</span>
-                              )}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* アコーディオンが閉じている時の開くボタン */}
-                        {(schedule.description ||
-                          (schedule.budget && schedule.budget > 0) ||
-                          (schedule.files && schedule.files.length > 0)) &&
-                          !expandedDetails.has(schedule.id) && (
-                            <div className="relative">
-                              <button
-                                onClick={() =>
-                                  toggleDetailExpansion(schedule.id)
-                                }
-                                className="absolute inset-x-0 bottom-0 flex items-center justify-end py-3 pr-4 text-stone-500 hover:text-stone-700 hover:bg-stone-50 transition-colors rounded-b-lg -ml-3 -mr-3 -mb-3 w-[calc(100%+1.5rem)] md:-ml-4 md:-mr-4 md:-mb-4 md:w-[calc(100%+2rem)]"
-                              >
-                                <div className="flex items-center gap-1">
-                                  <span className="text-sm">詳細</span>
-                                  <Plus className="w-5 h-5" />
-                                </div>
-                              </button>
-                              <div className="h-5"></div>
-                            </div>
-                          )}
-
-                        {/* アコーディオンで表示される詳細情報 */}
-                        {expandedDetails.has(schedule.id) && (
-                          <div>
-                            <div className="space-y-3 mb-3">
-                              {!!schedule.budget && schedule.budget > 0 && (
-                                <div className="bg-stone-50 rounded-lg p-3">
-                                  <div className="flex items-center gap-2 text-sm text-stone-600">
-                                    <span className="font-medium">予算:</span>
-                                    <span>
-                                      ¥{schedule.budget.toLocaleString()}
-                                    </span>
-                                    {schedule.budgetPeople &&
-                                      schedule.budgetPeople > 1 && (
-                                        <span>
-                                          ({schedule.budgetPeople}人分)
-                                        </span>
-                                      )}
-                                    {schedule.paidBy &&
-                                      schedule.paidBy.trim() && (
-                                        <span className="ml-2">
-                                          支払い:{' '}
-                                          {trip.members.find(
-                                            (member) =>
-                                              member.id === schedule.paidBy
-                                          )?.name || schedule.paidBy}
-                                        </span>
-                                      )}
-                                  </div>
-                                </div>
-                              )}
-
-                              {schedule.description && (
-                                <div className="text-stone-700 whitespace-pre-wrap break-words overflow-wrap-anywhere">
-                                  {linkifyText(schedule.description)}
-                                </div>
-                              )}
-
-                              {/* 詳細モードでのファイル表示 */}
-                              <div>
-                                <ScheduleFiles
-                                  files={schedule.files}
-                                  scheduleId={schedule.id}
-                                  onFileUpload={handleFileUpload}
-                                  onFileDelete={handleFileDelete}
-                                  uploadingFiles={uploadingFiles}
-                                  expandedSchedules={expandedSchedules}
-                                  onToggleExpand={onToggleExpand}
-                                  onImageClick={(url) => setShowImageModal(url)}
-                                  onPDFClick={(url) => setShowPDFModal(url)}
-                                  onFilesUpload={handleFilesUpload}
-                                />
-                              </div>
-                            </div>
-
-                            {/* アコーディオンが開いている時の閉じるボタン（下付き） */}
-                            <div className="relative">
-                              <button
-                                onClick={() =>
-                                  toggleDetailExpansion(schedule.id)
-                                }
-                                className="absolute inset-x-0 bottom-0 flex items-center justify-end py-3 pr-4 text-stone-500 hover:text-stone-700 hover:bg-stone-50 transition-colors rounded-b-lg -ml-3 -mr-3 -mb-3 w-[calc(100%+1.5rem)] md:-ml-4 md:-mr-4 md:-mb-4 md:w-[calc(100%+2rem)]"
-                              >
-                                <div className="flex items-center gap-1">
-                                  <span className="text-sm">詳細</span>
-                                  <Minus className="w-5 h-5" />
-                                </div>
-                              </button>
-                              <div className="h-5"></div>
-                            </div>
-                          </div>
-                        )}
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
+                )}
 
-                  {/* スケジュールがある場合の追加ボタン */}
-                  {daySchedules.length > 0 && canEdit && (
-                    <div className="mt-4 pt-4 border-t border-stone-100 flex justify-center">
+                {/* スケジュールがある場合の追加ボタン */}
+                {daySchedules.length > 0 && canEdit && (
+                  <div className="mt-4 pt-4 border-t border-stone-100 flex justify-center">
+                    <AddScheduleButton
+                      onClick={() => {
+                        onDateChange(date);
+                        handleNewScheduleClick(date);
+                      }}
+                    />
+                  </div>
+                )}
+
+                {/* スケジュールがない場合の中央ボタン */}
+                {daySchedules.length === 0 && (
+                  <div className="text-center py-12 text-stone-500">
+                    <Calendar className="w-12 h-12 mx-auto mb-4 text-stone-300" />
+                    <p>この日のスケジュールはまだありません</p>
+                    {canEdit && (
                       <AddScheduleButton
                         onClick={() => {
                           onDateChange(date);
                           handleNewScheduleClick(date);
                         }}
+                        className="mt-4 mx-auto"
                       />
-                    </div>
-                  )}
-
-                  {/* スケジュールがない場合の中央ボタン */}
-                  {daySchedules.length === 0 && (
-                    <div className="text-center py-12 text-stone-500">
-                      <Calendar className="w-12 h-12 mx-auto mb-4 text-stone-300" />
-                      <p>この日のスケジュールはまだありません</p>
-                      {canEdit && (
-                        <AddScheduleButton
-                          onClick={() => {
-                            onDateChange(date);
-                            handleNewScheduleClick(date);
-                          }}
-                          className="mt-4 mx-auto"
-                        />
-                      )}
-                    </div>
-                  )}
-                </div>
+                    )}
+                  </div>
+                )}
               </div>
             );
           })}

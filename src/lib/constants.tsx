@@ -215,3 +215,60 @@ export const getIcon = (icon?: string) => {
       return null;
   }
 };
+
+export const iconOptions = [
+  {
+    id: '',
+    name: 'なし',
+    bgColor: colorPalette.strawBeige.light,
+    iconColor: colorPalette.strawBeige.accentText,
+  },
+  {
+    id: 'meal',
+    name: '食事',
+    bgColor: colorPalette.sandRed.light,
+    iconColor: colorPalette.sandRed.accentText,
+  },
+  {
+    id: 'camera',
+    name: '観光',
+    bgColor: colorPalette.strawBeige.light,
+    iconColor: colorPalette.strawBeige.accentText,
+  },
+  {
+    id: 'bed',
+    name: '宿泊',
+    bgColor: colorPalette.roseQuartz.light,
+    iconColor: colorPalette.roseQuartz.accentText,
+  },
+  {
+    id: 'car',
+    name: '車',
+    bgColor: colorPalette.aquaBlue.light,
+    iconColor: colorPalette.aquaBlue.accentText,
+  },
+  {
+    id: 'train',
+    name: '電車',
+    bgColor: colorPalette.aquaBlue.light,
+    iconColor: colorPalette.aquaBlue.accentText,
+  },
+  {
+    id: 'bus',
+    name: 'バス',
+    bgColor: colorPalette.aquaBlue.light,
+    iconColor: colorPalette.aquaBlue.accentText,
+  },
+  {
+    id: 'plane',
+    name: '飛行機',
+    bgColor: colorPalette.aquaBlue.light,
+    iconColor: colorPalette.aquaBlue.accentText,
+  },
+];
+
+export const getIconOption = (icon?: string) => {
+  return (
+    iconOptions.find((option) => option.id === (icon || '')) || iconOptions[0]
+  );
+};

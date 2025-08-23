@@ -1,0 +1,231 @@
+/* 印刷専用スタイル */
+@media print {
+  /* ページ設定 - A4サイズに最適化 */
+  @page {
+    margin: 10mm 8mm;
+    size: A4 portrait;
+  }
+
+  /* 基本設定 */
+  html,
+  body {
+    font-size: 14px !important;
+    line-height: 1.4 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color: #000 !important;
+  }
+
+  /* 不要な要素を完全に非表示 */
+  nav,
+  button,
+  .no-print,
+  header,
+  aside,
+  /* ヘッダーとナビゲーション全般 */
+  [role="banner"],
+  [role="navigation"],
+  /* アプリのヘッダー部分 */
+  .sticky,
+  .fixed,
+  /* フローティングメニューなど */
+  .floating,
+  .float,
+  /* スケジュール追加ボタン関連 */
+  .mt-4.pt-4.border-t.border-stone-100,
+  .text-center.py-12.text-stone-500 button {
+    display: none !important;
+  }
+
+  /* レイアウトを印刷用に調整 */
+  .md\:grid-cols-\[auto_1fr\],
+  .lg\:grid-cols-\[auto_1fr\] {
+    display: block !important;
+    grid-template-columns: none !important;
+  }
+
+  /* 左サイドバー（ナビゲーション）を完全に非表示 */
+  .md\:grid-cols-\[auto_1fr\] > div:first-child {
+    display: none !important;
+  }
+
+  /* 日付セクション - 1ページ1日 */
+  .scroll-mt-6 {
+    page-break-before: always;
+    page-break-inside: avoid;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: calc(297mm - 20mm) !important; /* A4高さ - マージン */
+    display: flex !important;
+    flex-direction: column !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: white !important;
+  }
+
+  /* 最初の日付は改ページしない（印刷の1ページ目になる） */
+  .scroll-mt-6:first-of-type {
+    page-break-before: auto;
+  }
+
+  /* 日付未定セクションを非表示 */
+  #schedule-unscheduled {
+    display: none !important;
+  }
+
+  /* 日付タイトル */
+  .scroll-mt-6 h2 {
+    font-size: 20px !important;
+    font-weight: bold !important;
+    margin: 0 0 12px 0 !important;
+    padding: 8px 0 !important;
+    border-bottom: 2px solid #000 !important;
+    text-align: center !important;
+    color: #000 !important;
+  }
+
+  /* タイムライン表示のコンテナ */
+  .space-y-1 {
+    margin: 0 !important;
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+  }
+
+  .space-y-1 > * + * {
+    margin-top: 0 !important;
+  }
+
+  /* 時間軸の各行 - 均等配分 */
+  .min-h-\[3rem\] {
+    flex: 1 !important;
+    min-height: calc(
+      (297mm - 20mm - 40mm) / 18
+    ) !important; /* (A4高さ - マージン - ヘッダー) / 18時間 */
+    margin-bottom: 0 !important;
+    page-break-inside: avoid;
+    display: flex !important;
+    align-items: flex-start !important;
+    border-bottom: 0.5px solid #eee !important;
+  }
+
+  /* 時間表示部分 */
+  .w-16 {
+    width: 45px !important;
+    flex-shrink: 0 !important;
+    font-size: 12px !important;
+    font-weight: bold !important;
+    color: #666 !important;
+    padding: 2px 0 !important;
+    display: flex !important;
+    align-items: flex-start !important;
+  }
+
+  /* 時間軸の線（各行に組み込まれたので不要） */
+  .border-t.border-stone-200 {
+    display: none !important;
+  }
+
+  /* スケジュール項目のコンテナ */
+  .flex-1.relative {
+    flex: 1 !important;
+    position: relative !important;
+  }
+
+  /* スケジュール項目 */
+  .shadow-sm.hover\:shadow-md {
+    box-shadow: none !important;
+    border: 0.5px solid #ccc !important;
+    margin: 1px 0 !important;
+    padding: 2px 6px !important;
+    border-radius: 3px !important;
+    background: white !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    font-size: 11px !important;
+  }
+
+  /* アイコン */
+  .px-3.py-2.rounded-full {
+    padding: 2px 6px !important;
+    font-size: 11px !important;
+    border-radius: 10px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    margin-right: 6px !important;
+  }
+
+  /* 時間表示 */
+  .text-sm.font-medium.text-stone-600 {
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    color: #555 !important;
+    margin-right: 8px !important;
+  }
+
+  /* スケジュールタイトル */
+  .text-base.font-medium.text-stone-800 {
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: #000 !important;
+    flex: 1 !important;
+  }
+
+  /* 早朝・深夜セクション */
+  .text-stone-500 {
+    color: #555 !important;
+    font-weight: bold !important;
+    font-size: 12px !important;
+  }
+
+  /* スペース調整 */
+  .gap-3 {
+    gap: 3px !important;
+  }
+
+  .space-y-2 > * + * {
+    margin-top: 3px !important;
+  }
+
+  /* 背景とボーダー */
+  .bg-white {
+    background-color: white !important;
+  }
+
+  .bg-stone-50 {
+    background-color: #fafafa !important;
+  }
+
+  .border-stone-200 {
+    border-color: #ddd !important;
+  }
+
+  /* フレックスレイアウト調整 */
+  .flex.items-center.gap-3 {
+    display: flex !important;
+    align-items: center !important;
+    gap: 3px !important;
+    flex: 1 !important;
+  }
+
+  .flex.items-center.gap-2 {
+    display: flex !important;
+    align-items: center !important;
+    gap: 2px !important;
+  }
+
+  /* 印刷時の余白調整 */
+  .p-3,
+  .p-4,
+  .p-6 {
+    padding: 6px !important;
+  }
+
+  .mb-6,
+  .mb-4,
+  .mb-3 {
+    margin-bottom: 8px !important;
+  }
+}
