@@ -25,7 +25,7 @@ interface JoinPageClientProps {
 
 export default function JoinPageClient({ inviteCode }: JoinPageClientProps) {
   const router = useRouter();
-  const { user, isGuest } = useAuth();
+  const { user, isGuest, loading: authLoading } = useAuth();
   const [status, setStatus] = useState<
     | 'loading'
     | 'success'
@@ -40,32 +40,14 @@ export default function JoinPageClient({ inviteCode }: JoinPageClientProps) {
   const [showLogin, setShowLogin] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string>('');
 
-  // 招待コードから旅行タイトルを取得（認証なしで表示のみ）
-  useEffect(() => {
-    const fetchInviteInfo = async () => {
-      if (inviteCode) {
-        const inviteInfo = await getInviteInfo(inviteCode);
-        if (inviteInfo) {
-          setTripName(inviteInfo.tripTitle);
-        } else {
-          // 招待コードが無効な場合は404へ
-          setStatus('not-found');
-        }
-      }
-    };
-    fetchInviteInfo();
-  }, [inviteCode]);
-
   useEffect(() => {
     const handleInitialLoad = async () => {
-      if (!inviteCode) {
-        setStatus('not-found');
+      // Auth がまだローディング中の場合は何もしない
+      if (authLoading) {
         return;
       }
 
-      // まず招待コードの有効性をチェック
-      const trip = await getTripByInviteCode(inviteCode);
-      if (!trip) {
+      if (!inviteCode) {
         setStatus('not-found');
         return;
       }
@@ -77,14 +59,18 @@ export default function JoinPageClient({ inviteCode }: JoinPageClientProps) {
       }
 
       try {
-        // 既にtripDataがある場合はそれを使用、なければ再取得
-        let trip = tripData;
-        if (!trip) {
-          trip = await getTripByInviteCode(inviteCode);
-          if (!trip) {
-            setStatus('not-found');
-            return;
-          }
+        // 招待リンクの場合、まずjoinTripByCodeでメンバーになってからtripを取得
+        const result = await joinTripByCode(user.uid, inviteCode);
+
+        if (!result.success) {
+          setStatus('not-found');
+          return;
+        }
+
+        // メンバーになったのでtripデータを取得
+        const trip = await getTripByInviteCode(inviteCode);
+
+        if (trip) {
           setTripData(trip);
           setTripName(trip.title);
         }
@@ -95,18 +81,12 @@ export default function JoinPageClient({ inviteCode }: JoinPageClientProps) {
           return;
         }
 
-        // 通常ユーザーの場合はメンバーとして参加
-        const result = await joinTripByCode(user.uid, inviteCode);
-        if (result.success) {
-          setStatus('success');
-          // 少し長めに待機してFirestoreの更新を確実にする
-          setTimeout(() => {
-            router.push(`/trip/${result.tripId}`);
-          }, 2000);
-        } else {
-          // joinTripByCodeが失敗した場合は招待コードが無効
-          setStatus('not-found');
-        }
+        // 通常ユーザーの場合は成功画面を表示してからリダイレクト
+        setStatus('success');
+        // 少し長めに待機してFirestoreの更新を確実にする
+        setTimeout(() => {
+          router.push(`/trip/${result.tripId}`);
+        }, 2000);
       } catch (error) {
         console.error('Failed to process invite:', error);
         // ネットワークエラーやFirestoreエラーはサーバーエラー
@@ -115,7 +95,7 @@ export default function JoinPageClient({ inviteCode }: JoinPageClientProps) {
     };
 
     handleInitialLoad();
-  }, [user, isGuest, inviteCode, router, tripData]);
+  }, [user, isGuest, inviteCode, router, tripData, authLoading]);
 
   const handleMemberJoin = async () => {
     try {
@@ -146,6 +126,13 @@ export default function JoinPageClient({ inviteCode }: JoinPageClientProps) {
 
       // 招待コードを検証
       if (!inviteCode) {
+        setStatus('not-found');
+        return;
+      }
+
+      // 招待コードの検証
+      const inviteInfo = await getInviteInfo(inviteCode);
+      if (!inviteInfo) {
         setStatus('not-found');
         return;
       }

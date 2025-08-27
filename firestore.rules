@@ -22,14 +22,19 @@ service cloud.firestore {
     
     // 旅行の読み書きルール
     match /trips/{tripId} {
-      // 読み取り: 認証済みユーザーのみ
-      allow read: if request.auth != null && canAccessTrip(resource.data);
+      // 読み取り: 認証済みユーザーのみ（招待リンク経由のアクセスも許可）
+      allow read: if request.auth != null && 
+        (canAccessTrip(resource.data) || resource.data.inviteCode != null);
       
       // 作成: 認証済み非匿名ユーザーのみ
       allow create: if request.auth != null && !isAnonymous();
       
-      // 更新: メンバー、作成者、またはゲスト編集権限がある場合
-      allow update: if request.auth != null && canEditTrip(resource.data);
+      // 更新: メンバー、作成者、ゲスト編集権限、または招待コード経由でのメンバー追加
+      allow update: if request.auth != null && 
+        (canEditTrip(resource.data) || 
+         (resource.data.inviteCode != null && 
+          ('memberIds' in request.resource.data && 
+           request.auth.uid in request.resource.data.memberIds)));
          
       // 削除: 作成者のみ
       allow delete: if request.auth != null && 
