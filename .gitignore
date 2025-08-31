@@ -1,7 +1,7 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# Claude settings
-.claude/
+# Claude local settings
+.claude/settings.local.json
 
 # dependencies
 /node_modules
