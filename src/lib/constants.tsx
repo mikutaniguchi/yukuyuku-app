@@ -98,10 +98,10 @@ export const formatDate = (dateString: string): string => {
   return `${date.getMonth() + 1}/${date.getDate()}(${days[date.getDay()]})`;
 };
 
-export const linkifyText = (text: string) => {
+export const formatMarkdownText = (text: string) => {
   if (!text) return text;
 
-  // 行ごとに分割してマークダウン見出しとURLを処理
+  // 行ごとに分割してマークダウン見出し、箇条書き、URLを処理
   const lines = text.split('\n');
 
   return lines.map((line, lineIndex) => {
@@ -120,6 +120,32 @@ export const linkifyText = (text: string) => {
       return (
         <div key={lineIndex} className={headingClass}>
           {processUrls(content)}
+        </div>
+      );
+    }
+
+    // 番号付きリストの処理（1. , 2. など）
+    const numberedListMatch = line.match(/^(\d+\.\s+)(.+)$/);
+    if (numberedListMatch) {
+      const content = numberedListMatch[2];
+      return (
+        <div key={lineIndex} className="flex items-start ml-4 mb-1">
+          <span className="text-stone-600 font-medium mr-2 leading-normal">
+            {numberedListMatch[1]}
+          </span>
+          <div className="flex-1 leading-normal">{processUrls(content)}</div>
+        </div>
+      );
+    }
+
+    // 箇条書きの処理（- で始まる行）
+    const bulletMatch = line.match(/^-\s+(.+)$/);
+    if (bulletMatch) {
+      const content = bulletMatch[1];
+      return (
+        <div key={lineIndex} className="flex items-start ml-4 mb-1">
+          <span className="text-stone-600 mr-2 leading-normal">•</span>
+          <div className="flex-1 leading-normal">{processUrls(content)}</div>
         </div>
       );
     }

@@ -24,7 +24,7 @@ import {
   colorPalette,
   getDatesInRange,
   formatDate,
-  linkifyText,
+  formatMarkdownText,
   getGoogleMapsLink,
   getIcon,
   iconOptions,
@@ -850,7 +850,7 @@ export default function SchedulePage({
 
                                 {schedule.description && (
                                   <div className="text-stone-700 whitespace-pre-wrap break-words overflow-wrap-anywhere">
-                                    {linkifyText(schedule.description)}
+                                    {formatMarkdownText(schedule.description)}
                                   </div>
                                 )}
 
@@ -1112,7 +1112,7 @@ export default function SchedulePage({
 
                     {schedule.description && (
                       <div className="text-stone-700 whitespace-pre-wrap break-words overflow-wrap-anywhere mt-2">
-                        {linkifyText(schedule.description)}
+                        {formatMarkdownText(schedule.description)}
                       </div>
                     )}
                   </div>
