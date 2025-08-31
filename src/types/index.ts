@@ -91,6 +91,7 @@ export interface Trip {
   members: Member[];
   inviteCode: string;
   memo: string;
+  memoImages?: UploadedFile[];
   schedules: Record<string, Schedule[]>;
   checklists: Checklist[];
   dailyMemos?: {
