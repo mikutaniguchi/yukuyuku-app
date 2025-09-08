@@ -457,7 +457,7 @@ export default function SchedulePage({
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] lg:grid-cols-[auto_1fr] gap-3 md:gap-6">
-        <div className="bg-white rounded-xl shadow-sm border border-stone-200 p-4 md:w-fit md:h-fit md:sticky md:top-6">
+        <div className="hidden md:block bg-white rounded-xl shadow-sm border border-stone-200 p-4 md:w-fit md:h-fit md:sticky md:top-6">
           <h2 className="text-lg font-semibold text-stone-800 mb-4">日程</h2>
           <div className="space-y-2">
             {tripDates.map((date) => (
