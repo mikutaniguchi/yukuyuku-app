@@ -3,13 +3,8 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Calendar } from 'lucide-react';
-import {
-  joinTripByCode,
-  getTripByInviteCode,
-  getInviteInfo,
-} from '@/lib/firestore';
+import { joinTripByCode, getTripByInviteCode } from '@/lib/firestore';
 import { useAuth } from '@/contexts/AuthContext';
-import { loginAsGuest } from '@/lib/auth';
 import { auth } from '@/lib/firebase';
 import { colorPalette } from '@/lib/constants';
 import LoginModal from '@/components/LoginModal';
@@ -25,7 +20,7 @@ interface JoinPageClientProps {
 
 export default function JoinPageClient({ inviteCode }: JoinPageClientProps) {
   const router = useRouter();
-  const { user, isGuest, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [status, setStatus] = useState<
     | 'loading'
     | 'success'
@@ -42,60 +37,49 @@ export default function JoinPageClient({ inviteCode }: JoinPageClientProps) {
 
   useEffect(() => {
     const handleInitialLoad = async () => {
-      // Auth がまだローディング中の場合は何もしない
-      if (authLoading) {
-        return;
-      }
-
       if (!inviteCode) {
+        console.error('No invite code provided');
         setStatus('not-found');
         return;
       }
 
-      // ユーザーがいない場合は選択画面を表示
-      if (!user) {
-        setStatus('choose-access');
-        return;
-      }
-
       try {
-        // 招待リンクの場合、まずjoinTripByCodeでメンバーになってからtripを取得
-        const result = await joinTripByCode(user.uid, inviteCode);
+        // まず未認証状態で旅行データの存在を確認
+        const trip = await getTripByInviteCode(inviteCode);
 
-        if (!result.success) {
+        if (!trip) {
           setStatus('not-found');
           return;
         }
 
-        // メンバーになったのでtripデータを取得
-        const trip = await getTripByInviteCode(inviteCode);
+        setTripData(trip);
+        setTripName(trip.title);
+        setSelectedDate(trip.startDate);
 
-        if (trip) {
-          setTripData(trip);
-          setTripName(trip.title);
-        }
-
-        // ゲストユーザーの場合は直接閲覧
-        if (isGuest) {
-          setStatus('guest-viewing');
+        // 未認証ユーザーまたは認証ローディング中は選択画面を表示
+        if (authLoading || !user) {
+          setStatus('choose-access');
           return;
         }
 
-        // 通常ユーザーの場合は成功画面を表示してからリダイレクト
-        setStatus('success');
-        // 少し長めに待機してFirestoreの更新を確実にする
-        setTimeout(() => {
-          router.push(`/trip/${result.tripId}`);
-        }, 2000);
+        // 認証済みユーザーの場合は自動でメンバー参加処理
+        const result = await joinTripByCode(user.uid, inviteCode);
+        if (result.success) {
+          setStatus('success');
+          setTimeout(() => {
+            router.push(`/trip/${result.tripId}`);
+          }, 2000);
+        } else {
+          setStatus('server-error');
+        }
       } catch (error) {
         console.error('Failed to process invite:', error);
-        // ネットワークエラーやFirestoreエラーはサーバーエラー
         setStatus('server-error');
       }
     };
 
     handleInitialLoad();
-  }, [user, isGuest, inviteCode, router, tripData, authLoading]);
+  }, [user, inviteCode, router, authLoading]);
 
   const handleMemberJoin = async () => {
     try {
@@ -120,39 +104,8 @@ export default function JoinPageClient({ inviteCode }: JoinPageClientProps) {
   };
 
   const handleGuestAccess = async () => {
-    try {
-      // ゲストとして認証
-      await loginAsGuest();
-
-      // 招待コードを検証
-      if (!inviteCode) {
-        setStatus('not-found');
-        return;
-      }
-
-      // 招待コードの検証
-      const inviteInfo = await getInviteInfo(inviteCode);
-      if (!inviteInfo) {
-        setStatus('not-found');
-        return;
-      }
-
-      const trip = await getTripByInviteCode(inviteCode);
-      if (!trip) {
-        setStatus('not-found');
-        return;
-      }
-
-      setTripData(trip);
-      setTripName(trip.title);
-      setSelectedDate(trip.startDate); // 初期日付を設定
-
-      // ゲストとして招待ページで閲覧開始
-      setStatus('guest-viewing');
-    } catch (error) {
-      console.error('Failed to access as guest:', error);
-      setStatus('server-error');
-    }
+    // 既に旅行データが取得できているので、そのまま閲覧モードに移行
+    setStatus('guest-viewing');
   };
 
   const handleLogin = async (user: User) => {
@@ -180,7 +133,7 @@ export default function JoinPageClient({ inviteCode }: JoinPageClientProps) {
   };
 
   if (showLogin) {
-    return <LoginModal onLogin={handleLogin} allowGuestAccess={true} />;
+    return <LoginModal onLogin={handleLogin} />;
   }
 
   // 招待リンクが無効な場合は404ページへリダイレクト
@@ -201,7 +154,7 @@ export default function JoinPageClient({ inviteCode }: JoinPageClientProps) {
     return null;
   }
 
-  if (status === 'guest-viewing' && tripData && user) {
+  if (status === 'guest-viewing' && tripData) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-stone-50 to-neutral-100">
         <div className="bg-stone-100 p-4 text-center border-b border-stone-200">

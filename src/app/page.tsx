@@ -10,16 +10,14 @@ import {
 import { Trip, User } from '@/types';
 import { Calendar, Plus } from 'lucide-react';
 import { colorPalette, formatDate } from '@/lib/constants';
-import LoginModal from '@/components/LoginModal';
 import CreateTripModal from '@/components/CreateTripModal';
 import Header from '@/components/Header';
 import LoadingScreen from '@/components/LoadingScreen';
 
 export default function Home() {
   const router = useRouter();
-  const { user: firebaseUser, loading } = useAuth();
+  const { user: firebaseUser, loading, isGuest } = useAuth();
   const [trips, setTrips] = useState<Trip[]>([]);
-  const [showLoginModal, setShowLoginModal] = useState(false);
   const [showCreateTripModal, setShowCreateTripModal] = useState(false);
   const [loadingTrips, setLoadingTrips] = useState(true);
   const [appUser, setAppUser] = useState<User | null>(null);
@@ -27,6 +25,12 @@ export default function Home() {
   useEffect(() => {
     if (!loading) {
       if (firebaseUser) {
+        // ゲストユーザーまたは未ログインの場合はログインページにリダイレクト
+        if (isGuest) {
+          router.push('/login');
+          return;
+        }
+
         const userData: User = {
           id: firebaseUser.uid,
           name: firebaseUser.displayName || 'ユーザー',
@@ -34,14 +38,13 @@ export default function Home() {
           type: 'google',
         };
         setAppUser(userData);
-        setShowLoginModal(false);
         loadUserTrips(firebaseUser.uid);
       } else {
-        setShowLoginModal(true);
-        setLoadingTrips(false);
+        router.push('/login');
+        return;
       }
     }
-  }, [firebaseUser, loading]);
+  }, [firebaseUser, loading, isGuest, router]);
 
   const loadUserTrips = async (userId: string) => {
     try {
@@ -51,14 +54,6 @@ export default function Home() {
       console.error('Failed to load trips:', error);
     } finally {
       setLoadingTrips(false);
-    }
-  };
-
-  const handleLogin = async (userData: User) => {
-    setAppUser(userData);
-    setShowLoginModal(false);
-    if (userData.id) {
-      loadUserTrips(userData.id);
     }
   };
 
@@ -97,10 +92,6 @@ export default function Home() {
 
   if (loading || loadingTrips) {
     return <LoadingScreen />;
-  }
-
-  if (showLoginModal) {
-    return <LoginModal onLogin={handleLogin} allowGuestAccess={false} />;
   }
 
   return (

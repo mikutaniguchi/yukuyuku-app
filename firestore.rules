@@ -1,35 +1,28 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // ヘルパー関数: 匿名ユーザーかチェック
-    function isAnonymous() {
-      return request.auth.token.firebase.sign_in_provider == 'anonymous';
-    }
-    
     // ヘルパー関数: ユーザーが旅行にアクセス可能かチェック
     function canAccessTrip(tripData) {
       return request.auth.uid == tripData.creator || 
-             request.auth.uid in tripData.memberIds ||
-             (isAnonymous() && (tripData.guestAccessEnabled == true || !('guestAccessEnabled' in tripData)));
+             request.auth.uid in tripData.memberIds;
     }
     
     // ヘルパー関数: ユーザーが旅行を編集可能かチェック
     function canEditTrip(tripData) {
       return request.auth.uid == tripData.creator || 
-             request.auth.uid in tripData.memberIds ||
-             (isAnonymous() && tripData.guestAccessEnabled == true);
+             request.auth.uid in tripData.memberIds;
     }
     
     // 旅行の読み書きルール
     match /trips/{tripId} {
-      // 読み取り: 認証済みユーザーのみ（招待リンク経由のアクセスも許可）
-      allow read: if request.auth != null && 
-        (canAccessTrip(resource.data) || resource.data.inviteCode != null);
+      // 読み取り: 認証済みユーザー または 招待コード経由の未認証アクセス
+      allow read: if (request.auth != null && canAccessTrip(resource.data)) ||
+                     (request.auth == null && resource.data.inviteCode != null);
       
-      // 作成: 認証済み非匿名ユーザーのみ
-      allow create: if request.auth != null && !isAnonymous();
+      // 作成: 認証済みユーザーのみ
+      allow create: if request.auth != null;
       
-      // 更新: メンバー、作成者、ゲスト編集権限、または招待コード経由でのメンバー追加
+      // 更新: 認証済みメンバー、作成者、または招待コード経由でのメンバー追加
       allow update: if request.auth != null && 
         (canEditTrip(resource.data) || 
          (resource.data.inviteCode != null && 
@@ -38,7 +31,7 @@ service cloud.firestore {
          
       // 削除: 作成者のみ
       allow delete: if request.auth != null && 
-        request.auth.uid == resource.data.creator && !isAnonymous();
+        request.auth.uid == resource.data.creator;
     }
     
     // ヘルパー関数: tripIdから旅行データを取得してアクセス権をチェック
@@ -52,51 +45,52 @@ service cloud.firestore {
       return canEditTrip(trip);
     }
 
+    // 未認証でも招待コード経由の旅行データ読み取りを許可するヘルパー
+    function canAccessTripDataWithInvite(tripId) {
+      let trip = get(/databases/$(database)/documents/trips/$(tripId)).data;
+      return (request.auth != null && canAccessTrip(trip)) ||
+             (request.auth == null && trip.inviteCode != null);
+    }
+
     // スケジュール
     match /schedules/{scheduleId} {
-      allow read: if request.auth != null && 
-        (resource.data.tripId != null && canAccessTripData(resource.data.tripId));
+      allow read: if resource.data.tripId != null && canAccessTripDataWithInvite(resource.data.tripId);
       allow write: if request.auth != null && 
         (resource.data.tripId != null && canEditTripData(resource.data.tripId));
     }
     
     // チェックリスト
     match /checklists/{checklistId} {
-      allow read: if request.auth != null && 
-        (resource.data.tripId != null && canAccessTripData(resource.data.tripId));
+      allow read: if resource.data.tripId != null && canAccessTripDataWithInvite(resource.data.tripId);
       allow write: if request.auth != null && 
         (resource.data.tripId != null && canEditTripData(resource.data.tripId));
     }
     
     // メモ
     match /memos/{memoId} {
-      allow read: if request.auth != null && 
-        (resource.data.tripId != null && canAccessTripData(resource.data.tripId));
+      allow read: if resource.data.tripId != null && canAccessTripDataWithInvite(resource.data.tripId);
       allow write: if request.auth != null && 
         (resource.data.tripId != null && canEditTripData(resource.data.tripId));
     }
     
     // タグ
     match /tags/{tagId} {
-      allow read: if request.auth != null && 
-        (resource.data.tripId != null && canAccessTripData(resource.data.tripId));
+      allow read: if resource.data.tripId != null && canAccessTripDataWithInvite(resource.data.tripId);
       allow write: if request.auth != null && 
         (resource.data.tripId != null && canEditTripData(resource.data.tripId));
     }
     
     // メンバー
     match /members/{memberId} {
-      allow read: if request.auth != null && 
-        (resource.data.tripId != null && canAccessTripData(resource.data.tripId));
-      // メンバー情報の編集は非匿名ユーザーのみ
-      allow write: if request.auth != null && !isAnonymous() &&
+      allow read: if resource.data.tripId != null && canAccessTripDataWithInvite(resource.data.tripId);
+      // メンバー情報の編集は認証済みユーザーのみ
+      allow write: if request.auth != null &&
         (resource.data.tripId != null && canEditTripData(resource.data.tripId));
     }
     
     // 予算
     match /budgets/{budgetId} {
-      allow read: if request.auth != null && 
-        (resource.data.tripId != null && canAccessTripData(resource.data.tripId));
+      allow read: if resource.data.tripId != null && canAccessTripDataWithInvite(resource.data.tripId);
       allow write: if request.auth != null && 
         (resource.data.tripId != null && canEditTripData(resource.data.tripId));
     }
@@ -104,8 +98,8 @@ service cloud.firestore {
     // 招待情報（タイトルのみ、認証不要で読み取り可能）
     match /invites/{inviteCode} {
       allow read: if true;  // 誰でも読み取り可能（OGP用、タイトルのみ）
-      allow create: if request.auth != null && !isAnonymous();  // 認証済み非匿名ユーザーのみ作成可能
-      allow update: if request.auth != null && !isAnonymous();  // 認証済み非匿名ユーザーのみ更新可能
+      allow create: if request.auth != null;  // 認証済みユーザーのみ作成可能
+      allow update: if request.auth != null;  // 認証済みユーザーのみ更新可能
       allow delete: if false;  // 削除は不可
     }
   }

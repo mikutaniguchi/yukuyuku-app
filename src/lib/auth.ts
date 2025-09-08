@@ -1,6 +1,5 @@
 import {
   signOut,
-  signInAnonymously,
   onAuthStateChanged,
   updateProfile,
   deleteUser,
@@ -16,17 +15,8 @@ export const logout = async () => {
   }
 };
 
-export const loginAsGuest = async () => {
-  try {
-    const result = await signInAnonymously(auth);
-    return result.user;
-  } catch (error) {
-    throw error;
-  }
-};
-
-export const isGuestUser = (user: User | null): boolean => {
-  return user?.isAnonymous === true;
+export const isGuestUser = (_user: User | null): boolean => {
+  return false; // 匿名認証は使用しないため常にfalse
 };
 
 export const onAuthChange = (callback: (user: User | null) => void) => {

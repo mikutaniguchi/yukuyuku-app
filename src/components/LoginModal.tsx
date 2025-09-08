@@ -6,19 +6,14 @@ import { User } from '@/types';
 import { colorPalette } from '../lib/constants';
 import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
-import { loginAsGuest } from '@/lib/auth';
 import { Button } from './buttons';
 import ErrorMessage from './ErrorMessage';
 
 interface LoginModalProps {
   onLogin: (user: User) => void;
-  allowGuestAccess?: boolean;
 }
 
-export default function LoginModal({
-  onLogin,
-  allowGuestAccess = false,
-}: LoginModalProps) {
+export default function LoginModal({ onLogin }: LoginModalProps) {
   const [error, setError] = useState<string | null>(null);
 
   const handleGoogleLogin = async () => {
@@ -35,23 +30,6 @@ export default function LoginModal({
     } catch (error) {
       setError(
         error instanceof Error ? error.message : 'ログインに失敗しました'
-      );
-    }
-  };
-
-  const handleGuestLogin = async () => {
-    try {
-      const firebaseUser = await loginAsGuest();
-      const user: User = {
-        id: firebaseUser.uid,
-        name: 'ゲスト',
-        email: '',
-        type: 'guest',
-      };
-      onLogin(user);
-    } catch (error) {
-      setError(
-        error instanceof Error ? error.message : 'ゲストログインに失敗しました'
       );
     }
   };
@@ -80,18 +58,6 @@ export default function LoginModal({
             <span className="text-xl font-bold text-white">G</span>
             Googleアカウントでログイン
           </Button>
-
-          {allowGuestAccess && (
-            <Button
-              onClick={handleGuestLogin}
-              variant="outlined"
-              color="sandRed"
-              size="lg"
-              fullWidth
-            >
-              ゲストとして閲覧
-            </Button>
-          )}
         </div>
 
         {error && <ErrorMessage message={error} className="mb-4" />}
