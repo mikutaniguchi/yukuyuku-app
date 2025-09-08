@@ -263,6 +263,16 @@ export default function ScheduleForm({
         className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-base text-stone-900 bg-white"
       />
 
+      <input
+        type="text"
+        placeholder="住所（印刷時に表示されます）"
+        value={schedule.address || ''}
+        onChange={(e) =>
+          onScheduleChange({ ...schedule, address: e.target.value })
+        }
+        className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500 text-base text-stone-900 bg-white"
+      />
+
       <textarea
         placeholder="詳細・メモ"
         value={schedule.description}

@@ -122,6 +122,7 @@ export default function SchedulePage({
     endTime: undefined,
     title: '',
     location: '',
+    address: '',
     description: '',
     icon: '',
     budget: 0,
@@ -254,6 +255,7 @@ export default function SchedulePage({
           ...(scheduleData.endTime && { endTime: scheduleData.endTime }),
           title: scheduleData.title,
           location: scheduleData.location,
+          address: scheduleData.address || '',
           description: scheduleData.description,
           icon: scheduleData.icon,
           budget: scheduleData.budget,
@@ -276,6 +278,7 @@ export default function SchedulePage({
                   }),
                   title: scheduleData.title,
                   location: scheduleData.location,
+                  address: scheduleData.address || '',
                   description: scheduleData.description,
                   icon: scheduleData.icon,
                   budget: scheduleData.budget,
@@ -318,6 +321,7 @@ export default function SchedulePage({
       ...(newSchedule.endTime && { endTime: newSchedule.endTime }),
       title: newSchedule.title,
       location: newSchedule.location,
+      address: newSchedule.address || '',
       description: newSchedule.description,
       ...(newSchedule.icon && { icon: newSchedule.icon }),
       budget: newSchedule.budget,
@@ -346,6 +350,7 @@ export default function SchedulePage({
       endTime: undefined,
       title: '',
       location: '',
+      address: '',
       description: '',
       icon: '',
       budget: 0,
@@ -653,6 +658,7 @@ export default function SchedulePage({
                         endTime: schedule.endTime,
                         title: schedule.title,
                         location: schedule.location,
+                        address: schedule.address || '',
                         description: schedule.description,
                         icon: schedule.icon || '',
                         budget: schedule.budget || 0,
@@ -731,6 +737,7 @@ export default function SchedulePage({
                                       endTime: schedule.endTime,
                                       title: schedule.title,
                                       location: schedule.location,
+                                      address: schedule.address || '',
                                       description: schedule.description,
                                       icon: schedule.icon || '',
                                       budget: schedule.budget || 0,
@@ -772,6 +779,12 @@ export default function SchedulePage({
                                   {schedule.location}
                                 </span>
                               </a>
+                              {/* 印刷時のみ住所を表示 */}
+                              {schedule.address && (
+                                <div className="text-sm text-stone-500 ml-5 mt-1 print:block">
+                                  {schedule.address}
+                                </div>
+                              )}
                             </div>
                           )}
 
@@ -1070,6 +1083,7 @@ export default function SchedulePage({
                               endTime: schedule.endTime,
                               title: schedule.title,
                               location: schedule.location,
+                              address: schedule.address || '',
                               description: schedule.description,
                               icon: schedule.icon || '',
                               budget: schedule.budget || 0,
@@ -1107,6 +1121,12 @@ export default function SchedulePage({
                             {schedule.location}
                           </span>
                         </a>
+                        {/* 印刷時のみ住所を表示 */}
+                        {schedule.address && (
+                          <div className="hidden print:block text-sm text-stone-500 ml-5 mt-1">
+                            {schedule.address}
+                          </div>
+                        )}
                       </div>
                     )}
 

@@ -73,14 +73,23 @@ export default function TimelineView({
                           )}
 
                           {/* 時間とタイトル */}
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium text-stone-600">
-                              {schedule.startTime}
-                              {schedule.endTime && ` - ${schedule.endTime}`}
-                            </span>
-                            <span className="text-base font-medium text-stone-800">
-                              {schedule.title}
-                            </span>
+                          <div className="flex flex-col">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium text-stone-600">
+                                {schedule.startTime}
+                                {schedule.endTime && ` - ${schedule.endTime}`}
+                              </span>
+                              <span className="text-base font-medium text-stone-800">
+                                {schedule.title}
+                              </span>
+                            </div>
+                            {schedule.address && (
+                              <div className="mt-1">
+                                <div className="text-sm text-stone-700 print:block">
+                                  {schedule.address}
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </div>
 
@@ -145,14 +154,23 @@ export default function TimelineView({
                           )}
 
                           {/* 時間とタイトル */}
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium text-stone-600">
-                              {schedule.startTime}
-                              {schedule.endTime && ` - ${schedule.endTime}`}
-                            </span>
-                            <span className="text-base font-medium text-stone-800">
-                              {schedule.title}
-                            </span>
+                          <div className="flex flex-col">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium text-stone-600">
+                                {schedule.startTime}
+                                {schedule.endTime && ` - ${schedule.endTime}`}
+                              </span>
+                              <span className="text-base font-medium text-stone-800">
+                                {schedule.title}
+                              </span>
+                            </div>
+                            {schedule.address && (
+                              <div className="mt-1">
+                                <div className="text-sm text-stone-700 print:block">
+                                  {schedule.address}
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </div>
 
@@ -210,14 +228,23 @@ export default function TimelineView({
                           )}
 
                           {/* 時間とタイトル */}
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium text-stone-600">
-                              {schedule.startTime}
-                              {schedule.endTime && ` - ${schedule.endTime}`}
-                            </span>
-                            <span className="text-base font-medium text-stone-800">
-                              {schedule.title}
-                            </span>
+                          <div className="flex flex-col">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium text-stone-600">
+                                {schedule.startTime}
+                                {schedule.endTime && ` - ${schedule.endTime}`}
+                              </span>
+                              <span className="text-base font-medium text-stone-800">
+                                {schedule.title}
+                              </span>
+                            </div>
+                            {schedule.address && (
+                              <div className="mt-1">
+                                <div className="text-sm text-stone-700 print:block">
+                                  {schedule.address}
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </div>
 

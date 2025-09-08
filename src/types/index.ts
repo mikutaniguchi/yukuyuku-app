@@ -31,6 +31,7 @@ export interface Schedule {
   endTime?: string;
   title: string;
   location: string;
+  address?: string; // 住所（オプショナル - 既存データとの互換性のため）
   description: string;
   files: UploadedFile[];
   icon?: string;
@@ -48,6 +49,7 @@ export interface ScheduleFormData {
   endTime?: string;
   title: string;
   location: string;
+  address?: string; // 住所（オプショナル）
   description: string;
   icon: string;
   budget: number;

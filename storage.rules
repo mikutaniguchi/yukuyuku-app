@@ -1,0 +1,27 @@
+rules_version = '2';
+
+// Craft rules based on data in your Firestore database
+// allow write: if firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+service firebase.storage {
+  match /b/{bucket}/o {
+    // 旅行関連のファイル
+    match /trips/{tripId}/{allPaths=**} {
+      // 読み取り: 認証済みユーザーのみ
+      allow read: if request.auth != null;
+      
+      // 書き込み: 認証済みユーザーのみ
+      allow write: if request.auth != null
+                   && request.auth.uid != null;
+    }
+    
+    // その他のファイル（将来の拡張用）
+    match /{allPaths=**} {
+      // 読み取り: 認証済みユーザーのみ
+      allow read: if request.auth != null;
+      
+      // 書き込み: 認証済みユーザーのみ
+      allow write: if request.auth != null
+                   && request.auth.uid != null;
+    }
+  }
+}
