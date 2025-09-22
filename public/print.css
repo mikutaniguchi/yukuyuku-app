@@ -167,7 +167,7 @@
 
   /* スケジュールタイトル */
   .text-base.font-medium.text-stone-800 {
-    font-size: 13px !important;
+    font-size: 16px !important;
     font-weight: 600 !important;
     color: #000 !important;
     flex: 1 !important;
@@ -227,5 +227,12 @@
   .mb-4,
   .mb-3 {
     margin-bottom: 8px !important;
+  }
+
+  /* 住所表示 */
+  .text-sm.text-stone-700.print\:block {
+    font-size: 20px !important;
+    margin-top: 6px !important;
+    font-weight: 500 !important;
   }
 }

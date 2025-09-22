@@ -354,6 +354,7 @@ export default function ScheduleForm({
             <option value="車/タクシー">車/タクシー</option>
             <option value="バス">バス</option>
             <option value="飛行機">飛行機</option>
+            <option value="船">船</option>
           </select>
           <input
             type="text"

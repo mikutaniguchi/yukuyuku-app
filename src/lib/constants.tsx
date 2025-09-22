@@ -8,6 +8,7 @@ import {
   Bus,
   School,
   Bed,
+  Ship,
 } from 'lucide-react';
 import { ColorPalette } from '../types';
 
@@ -233,6 +234,8 @@ export const getIcon = (icon?: string) => {
       return <TrainFront className="w-4 h-4" />;
     case 'bus':
       return <Bus className="w-4 h-4" />;
+    case 'ship':
+      return <Ship className="w-4 h-4" />;
     case 'camera':
       return <School className="w-4 h-4" />;
     case 'bed':
@@ -288,6 +291,12 @@ export const iconOptions = [
   {
     id: 'plane',
     name: '飛行機',
+    bgColor: colorPalette.aquaBlue.light,
+    iconColor: colorPalette.aquaBlue.accentText,
+  },
+  {
+    id: 'ship',
+    name: '船',
     bgColor: colorPalette.aquaBlue.light,
     iconColor: colorPalette.aquaBlue.accentText,
   },

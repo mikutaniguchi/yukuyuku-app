@@ -11,6 +11,7 @@ import {
   Plane,
   Train,
   Footprints,
+  Ship,
   Package,
   PackageOpen,
   FileText,
@@ -302,9 +303,12 @@ export default function SchedulePage({
       case '電車':
         return <Train className="w-4 h-4" />;
       case 'タクシー':
+      case '車/タクシー':
         return <Car className="w-4 h-4" />;
       case '飛行機':
         return <Plane className="w-4 h-4" />;
+      case '船':
+        return <Ship className="w-4 h-4" />;
       default:
         return <Car className="w-4 h-4" />;
     }
@@ -576,13 +580,15 @@ export default function SchedulePage({
             <h2 className="text-lg font-semibold text-stone-800 mb-2">
               しおり
             </h2>
-            <button
-              onClick={handlePrint}
-              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-stone-50 text-stone-700 hover:bg-stone-100 transition-colors w-full"
-            >
-              <Printer className="w-4 h-4" />
-              <span className="text-sm">印刷</span>
-            </button>
+            <div className="space-y-2">
+              <button
+                onClick={handlePrint}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-stone-50 text-stone-700 hover:bg-stone-100 transition-colors w-full"
+              >
+                <Printer className="w-4 h-4" />
+                <span className="text-sm">スケジュール印刷</span>
+              </button>
+            </div>
           </div>
         </div>
 
